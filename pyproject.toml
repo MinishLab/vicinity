@@ -1,11 +1,13 @@
 [project]
-name = "PACKAGE"
-description = "DESCRIPTION"
+name = "nearest"
+description = "Nearest neighbors"
 readme = "README.md"
 version = "0.1.0"
 requires-python = ">=3.10"
 
 dependencies = [
+    "numpy",
+    "tqdm"
 ]
 
 [build-system]
@@ -22,6 +24,7 @@ dev = [
     "pytest-coverage",
     "ruff",
 ]
+hnsw = ["hnswlib"]
 
 [tool.ruff]
 exclude = [".venv/"]
@@ -66,7 +69,7 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.setuptools]
-packages = ["PACKAGE"]
+packages = ["nearest"]
 
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
