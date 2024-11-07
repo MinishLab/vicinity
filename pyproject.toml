@@ -2,7 +2,7 @@
 name = "nearest"
 description = "Nearest neighbors"
 readme = "README.md"
-version = "0.1.0"
+dynamic = ["version"]
 requires-python = ">=3.10"
 
 dependencies = [
@@ -73,3 +73,6 @@ packages = ["nearest"]
 
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
+
+[tool.setuptools.dynamic]
+version = {attr = "nearest.version.__version__"}
