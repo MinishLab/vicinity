@@ -34,9 +34,9 @@ class BasicBackend(BaseBackend):
         return Backend.BASIC
 
     @classmethod
-    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray) -> BasicBackend:
+    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, dim: int) -> BasicBackend:
         """Create a new instance from vectors."""
-        return cls(vectors, BasicArgs(dim=vectors.shape[1]))
+        return cls(vectors, BasicArgs(dim=dim))
 
     @classmethod
     def load(cls: type[BasicBackend], folder: Path) -> BasicBackend:
