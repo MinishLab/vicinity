@@ -71,7 +71,7 @@ class Nearest:
         :return: A Nearest instance.
         """
         backend_cls = get_backend_class(backend_type)
-        arguments = backend_cls.argument_class(dim=vectors.shape[1], **kwargs)
+        arguments = backend_cls.argument_class(**kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
 
         return cls(items, backend)
