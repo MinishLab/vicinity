@@ -7,25 +7,25 @@ from typing import Literal
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
 
-from nearest.backends.base import BaseArgs, BaseBackend
+from nearest.backends.base import AbstractBackend, BaseArgs
 from nearest.datatypes import Backend, QueryResult
 
 
 @dataclass(frozen=True)
-class HnswArgs(BaseArgs):
+class HNSWArgs(BaseArgs):
     dim: int
     space: Literal["cosine", "l2", "ip"] = "cosine"
     ef_construction: int = 200
     m: int = 16
 
 
-class HnswBackend(BaseBackend):
-    argument_class = HnswArgs
+class HNSWBackend(AbstractBackend):
+    argument_class = HNSWArgs
 
     def __init__(
         self,
         index: HnswIndex,
-        arguments: HnswArgs,
+        arguments: HNSWArgs,
     ) -> None:
         """Initialize the backend using vectors."""
         super().__init__(arguments)
@@ -33,19 +33,19 @@ class HnswBackend(BaseBackend):
 
     @classmethod
     def from_vectors(
-        cls: type[HnswBackend],
+        cls: type[HNSWBackend],
         vectors: npt.NDArray,
         dim: int,
         space: Literal["cosine", "l2", "ip"],
         ef_construction: int,
         m: int,
-    ) -> HnswBackend:
+    ) -> HNSWBackend:
         """Create a new instance from vectors."""
         index = HnswIndex(space=space, dim=vectors.shape[1])
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
         index.add_items(vectors)
-        arguments = HnswArgs(dim=dim, space=space, ef_construction=ef_construction, m=m)
-        return HnswBackend(index, arguments=arguments)
+        arguments = HNSWArgs(dim=dim, space=space, ef_construction=ef_construction, m=m)
+        return HNSWBackend(index, arguments=arguments)
 
     @property
     def backend_type(self) -> Backend:
@@ -62,10 +62,10 @@ class HnswBackend(BaseBackend):
         return self.index.get_current_count()
 
     @classmethod
-    def load(cls: type[HnswBackend], base_path: Path) -> HnswBackend:
+    def load(cls: type[HNSWBackend], base_path: Path) -> HNSWBackend:
         """Load the vectors from a path."""
         path = Path(base_path) / "index.bin"
-        arguments = HnswArgs.load(base_path / "arguments.json")
+        arguments = HNSWArgs.load(base_path / "arguments.json")
         index = HnswIndex(space=arguments.space, dim=arguments.dim)
         index.load_index(str(path))
         return cls(index, arguments=arguments)

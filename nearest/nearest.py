@@ -11,7 +11,7 @@ from typing import Any, Sequence
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends import BaseBackend, get_backend_class
+from nearest.backends import AbstractBackend, get_backend_class
 from nearest.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class Nearest:
     def __init__(
         self,
         items: Sequence[str],
-        backend: BaseBackend,
+        backend: AbstractBackend,
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """
@@ -54,7 +54,7 @@ class Nearest:
             )
         self._items: dict[str, int] = {w: idx for idx, w in enumerate(items)}
         self._indices: dict[int, str] = {idx: w for w, idx in self.items.items()}
-        self.backend: BaseBackend = backend
+        self.backend: AbstractBackend = backend
         self.metadata = metadata or {}
 
     def __len__(self) -> int:
@@ -203,7 +203,7 @@ class Nearest:
         metadata: dict[str, Any] = data["metadata"]
         backend_type = Backend(data["backend_type"])
 
-        backend_cls: type[BaseBackend] = get_backend_class(backend_type)
+        backend_cls: type[AbstractBackend] = get_backend_class(backend_type)
         backend = backend_cls.load(folder_path)
 
         instance = cls(items, backend, metadata=metadata)

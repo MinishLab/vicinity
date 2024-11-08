@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends.base import BaseArgs, BaseBackend
+from nearest.backends.base import AbstractBackend, BaseArgs
 from nearest.datatypes import Backend, Matrix, QueryResult
 from nearest.utilities import normalize, normalize_or_copy
 
@@ -16,7 +16,7 @@ from nearest.utilities import normalize, normalize_or_copy
 class BasicArgs(BaseArgs): ...
 
 
-class BasicBackend(BaseBackend):
+class BasicBackend(AbstractBackend):
     argument_class = BasicArgs
 
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:

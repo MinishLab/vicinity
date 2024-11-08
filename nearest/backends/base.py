@@ -34,7 +34,7 @@ class BaseArgs:
 ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 
-class BaseBackend(ABC):
+class AbstractBackend(ABC):
     argument_class: type[BaseArgs]
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:
@@ -96,4 +96,4 @@ class BaseBackend(ABC):
         raise NotImplementedError()
 
 
-BaseType = TypeVar("BaseType", bound=BaseBackend)
+BaseType = TypeVar("BaseType", bound=AbstractBackend)
