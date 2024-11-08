@@ -146,6 +146,4 @@ class BasicBackend(AbstractBackend):
 
     def delete(self, indices: list[int]) -> None:
         """Deletes specific indices from the vector space."""
-        np.delete(self._vectors, indices, axis=0)
-        # Reassign the vectors to make sure the norm vectors are updated.
-        self._vectors = self._vectors
+        self._vectors = np.delete(self._vectors, indices, axis=0)
