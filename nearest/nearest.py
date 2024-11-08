@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from io import open
 from pathlib import Path
 from typing import Any, Sequence
 
 import numpy as np
+import orjson
 from numpy import typing as npt
 
 from nearest.backends import AbstractBackend, get_backend_class
@@ -45,15 +45,7 @@ class Nearest:
             raise ValueError(
                 "Your vector space and list of items are not the same length: " f"{len(backend)} != {len(items)}"
             )
-        if isinstance(items, (dict, set)):
-            raise ValueError(
-                "Your item list is a set or dict, and might not "
-                "retain order in the conversion to internal look"
-                "-ups. Please convert it to list and check the "
-                "order."
-            )
-        self._items: dict[str, int] = {w: idx for idx, w in enumerate(items)}
-        self._indices: dict[int, str] = {idx: w for w, idx in self.items.items()}
+        self.items: list[str] = list(items)
         self.backend: AbstractBackend = backend
         self.metadata = metadata or {}
 
@@ -81,23 +73,8 @@ class Nearest:
         backend_cls = get_backend_class(backend_type)
         arguments = backend_cls.argument_class(dim=vectors.shape[1], **kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
+
         return cls(items, backend)
-
-    @property
-    def items(self) -> dict[str, int]:
-        """A mapping from item ids to their indices."""
-        return self._items
-
-    @property
-    def indices(self) -> dict[int, str]:
-        """A mapping from integers to item indices."""
-        return self._indices
-
-    @property
-    def sorted_items(self) -> list[str]:
-        """The items, sorted by index."""
-        items: list[str] = [item for item, _ in sorted(self.items.items(), key=lambda x: x[1])]
-        return items
 
     @property
     def dim(self) -> int:
@@ -126,7 +103,7 @@ class Nearest:
         out = []
         for index, distances in self.backend.query(vectors, k):
             distances.clip(min=0, out=distances)
-            out.append([(self.indices[idx], dist) for idx, dist in zip(index, distances)])
+            out.append([(self.items[idx], dist) for idx, dist in zip(index, distances)])
 
         return out
 
@@ -149,7 +126,7 @@ class Nearest:
 
         out = []
         for indexes in self.backend.threshold(vectors, threshold):
-            out.append([self.indices[idx] for idx in indexes])
+            out.append([self.items[idx] for idx in indexes])
 
         return out
 
@@ -174,11 +151,10 @@ class Nearest:
         if not path.is_dir():
             raise ValueError(f"Path {path} should be a directory.")
 
-        items = self.sorted_items
-        items_dict = {"items": items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
+        items_dict = {"items": self.items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
 
-        with open(path / "data.json", "w") as file_handle:
-            json.dump(items_dict, file_handle)
+        with open(path / "data.json", "wb") as file_handle:
+            file_handle.write(orjson.dumps(items_dict))
 
         self.backend.save(path)
 
@@ -196,9 +172,9 @@ class Nearest:
         """
         folder_path = Path(filename)
 
-        with open(folder_path / "data.json") as file_handle:
-            data: dict[str, Any] = json.load(file_handle)
-        items: list[str] = data["items"]
+        with open(folder_path / "data.json", "rb") as file_handle:
+            data: dict[str, Any] = orjson.loads(file_handle.read())
+        items: Sequence[str] = data["items"]
 
         metadata: dict[str, Any] = data["metadata"]
         backend_type = Backend(data["backend_type"])
@@ -224,11 +200,11 @@ class Nearest:
         if vectors.shape[1] != self.dim:
             raise ValueError("The inserted vectors must have the same dimension as the backend.")
 
+        item_set = set(self.items)
         for token in tokens:
-            if token in self.items:
+            if token in item_set:
                 raise ValueError(f"Token {token} is already in the vector space.")
-            self.items[token] = len(self.items)
-            self.indices[len(self.items) - 1] = token
+            self.items.append(token)
         self.backend.insert(vectors)
 
     def delete(self, tokens: Sequence[str]) -> None:
@@ -242,19 +218,11 @@ class Nearest:
         :raises ValueError: If any passed tokens are not in the vector space.
         """
         try:
-            curr_indices = [self.items[token] for token in tokens]
+            curr_indices = [self.items.index(token) for token in tokens]
         except KeyError as exc:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
         self.backend.delete(curr_indices)
 
-        tokens_set = set(tokens)
-        new_items: dict[str, int] = {}
-        for item in self.items:
-            if item in tokens_set:
-                tokens_set.remove(item)
-                continue
-            new_items[item] = len(new_items)
-
-        self._items = new_items
-        self._indices = {idx: item for item, idx in self.items.items()}
+        for index in curr_indices:
+            self.items.pop(index)
