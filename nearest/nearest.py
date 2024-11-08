@@ -11,16 +11,10 @@ from typing import Any, Sequence
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends.base import BaseBackend
-from nearest.backends.basic import BasicBackend
-from nearest.backends.hnsw import HnswBackend
+from nearest.backends import BaseBackend, get_backend_class
 from nearest.datatypes import Backend, Dtype, PathLike
 
 logger = logging.getLogger(__name__)
-
-
-_BACKENDS: dict[Backend, type[BaseBackend]] = {Backend.BASIC: BasicBackend, Backend.HNSW: HnswBackend}
-_BACKEND_TO_STRING: dict[type[BaseBackend], Backend] = {BasicBackend: Backend.BASIC, HnswBackend: Backend.HNSW}
 
 
 class Nearest:
@@ -69,7 +63,11 @@ class Nearest:
 
     @classmethod
     def from_vectors_and_items(
-        cls: type[Nearest], vectors: npt.NDArray, items: Sequence[str], backend_type: Backend = Backend.BASIC
+        cls: type[Nearest],
+        vectors: npt.NDArray,
+        items: Sequence[str],
+        backend_type: Backend = Backend.BASIC,
+        **kwargs: Any,
     ) -> Nearest:
         """
         Create a Nearest instance from vectors and items.
@@ -77,10 +75,12 @@ class Nearest:
         :param vectors: The vectors to use.
         :param items: The items to use.
         :param backend_type: The type of backend to use.
+        :param **kwargs: Additional arguments to pass to the backend.
         :return: A Nearest instance.
         """
-        backend_cls = _BACKENDS[backend_type]
-        backend = backend_cls(vectors)
+        backend_cls = get_backend_class(backend_type)
+        arguments = backend_cls.argument_class(dim=vectors.shape[1], **kwargs)
+        backend = backend_cls.from_vectors(vectors, **arguments.dict())
         return cls(items, backend)
 
     @property
@@ -129,15 +129,13 @@ class Nearest:
 
         return out
 
-    def nearest_neighbor_threshold(
+    def query_threshold(
         self,
         vectors: npt.NDArray,
         threshold: float = 0.5,
     ) -> list[list[str]]:
         """
-        Find the nearest neighbors to some arbitrary vector in some threshold.
-
-        Use this to look up the nearest neighbors to a vector that is not in the vocabulary.
+        Find the nearest neighbors to some arbitrary vector with some threshold.
 
         :param vectors: The vectors to find the most similar vectors to.
         :param threshold: The threshold to use.
@@ -177,9 +175,9 @@ class Nearest:
             raise ValueError(f"Path {path} should be a directory.")
 
         items = self.sorted_items
-        items_dict = {"items": items, "metadata": self.metadata, "backend_type": _BACKEND_TO_STRING[type(self.backend)]}
+        items_dict = {"items": items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
 
-        with open(path, "w") as file_handle:
+        with open(path / "data.json", "w") as file_handle:
             json.dump(items_dict, file_handle)
 
         self.backend.save(path)
@@ -196,30 +194,19 @@ class Nearest:
         :param filename: The filename to load.
         :param desired_dtype: The desired dtype of the loaded vectors.
         :return: A Nearest instance.
-        :raises ValueError: If the vectors file is not found.
         """
-        filename_path = Path(filename)
+        folder_path = Path(filename)
 
-        with open(filename) as file_handle:
+        with open(folder_path / "data.json") as file_handle:
             data: dict[str, Any] = json.load(file_handle)
         items: list[str] = data["items"]
 
         metadata: dict[str, Any] = data["metadata"]
-        numpy_path = filename_path.parent / Path(data["vectors_path"])
-        backend_type = Backend(data["backend"])
-        backend_path = data["backend_path"]
+        backend_type = Backend(data["backend_type"])
 
-        backend_cls: type[BaseBackend] = _BACKENDS[backend_type]
-        backend = backend_cls.load(backend_path)
+        backend_cls: type[BaseBackend] = get_backend_class(backend_type)
+        backend = backend_cls.load(folder_path)
 
-        if not numpy_path.exists():
-            raise ValueError(f"Could not find the vectors file at {numpy_path}")
-
-        with open(numpy_path, "rb") as file_handle:
-            vectors: npt.NDArray = np.load(file_handle)
-
-        if desired_dtype is not None and vectors.dtype != np.dtype(desired_dtype):
-            vectors = vectors.astype(desired_dtype)
         instance = cls(items, backend, metadata=metadata)
 
         return instance

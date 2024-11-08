@@ -1,34 +1,55 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends.base import BaseBackend
-from nearest.datatypes import Matrix, QueryResult
+from nearest.backends.base import BaseArgs, BaseBackend
+from nearest.datatypes import Backend, Matrix, QueryResult
 from nearest.utilities import normalize, normalize_or_copy
 
 
+@dataclass(frozen=True)
+class BasicArgs(BaseArgs): ...
+
+
 class BasicBackend(BaseBackend):
-    def __init__(self, vectors: npt.NDArray) -> None:
+    argument_class = BasicArgs
+
+    def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
         """Initialize the backend using vectors."""
+        super().__init__(arguments)
         self._vectors = vectors
 
     def __len__(self) -> int:
         """Get the number of vectors."""
         return self.vectors.shape[0]
 
+    @property
+    def backend_type(self) -> Backend:
+        """The type of the backend."""
+        return Backend.BASIC
+
+    @classmethod
+    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray) -> BasicBackend:
+        """Create a new instance from vectors."""
+        return cls(vectors, BasicArgs(dim=vectors.shape[1]))
+
     @classmethod
     def load(cls: type[BasicBackend], folder: Path) -> BasicBackend:
         """Load the vectors from a path."""
-        path = Path(folder) / "vectors.npy"
+        path = folder / "vectors.npy"
+        arguments = BasicArgs.load(folder / "arguments.json")
         with open(path, "rb") as f:
-            return cls(np.load(f))
+            return cls(np.load(f), arguments)
 
     def save(self, folder: Path) -> None:
         """Save the vectors to a path."""
         path = Path(folder) / "vectors.npy"
+        self.arguments.dump(folder / "arguments.json")
         with open(path, "wb") as f:
             np.save(f, self._vectors)
 
@@ -67,16 +88,16 @@ class BasicBackend(BaseBackend):
         self,
         vectors: npt.NDArray,
         threshold: float,
-    ) -> list[list[int]]:
+    ) -> list[npt.NDArray]:
         """Batched cosine similarity."""
-        out: list[list[int]] = []
+        out: list[npt.NDArray] = []
         for i in range(0, len(vectors), 1024):
             batch = vectors[i : i + 1024]
             distances = self._dist(batch, self.norm_vectors)
             for _, sims in enumerate(distances):
                 indices = np.flatnonzero(sims <= threshold)
                 sorted_indices = indices[np.argsort(sims[indices])]
-                out.append([d for d in sorted_indices])
+                out.append(np.asarray([d for d in sorted_indices]))
 
         return out
 
