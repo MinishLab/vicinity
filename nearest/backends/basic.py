@@ -97,7 +97,7 @@ class BasicBackend(AbstractBackend):
             for _, sims in enumerate(distances):
                 indices = np.flatnonzero(sims <= threshold)
                 sorted_indices = indices[np.argsort(sims[indices])]
-                out.append(np.asarray([d for d in sorted_indices]))
+                out.append(sorted_indices)
 
         return out
 
