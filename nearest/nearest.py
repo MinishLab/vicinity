@@ -183,7 +183,7 @@ class Nearest:
         self.backend.save(path)
 
     @classmethod
-    def load(cls, filename: PathLike, desired_dtype: Dtype | None = None) -> Nearest:
+    def load(cls, filename: PathLike) -> Nearest:
         """
         Load a nearest instance in fast format.
 
@@ -192,7 +192,6 @@ class Nearest:
         .txt files.
 
         :param filename: The filename to load.
-        :param desired_dtype: The desired dtype of the loaded vectors.
         :return: A Nearest instance.
         """
         folder_path = Path(filename)
