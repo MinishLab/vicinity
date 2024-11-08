@@ -5,7 +5,6 @@ from typing import Iterable, TypeAlias
 import numpy as np
 from numpy import typing as npt
 
-Dtype: TypeAlias = str | np.dtype
 PathLike = str | Path
 Matrix: TypeAlias = npt.NDArray | list[npt.NDArray]
 SimilarityItem = list[tuple[str, float]]

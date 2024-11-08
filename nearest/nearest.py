@@ -12,7 +12,7 @@ import numpy as np
 from numpy import typing as npt
 
 from nearest.backends import BaseBackend, get_backend_class
-from nearest.datatypes import Backend, Dtype, PathLike
+from nearest.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
 
