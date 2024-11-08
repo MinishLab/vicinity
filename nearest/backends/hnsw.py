@@ -41,7 +41,7 @@ class HNSWBackend(AbstractBackend):
         m: int,
     ) -> HNSWBackend:
         """Create a new instance from vectors."""
-        index = HnswIndex(space=space, dim=vectors.shape[1])
+        index = HnswIndex(space=space, dim=dim)
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
         index.add_items(vectors)
         arguments = HNSWArgs(dim=dim, space=space, ef_construction=ef_construction, m=m)
