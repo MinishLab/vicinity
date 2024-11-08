@@ -221,6 +221,9 @@ class Nearest:
         if len(tokens) != len(vectors):
             raise ValueError(f"Your tokens and vectors are not the same length: {len(tokens)} != {len(vectors)}")
 
+        if vectors.shape[1] != self.dim:
+            raise ValueError("The inserted vectors must have the same dimension as the backend.")
+
         for token in tokens:
             if token in self.items:
                 raise ValueError(f"Token {token} is already in the vector space.")

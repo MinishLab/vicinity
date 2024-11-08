@@ -23,6 +23,7 @@ class BasicBackend(AbstractBackend):
         """Initialize the backend using vectors."""
         super().__init__(arguments)
         self._vectors = vectors
+        self._norm_vectors: npt.NDArray | None = None
 
     def __len__(self) -> int:
         """Get the number of vectors."""
@@ -70,7 +71,7 @@ class BasicBackend(AbstractBackend):
             raise ValueError(f"Your array does not have 2 dimensions: {np.ndim(matrix)}")
         self._vectors = matrix
         # Make sure norm vectors is updated.
-        if hasattr(self, "_norm_vectors"):
+        if self._norm_vectors is not None:
             self._norm_vectors = normalize_or_copy(matrix)
 
     @property
@@ -80,7 +81,7 @@ class BasicBackend(AbstractBackend):
 
         NOTE: when all vectors are unit length, this attribute _is_ vectors.
         """
-        if not hasattr(self, "_norm_vectors"):
+        if self._norm_vectors is None:
             self._norm_vectors = normalize_or_copy(self.vectors)
         return self._norm_vectors
 

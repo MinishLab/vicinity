@@ -14,7 +14,7 @@ from nearest.datatypes import Backend, QueryResult
 @dataclass(frozen=True)
 class HNSWArgs(BaseArgs):
     dim: int
-    space: Literal["cosine", "l2", "ip"] = "cosine"
+    space: Literal["cosine", "l2"] = "cosine"
     ef_construction: int = 200
     m: int = 16
 
@@ -36,7 +36,7 @@ class HNSWBackend(AbstractBackend):
         cls: type[HNSWBackend],
         vectors: npt.NDArray,
         dim: int,
-        space: Literal["cosine", "l2", "ip"],
+        space: Literal["cosine", "l2"],
         ef_construction: int,
         m: int,
     ) -> HNSWBackend:
