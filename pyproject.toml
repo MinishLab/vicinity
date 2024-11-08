@@ -1,11 +1,28 @@
 [project]
-name = "PACKAGE"
-description = "DESCRIPTION"
-readme = "README.md"
-version = "0.1.0"
+name = "nearest"
+description = "Nearest neighbors"
+readme = { file = "README.md", content-type = "text/markdown" }
+dynamic = ["version"]
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Stéphan Tulkens", email = "stephantul@gmail.com"}, {name = "Thomas van Dongen", email = "thomas123@live.nl"}]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 
 dependencies = [
+    "numpy",
+    "tqdm"
 ]
 
 [build-system]
@@ -22,6 +39,7 @@ dev = [
     "pytest-coverage",
     "ruff",
 ]
+hnsw = ["hnswlib"]
 
 [tool.ruff]
 exclude = [".venv/"]
@@ -66,7 +84,10 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.setuptools]
-packages = ["PACKAGE"]
+packages = ["nearest"]
 
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
+
+[tool.setuptools.dynamic]
+version = {attr = "nearest.version.__version__"}

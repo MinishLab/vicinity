@@ -1,19 +1,17 @@
-# watertemplate
-Our template
+# Nearest
 
-## Usage
-To start a new project, follow the steps below:
+<div align="center">
+  <h2>A small vector store for your RAG system</h2>
+</div>
 
-1. Replace `PACKAGE` with the name of your project.
+# Table of contents
 
-2. Run the following make commands to install the project:
+1. [Quickstart](#quickstart)
 
-```bash
-make clean install
-```
+Nearest is the lightest-weight vector store. Just put in some vectors, calculate query vectors, and off you go.
 
-3. To compile new requirements, run:
+## Quickstart
 
 ```bash
-make compile
+pip install nearest
 ```

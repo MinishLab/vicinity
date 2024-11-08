@@ -1,5 +1,5 @@
 clean:
-	
+
 
 venv:
 	uv venv
@@ -12,4 +12,4 @@ fix:
 	uv run pre-commit run --all-files
 
 test:
-	uv run pytest --cov=PACKAGE --cov-report=term-missing
+	uv run pytest --cov=nearest --cov-report=term-missing
