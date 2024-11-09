@@ -4,6 +4,24 @@
 
 </div>
 
+
+<div align="center">
+  <h2>
+    <a href="https://pypi.org/project/vicinity/"><img src="https://img.shields.io/pypi/v/vicinity?color=%23007ec6&label=pypi%20package" alt="Package version"></a>
+    <a href="https://pypi.org/project/vicinity/"><img src="https://img.shields.io/pypi/pyversions/vicinity" alt="Supported Python versions"></a>
+    <a href="https://app.codecov.io/gh/MinishLab/vicinity">
+    <img src="https://codecov.io/gh/MinishLab/vicinity/graph/badge.svg?token=21TWJ6B5ET" alt="Codecov">
+    </a>
+    <a href="https://github.com/MinishLab/vicinity/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License - MIT"></a>
+  </h2>
+</div>
+
+<div align="center">
+    <img src="assets/images/vicinity_model_diagram_transparant_dark.png#gh-dark-mode-only" width="90%">
+    <img src="assets/images/vicinity_model_diagram_transparant_light.png#gh-light-mode-only" width="90%">
+</div>
+
+
 ## Table of contents
 
 - [Quickstart](#quickstart)
