@@ -11,7 +11,7 @@ from nearest.datatypes import Backend
 
 def test_nearest_init(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
     """
-    Test Nearest.__init__ with matching items and backend lengths.
+    Test Nearest.init.
 
     :param backend_type: The backend type to use (BASIC or HNSW).
     :param items: A list of item names.
@@ -30,7 +30,7 @@ def test_nearest_init(backend_type: Backend, items: list[str], vectors: np.ndarr
 
 def test_nearest_from_vectors_and_items(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
     """
-    Test Nearest.from_vectors_and_items class method.
+    Test Nearest.from_vectors_and_items.
 
     :param backend_type: The backend type to use (BASIC or HNSW).
     :param items: A list of item names.
@@ -45,9 +45,10 @@ def test_nearest_from_vectors_and_items(backend_type: Backend, items: list[str],
 
 def test_nearest_query(nearest_instance: Nearest, query_vector: np.ndarray) -> None:
     """
-    Test Nearest.query method.
+    Test Nearest.query.
 
     :param nearest_instance: A Nearest instance.
+    :param query_vector: A query vector.
     """
     results = nearest_instance.query(query_vector, k=2)
 
@@ -59,6 +60,7 @@ def test_nearest_query_threshold(nearest_instance: Nearest, query_vector: np.nda
     Test Nearest.query_threshold method.
 
     :param nearest_instance: A Nearest instance.
+    :param query_vector: A query vector.
     """
     results = nearest_instance.query_threshold(query_vector, threshold=0.7)
 
@@ -69,8 +71,9 @@ def test_nearest_insert(backend_type: Backend, nearest_instance: Nearest, query_
     """
     Test Nearest.insert method.
 
-    :param backend_type: The backend type to use (BASIC or HNSW).
+    :param backend_type: The backend type to use.
     :param nearest_instance: A Nearest instance.
+    :param query_vector: A query vector.
     """
     if backend_type == Backend.HNSW:
         # Don't test insert for HNSW backend
@@ -86,13 +89,10 @@ def test_nearest_insert(backend_type: Backend, nearest_instance: Nearest, query_
     assert returned_item == "item101"
 
 
-def test_nearest_delete(
-    backend_type: Backend, nearest_instance: Nearest, items: list[str], vectors: np.ndarray
-) -> None:
+def test_nearest_delete(nearest_instance: Nearest, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Nearest.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
 
-    :param backend_type: The backend type to use (BASIC or HNSW).
     :param nearest_instance: A Nearest instance.
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
@@ -125,7 +125,7 @@ def test_nearest_save_and_load(tmp_path: Path, nearest_instance: Nearest) -> Non
     save_path = tmp_path / "nearest_data"
     nearest_instance.save(save_path)
 
-    loaded_nearest = Nearest.load(save_path)
+    Nearest.load(save_path)
 
 
 def test_nearest_insert_duplicate(nearest_instance: Nearest, query_vector: np.ndarray) -> None:
@@ -175,7 +175,7 @@ def test_nearest_insert_wrong_dimension(nearest_instance: Nearest) -> None:
     :raises ValueError: If vectors have wrong dimension.
     """
     new_item = ["item102"]
-    new_vector = np.array([[0.5, 0.5, 0.5]])  # Incorrect dimension
+    new_vector = np.array([[0.5, 0.5, 0.5]])
 
     with pytest.raises(ValueError):
         nearest_instance.insert(new_item, new_vector)
