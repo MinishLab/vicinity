@@ -139,3 +139,7 @@ Load the vector store:
 nearest = Nearest.load('my_vector_store')
 ```
 </details>
+
+## License
+
+MIT
