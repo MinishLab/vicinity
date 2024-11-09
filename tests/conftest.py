@@ -18,7 +18,6 @@ def items() -> list[str]:
 @pytest.fixture(scope="session")
 def vectors() -> np.ndarray:
     """Fixture providing an array of vectors corresponding to items."""
-    # Generate 100 vectors of dimension 5
     return random_gen.random((100, 5))
 
 
