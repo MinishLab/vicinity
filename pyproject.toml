@@ -42,6 +42,8 @@ dev = [
 ]
 hnsw = ["hnswlib"]
 
+rerankers = ["sentence-transformers"]
+
 [tool.ruff]
 exclude = [".venv/"]
 line-length = 120
