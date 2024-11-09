@@ -1,15 +1,11 @@
-"""Fixtures for testing the Nearest class with pytest."""
-
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
 from nearest import Nearest
-from nearest.backends import get_backend_class
 from nearest.datatypes import Backend
 
-# Use np.random.Generator for reproducible random numbers
 random_gen = np.random.default_rng(42)
 
 
@@ -32,9 +28,9 @@ def query_vector() -> np.ndarray:
     return random_gen.random(5)
 
 
-@pytest.fixture(params=[Backend.BASIC, Backend.HNSW])
+@pytest.fixture(params=list(Backend))
 def backend_type(request: pytest.FixtureRequest) -> Backend:
-    """Fixture parametrizing over backend types BASIC and HNSW."""
+    """Fixture parametrizing over all backend types defined in Backend."""
     return request.param
 
 

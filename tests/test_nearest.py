@@ -1,5 +1,3 @@
-"""Unit tests for the Nearest class using pytest."""
-
 from __future__ import annotations
 
 from pathlib import Path
