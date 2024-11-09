@@ -9,7 +9,7 @@ from numpy import typing as npt
 
 from nearest.backends.base import AbstractBackend, BaseArgs
 from nearest.datatypes import Backend, Matrix, QueryResult
-from nearest.utilities import normalize, normalize_or_copy
+from nearest.utils import normalize, normalize_or_copy
 
 
 @dataclass(frozen=True)
