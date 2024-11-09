@@ -108,7 +108,7 @@ def test_nearest_delete(nearest_instance: Nearest, items: list[str], vectors: np
     assert "item2" not in nearest_instance.items
 
     # Query using the vector of "item2"
-    results = nearest_instance.query(item2_vector, k=5)  # Adjust k as needed
+    results = nearest_instance.query(item2_vector, k=5)
     returned_items = [item for item, _ in results[0]]
 
     # Check that "item2" is not in the results
@@ -117,7 +117,7 @@ def test_nearest_delete(nearest_instance: Nearest, items: list[str], vectors: np
 
 def test_nearest_save_and_load(tmp_path: Path, nearest_instance: Nearest) -> None:
     """
-    Test Nearest.save and Nearest.load methods.
+    Test Nearest.save and Nearest.load.
 
     :param tmp_path: Temporary directory provided by pytest.
     :param nearest_instance: A Nearest instance.
@@ -160,7 +160,7 @@ def test_nearest_insert_mismatched_lengths(nearest_instance: Nearest, query_vect
     :param nearest_instance: A Nearest instance.
     :raises ValueError: If tokens and vectors lengths differ.
     """
-    new_items = ["item4", "item5"]
+    new_items = ["item102", "item103"]
     new_vector = query_vector
 
     with pytest.raises(ValueError):
