@@ -3,8 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from nearest import Nearest
-from nearest.datatypes import Backend
+from vicinity import Vicinity
+from vicinity.datatypes import Backend
 
 random_gen = np.random.default_rng(42)
 
@@ -34,6 +34,6 @@ def backend_type(request: pytest.FixtureRequest) -> Backend:
 
 
 @pytest.fixture
-def nearest_instance(backend_type: Backend, items: list[str], vectors: np.ndarray) -> Nearest:
-    """Fixture creating a Nearest instance with the given backend, items, and vectors."""
-    return Nearest.from_vectors_and_items(vectors, items, backend_type=backend_type)
+def vicinity_instance(backend_type: Backend, items: list[str], vectors: np.ndarray) -> Vicinity:
+    """Fixture creating a Vicinity instance with the given backend, items, and vectors."""
+    return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)

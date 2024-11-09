@@ -11,13 +11,13 @@ import numpy as np
 import orjson
 from numpy import typing as npt
 
-from nearest.backends import AbstractBackend, get_backend_class
-from nearest.datatypes import Backend, PathLike
+from vicinity.backends import AbstractBackend, get_backend_class
+from vicinity.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
 
 
-class Nearest:
+class Vicinity:
     """
     Work with vector representations of items.
 
@@ -32,7 +32,7 @@ class Nearest:
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """
-        Initialize a Nearest instance with an array and list of items.
+        Initialize a Vicinity instance with an array and list of items.
 
         :param items: The items in the vector space.
             A list of items. Length must be equal to the number of vectors, and
@@ -55,20 +55,20 @@ class Nearest:
 
     @classmethod
     def from_vectors_and_items(
-        cls: type[Nearest],
+        cls: type[Vicinity],
         vectors: npt.NDArray,
         items: Sequence[str],
         backend_type: Backend = Backend.BASIC,
         **kwargs: Any,
-    ) -> Nearest:
+    ) -> Vicinity:
         """
-        Create a Nearest instance from vectors and items.
+        Create a Vicinity instance from vectors and items.
 
         :param vectors: The vectors to use.
         :param items: The items to use.
         :param backend_type: The type of backend to use.
         :param **kwargs: Additional arguments to pass to the backend.
-        :return: A Nearest instance.
+        :return: A Vicinity instance.
         """
         backend_cls = get_backend_class(backend_type)
         arguments = backend_cls.argument_class(**kwargs)
@@ -93,7 +93,7 @@ class Nearest:
 
         :param vectors: The vectors to find the nearest neighbors to.
         :param k: The number of most similar items to retrieve.
-        :return: For each items in the input the num most similar items are returned in the form of
+        :return: For each item in the input, the num most similar items are returned in the form of
             (NAME, SIMILARITY) tuples.
         """
         vectors = np.asarray(vectors)
@@ -118,7 +118,7 @@ class Nearest:
         :param vectors: The vectors to find the most similar vectors to.
         :param threshold: The threshold to use.
 
-        :return: For each items in the input all items above the threshold are returned.
+        :return: For each item in the input, all items above the threshold are returned.
         """
         vectors = np.array(vectors)
         if np.ndim(vectors) == 1:
@@ -136,9 +136,9 @@ class Nearest:
         overwrite: bool = False,
     ) -> None:
         """
-        Save a nearest instance in a fast format.
+        Save a Vicinity instance in a fast format.
 
-        The nearest fast format stores the words and vectors of a Nearest instance
+        The Vicinity fast format stores the words and vectors of a Vicinity instance
         separately in a JSON and numpy format, respectively.
 
         :param folder: The path to which to save the JSON file. The vectors are saved separately. The JSON contains a path to the numpy file.
@@ -159,16 +159,16 @@ class Nearest:
         self.backend.save(path)
 
     @classmethod
-    def load(cls, filename: PathLike) -> Nearest:
+    def load(cls, filename: PathLike) -> Vicinity:
         """
-        Load a nearest instance in fast format.
+        Load a Vicinity instance in fast format.
 
         As described above, the fast format stores the words and vectors of the
-        Nearest instance separately, and is drastically faster than loading from
+        Vicinity instance separately and is drastically faster than loading from
         .txt files.
 
         :param filename: The filename to load.
-        :return: A Nearest instance.
+        :return: A Vicinity instance.
         """
         folder_path = Path(filename)
 

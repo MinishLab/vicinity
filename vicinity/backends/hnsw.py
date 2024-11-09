@@ -7,8 +7,8 @@ from typing import Literal
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
 
-from nearest.backends.base import AbstractBackend, BaseArgs
-from nearest.datatypes import Backend, QueryResult
+from vicinity.backends.base import AbstractBackend, BaseArgs
+from vicinity.datatypes import Backend, QueryResult
 
 
 @dataclass(frozen=True)
