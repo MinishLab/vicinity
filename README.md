@@ -54,6 +54,7 @@ Vicinity provides the following features:
 - Dynamic Updates: Insert and delete items in the vector store.
 - Serialization: Save and load vector stores for persistence.
 - Easy to Use: Simple and intuitive API.
+- Rerankers: Use rerankers to refine search results.
 
 ## Supported Backends
 The following backends are supported:
@@ -138,6 +139,32 @@ Load the vector store:
 
 ```python
 vicinity = Vicinity.load('my_vector_store')
+```
+</details>
+
+<details>
+<summary>  Using rerankers
+ </summary>
+<br>
+
+Use rerankers to refine search results:
+
+```python
+import numpy as np
+from vicinity import Vicinity
+from vicinity.rerankers import CrossEncoderReranker
+
+# Create some dummy data
+items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
+vectors = np.random.rand(len(items), 128)
+
+# Initialize the Vicinity instance with a CrossEncoderReranker
+vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, reranker=CrossEncoderReranker())
+
+# Query for nearest neighbors with a top-k search
+query_vector = np.random.rand(128)
+query_text = "What is the legendary weapon in Zelda?"
+results = vicinity.query([query_vector], [query_text], k=3)
 ```
 </details>
 
