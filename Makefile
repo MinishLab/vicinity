@@ -12,4 +12,4 @@ fix:
 	uv run pre-commit run --all-files
 
 test:
-	uv run pytest --cov=nearest --cov-report=term-missing
+	uv run pytest --cov=vicinity --cov-report=term-missing
