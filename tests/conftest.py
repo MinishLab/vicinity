@@ -5,6 +5,7 @@ import pytest
 
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
+from vicinity.rerankers import CrossEncoderReranker
 
 random_gen = np.random.default_rng(42)
 
@@ -37,3 +38,9 @@ def backend_type(request: pytest.FixtureRequest) -> Backend:
 def vicinity_instance(backend_type: Backend, items: list[str], vectors: np.ndarray) -> Vicinity:
     """Fixture creating a Vicinity instance with the given backend, items, and vectors."""
     return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+
+
+@pytest.fixture
+def reranker() -> CrossEncoderReranker:
+    """Fixture providing a CrossEncoderReranker instance."""
+    return CrossEncoderReranker()
