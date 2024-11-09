@@ -16,11 +16,6 @@
   </h2>
 </div>
 
-<div align="center">
-    <img src="assets/images/vicinity_model_diagram_transparant_dark.png#gh-dark-mode-only" width="90%">
-    <img src="assets/images/vicinity_model_diagram_transparant_light.png#gh-light-mode-only" width="90%">
-</div>
-
 
 ## Table of contents
 
