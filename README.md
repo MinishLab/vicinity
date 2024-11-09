@@ -1,6 +1,6 @@
 <div align="center">
 
-# Nearest: The Lightweight Vector Store
+# Vicinity: The Lightweight Vector Store
 
 </div>
 
@@ -11,43 +11,44 @@
 - [Supported Backends](#supported-backends)
 - [Usage](#usage)
 
-Nearest is the lightest-weight vector store. Just put in some vectors, calculate query vectors, and off you go. It provides a simple and intuitive API for nearest neighbor search, with support for different backends.
+Vicinity is the lightest-weight vector store. Just put in some vectors, calculate query vectors, and off you go. It provides a simple and intuitive API for nearest neighbor search, with support for different backends.
 
 ## Quickstart
 
 Install the package with:
 ```bash
-pip install nearest
+pip install vicinity
 ```
 
-The following code snippet demonstrates how to use Nearest for nearest neighbor search:
+The following code snippet demonstrates how to use Vicinity for nearest neighbor search:
 ```python
 import numpy as np
-from nearest import Nearest
+from vicinity import Vicinity
+from vicinity.datatypes import Backend
 
 # Create some dummy data
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
-# Initialize the Nearest instance (using the basic backend)
-nearest = Nearest.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC)
+# Initialize the Vicinity instance (using the basic backend)
+vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC)
 
 # Query for nearest neighbors with a top-k search
 query_vector = np.random.rand(128)
-results = nearest.query([query_vector], k=3)
+results = vicinity.query([query_vector], k=3)
 
 # Query for nearest neighbors with a threshold search
-results = nearest.query_threshold([query_vector], threshold=0.9)
+results = vicinity.query_threshold([query_vector], threshold=0.9)
 
 # Save the vector store
-nearest.save('my_vector_store')
+vicinity.save('my_vector_store')
 
 # Load the vector store
-nearest = Nearest.load('my_vector_store')
+vicinity = Vicinity.load('my_vector_store')
 ```
 
 ## Main Features
-Nearest provides the following features:
+Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
 - Dynamic Updates: Insert and delete items in the vector store.
@@ -66,17 +67,17 @@ The following backends are supported:
  </summary>
 <br>
 
-You can create a Nearest instance by providing items and their corresponding vectors:
+You can create a Vicinity instance by providing items and their corresponding vectors:
 
 
 ```python
-from nearest import Nearest
+from vicinity import Vicinity
 import numpy as np
 
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
-nearest = Nearest.from_vectors_and_items(vectors=vectors, items=items)
+vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items)
 ```
 
 </details>
@@ -90,14 +91,14 @@ Find the k nearest neighbors for a given vector:
 
 ```python
 query_vector = np.random.rand(128)
-results = nearest.query([query_vector], k=3)
+results = vicinity.query([query_vector], k=3)
 ```
 
 Find all neighbors within a given threshold:
 
 ```python
 query_vector = np.random.rand(128)
-results = nearest.query_threshold([query_vector], threshold=0.9)
+results = vicinity.query_threshold([query_vector], threshold=0.9)
 ```
 </details>
 
@@ -112,13 +113,13 @@ Insert new items:
 ```python
 new_items = ["ocarina", "bow"]
 new_vectors = np.random.rand(2, 128)
-nearest.insert(new_items, new_vectors)
+vicinity.insert(new_items, new_vectors)
 ```
 
 Delete items:
 
 ```python
-nearest.delete(["hookshot"])
+vicinity.delete(["hookshot"])
 ```
 </details>
 
@@ -130,13 +131,13 @@ nearest.delete(["hookshot"])
 Save the vector store:
 
 ```python
-nearest.save('my_vector_store')
+vicinity.save('my_vector_store')
 ```
 
 Load the vector store:
 
 ```python
-nearest = Nearest.load('my_vector_store')
+vicinity = Vicinity.load('my_vector_store')
 ```
 </details>
 

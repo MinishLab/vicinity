@@ -8,7 +8,7 @@ from typing import Any, TypeVar
 
 from numpy import typing as npt
 
-from nearest.datatypes import Backend, QueryResult
+from vicinity.datatypes import Backend, QueryResult
 
 
 @dataclass(frozen=True)

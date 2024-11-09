@@ -7,9 +7,9 @@ from typing import Any
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends.base import AbstractBackend, BaseArgs
-from nearest.datatypes import Backend, Matrix, QueryResult
-from nearest.utils import normalize, normalize_or_copy
+from vicinity.backends.base import AbstractBackend, BaseArgs
+from vicinity.datatypes import Backend, Matrix, QueryResult
+from vicinity.utils import normalize, normalize_or_copy
 
 
 @dataclass(frozen=True)
