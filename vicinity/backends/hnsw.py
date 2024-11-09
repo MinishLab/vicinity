@@ -7,13 +7,13 @@ from typing import Literal
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
 
-from nearest.backends.base import AbstractBackend, BaseArgs
-from nearest.datatypes import Backend, QueryResult
+from vicinity.backends.base import AbstractBackend, BaseArgs
+from vicinity.datatypes import Backend, QueryResult
 
 
 @dataclass(frozen=True)
 class HNSWArgs(BaseArgs):
-    dim: int
+    dim: int | None = None
     space: Literal["cosine", "l2"] = "cosine"
     ef_construction: int = 200
     m: int = 16
@@ -35,12 +35,14 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
     def from_vectors(
         cls: type[HNSWBackend],
         vectors: npt.NDArray,
-        dim: int,
+        dim: int | None,
         space: Literal["cosine", "l2"],
         ef_construction: int,
         m: int,
     ) -> HNSWBackend:
         """Create a new instance from vectors."""
+        if dim is None:
+            dim = vectors.shape[1]
         index = HnswIndex(space=space, dim=dim)
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
         index.add_items(vectors)

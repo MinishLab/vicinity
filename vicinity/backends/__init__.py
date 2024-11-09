@@ -1,6 +1,6 @@
-from nearest.backends.base import AbstractBackend
-from nearest.backends.basic import BasicBackend
-from nearest.datatypes import Backend
+from vicinity.backends.base import AbstractBackend
+from vicinity.backends.basic import BasicBackend
+from vicinity.datatypes import Backend
 
 
 def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
@@ -9,11 +9,11 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
     if backend == Backend.BASIC:
         return BasicBackend
     elif backend == Backend.HNSW:
-        from nearest.backends.hnsw import HNSWBackend
+        from vicinity.backends.hnsw import HNSWBackend
 
         return HNSWBackend
     elif backend == Backend.ANNOY:
-        from nearest.backends.annoy import AnnoyBackend
+        from vicinity.backends.annoy import AnnoyBackend
 
         return AnnoyBackend
 

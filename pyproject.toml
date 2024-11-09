@@ -1,6 +1,6 @@
 [project]
-name = "nearest"
-description = "Nearest neighbors"
+name = "vicinity"
+description = "Lightweight Nearest Neighbors with Flexible Backends"
 readme = { file = "README.md", content-type = "text/markdown" }
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -22,6 +22,7 @@ classifiers = [
 
 dependencies = [
     "numpy",
+    "orjson",
     "tqdm"
 ]
 
@@ -84,10 +85,10 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.setuptools]
-packages = ["nearest"]
+packages = ["vicinity"]
 
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
 
 [tool.setuptools.dynamic]
-version = {attr = "nearest.version.__version__"}
+version = {attr = "vicinity.version.__version__"}

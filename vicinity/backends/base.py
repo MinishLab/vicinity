@@ -8,12 +8,12 @@ from typing import Any, Generic, TypeVar
 
 from numpy import typing as npt
 
-from nearest.datatypes import Backend, QueryResult
+from vicinity.datatypes import Backend, QueryResult
 
 
 @dataclass(frozen=True)
 class BaseArgs:
-    dim: int
+    dim: int | None = None
 
     def dump(self, file: Path) -> None:
         """Dump the arguments to a file."""

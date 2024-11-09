@@ -7,9 +7,9 @@ from typing import Any
 import numpy as np
 from numpy import typing as npt
 
-from nearest.backends.base import AbstractBackend, BaseArgs
-from nearest.datatypes import Backend, Matrix, QueryResult
-from nearest.utilities import normalize, normalize_or_copy
+from vicinity.backends.base import AbstractBackend, BaseArgs
+from vicinity.datatypes import Backend, Matrix, QueryResult
+from vicinity.utils import normalize, normalize_or_copy
 
 
 @dataclass(frozen=True)
@@ -35,8 +35,10 @@ class BasicBackend(AbstractBackend[BasicArgs]):
         return Backend.BASIC
 
     @classmethod
-    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, dim: int) -> BasicBackend:
+    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, dim: int | None = None) -> BasicBackend:
         """Create a new instance from vectors."""
+        if dim is None:
+            dim = vectors.shape[1]
         return cls(vectors, BasicArgs(dim=dim))
 
     @classmethod
