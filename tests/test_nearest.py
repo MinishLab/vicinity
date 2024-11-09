@@ -174,7 +174,7 @@ def test_nearest_insert_wrong_dimension(nearest_instance: Nearest) -> None:
     :param nearest_instance: A Nearest instance.
     :raises ValueError: If vectors have wrong dimension.
     """
-    new_item = ["item4"]
+    new_item = ["item102"]
     new_vector = np.array([[0.5, 0.5, 0.5]])  # Incorrect dimension
 
     with pytest.raises(ValueError):
