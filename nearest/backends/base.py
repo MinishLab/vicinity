@@ -4,7 +4,7 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 from numpy import typing as npt
 
@@ -34,7 +34,7 @@ class BaseArgs:
 ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 
-class AbstractBackend(ABC):
+class AbstractBackend(ABC, Generic[ArgType]):
     argument_class: type[BaseArgs]
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:

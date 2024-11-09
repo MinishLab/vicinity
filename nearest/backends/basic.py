@@ -16,7 +16,7 @@ from nearest.utilities import normalize, normalize_or_copy
 class BasicArgs(BaseArgs): ...
 
 
-class BasicBackend(AbstractBackend):
+class BasicBackend(AbstractBackend[BasicArgs]):
     argument_class = BasicArgs
 
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:

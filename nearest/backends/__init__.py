@@ -12,6 +12,10 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
         from nearest.backends.hnsw import HNSWBackend
 
         return HNSWBackend
+    elif backend == Backend.ANNOY:
+        from nearest.backends.annoy import AnnoyBackend
+
+        return AnnoyBackend
 
 
 __all__ = ["get_backend_class", "AbstractBackend"]

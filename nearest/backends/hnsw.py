@@ -19,7 +19,7 @@ class HNSWArgs(BaseArgs):
     m: int = 16
 
 
-class HNSWBackend(AbstractBackend):
+class HNSWBackend(AbstractBackend[HNSWArgs]):
     argument_class = HNSWArgs
 
     def __init__(
