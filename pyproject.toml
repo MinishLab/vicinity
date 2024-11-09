@@ -41,6 +41,7 @@ dev = [
     "ruff",
 ]
 hnsw = ["hnswlib"]
+pynndescent = ["pynndescent"]
 
 [tool.ruff]
 exclude = [".venv/"]
