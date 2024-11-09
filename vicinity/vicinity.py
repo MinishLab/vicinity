@@ -13,7 +13,6 @@ from numpy import typing as npt
 
 from vicinity.backends import AbstractBackend, get_backend_class
 from vicinity.datatypes import Backend, PathLike
-from vicinity.rerankers import CrossEncoderReranker
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,6 @@ class Vicinity:
         self,
         items: Sequence[str],
         backend: AbstractBackend,
-        reranker: CrossEncoderReranker | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """
@@ -40,7 +38,6 @@ class Vicinity:
             A list of items. Length must be equal to the number of vectors, and
             aligned with the vectors.
         :param backend: The backend to use for the vector space.
-        :param reranker: An (optional) reranker to use for re-ranking the results.
         :param metadata: A dictionary containing metadata about the vector space.
         :raises ValueError: If the length of the items and vectors are not the same.
         """
@@ -50,7 +47,6 @@ class Vicinity:
             )
         self.items: list[str] = list(items)
         self.backend: AbstractBackend = backend
-        self.reranker: CrossEncoderReranker | None = reranker
         self.metadata = metadata or {}
 
     def __len__(self) -> int:
@@ -63,7 +59,6 @@ class Vicinity:
         vectors: npt.NDArray,
         items: Sequence[str],
         backend_type: Backend = Backend.BASIC,
-        reranker: CrossEncoderReranker | None = None,
         **kwargs: Any,
     ) -> Vicinity:
         """
@@ -72,7 +67,6 @@ class Vicinity:
         :param vectors: The vectors to use.
         :param items: The items to use.
         :param backend_type: The type of backend to use.
-        :param reranker: An optional reranker to use.
         :param **kwargs: Additional arguments to pass to the backend.
         :return: A Vicinity instance.
         """
@@ -80,7 +74,7 @@ class Vicinity:
         arguments = backend_cls.argument_class(**kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
 
-        return cls(items, backend, reranker=reranker)
+        return cls(items, backend)
 
     @property
     def dim(self) -> int:
@@ -90,7 +84,6 @@ class Vicinity:
     def query(
         self,
         vectors: npt.NDArray,
-        query_texts: Sequence[str] | None = None,
         k: int = 10,
     ) -> list[list[tuple[str, float]]]:
         """
@@ -99,24 +92,19 @@ class Vicinity:
         Use this to look up the nearest neighbors to a vector that is not in the vocabulary.
 
         :param vectors: The vectors to find the nearest neighbors to.
-        :param query_texts: The texts of the queries. Required when using a reranker.
         :param k: The number of most similar items to retrieve.
         :return: For each item in the input, the num most similar items are returned in the form of
             (NAME, SIMILARITY) tuples.
-        :raises ValueError: If the query_texts are not provided when using a reranker.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
             vectors = vectors[None, :]
+
         out = []
         for index, distances in self.backend.query(vectors, k):
             distances.clip(min=0, out=distances)
             out.append([(self.items[idx], dist) for idx, dist in zip(index, distances)])
 
-        if self.reranker is not None:
-            if query_texts is None:
-                raise ValueError("Query texts are required when using a reranker.")
-            out = self.reranker(query_texts, out)
         return out
 
     def query_threshold(
