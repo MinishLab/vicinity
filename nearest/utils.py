@@ -40,11 +40,11 @@ def normalize(vectors: npt.NDArray, norms: npt.NDArray | None = None) -> npt.NDA
 
 def normalize_or_copy(vectors: npt.NDArray) -> npt.NDArray:
     """
-    Return a copy of vectors if they are unit length.
+    Return the original vectors if they are already normalized.
 
     Otherwise, the vectors are normalized, and a new array is returned.
     """
-    norms = np.linalg.norm(vectors, axis=1)
+    norms = np.linalg.norm(vectors, axis=-1)
     all_unit_length = np.allclose(norms[norms != 0], 1)
     if all_unit_length:
         return vectors
