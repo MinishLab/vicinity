@@ -1,5 +1,5 @@
 [project]
-name = "nearest"
+name = "vicinity"
 description = "Lightweight Nearest Neighbors with Flexible Backends"
 readme = { file = "README.md", content-type = "text/markdown" }
 dynamic = ["version"]
