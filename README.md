@@ -1,5 +1,8 @@
-<h1 style="text-align: center;">Nearest: The Lightweight Vector Store</h1>
+<div align="center">
 
+# Nearest: The Lightweight Vector Store
+
+</div>
 
 ## Table of contents
 
