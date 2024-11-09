@@ -29,8 +29,8 @@ from nearest import Nearest
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
-# Initialize the Nearest instance
-nearest = Nearest.from_vectors_and_items(vectors=vectors, items=items)
+# Initialize the Nearest instance (using the basic backend)
+nearest = Nearest.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC)
 
 # Query for nearest neighbors with a top-k search
 query_vector = np.random.rand(128)
