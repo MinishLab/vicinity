@@ -73,7 +73,7 @@ def test_nearest_insert(backend_type: Backend, nearest_instance: Nearest, query_
     :param nearest_instance: A Nearest instance.
     """
     if backend_type == Backend.HNSW:
-        # HNSW does not support inserting new items
+        # Don't test insert for HNSW backend
         return
     new_item = ["item101"]
     new_vector = query_vector
