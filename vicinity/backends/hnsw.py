@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
@@ -35,14 +35,13 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
     def from_vectors(
         cls: type[HNSWBackend],
         vectors: npt.NDArray,
-        dim: int | None,
         space: Literal["cosine", "l2"],
         ef_construction: int,
         m: int,
+        **kwargs: Any,
     ) -> HNSWBackend:
         """Create a new instance from vectors."""
-        if dim is None:
-            dim = vectors.shape[1]
+        dim = vectors.shape[1]
         index = HnswIndex(space=space, dim=dim)
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
         index.add_items(vectors)

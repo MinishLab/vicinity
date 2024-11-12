@@ -35,10 +35,9 @@ class BasicBackend(AbstractBackend[BasicArgs]):
         return Backend.BASIC
 
     @classmethod
-    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, dim: int | None = None) -> BasicBackend:
+    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, **kwargs: Any) -> BasicBackend:
         """Create a new instance from vectors."""
-        if dim is None:
-            dim = vectors.shape[1]
+        dim = vectors.shape[1]
         return cls(vectors, BasicArgs(dim=dim))
 
     @classmethod

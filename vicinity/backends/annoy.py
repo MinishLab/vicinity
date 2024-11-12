@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 from annoy import AnnoyIndex
@@ -40,12 +40,12 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
     def from_vectors(
         cls: type[AnnoyBackend],
         vectors: npt.NDArray,
-        dim: int,
         metric: Literal["dot", "euclidean", "cosine"],
         trees: int,
-        length: int | None = None,
+        **kwargs: Any,
     ) -> AnnoyBackend:
         """Create a new instance from vectors."""
+        dim = vectors.shape[1]
         actual_metric: Literal["dot", "euclidean"]
         if metric == "cosine":
             actual_metric = "dot"
@@ -99,6 +99,8 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
         """Query the backend."""
         out = []
         for vec in vectors:
+            if self.arguments.metric == "cosine":
+                vec = normalize(vec)
             indices, scores = self.index.get_nns_by_vector(vec, k, include_distances=True)
             scores_array = np.asarray(scores)
             if self.arguments.metric == "cosine":
@@ -109,10 +111,7 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        length = len(self)
-        for i, vector in enumerate(vectors):
-            self.index.add_item(length + i, vector)
-        self.length = length + len(vectors)
+        raise NotImplementedError("Annoy does not support insertion.")
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""
