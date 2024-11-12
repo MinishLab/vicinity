@@ -13,7 +13,8 @@ from vicinity.utils import normalize, normalize_or_copy
 
 
 @dataclass(frozen=True)
-class BasicArgs(BaseArgs): ...
+class BasicArgs(BaseArgs):
+    dim: int | None = None
 
 
 class BasicBackend(AbstractBackend):

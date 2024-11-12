@@ -41,6 +41,7 @@ dev = [
     "ruff",
 ]
 hnsw = ["hnswlib"]
+pynndescent = ["pynndescent"]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"
