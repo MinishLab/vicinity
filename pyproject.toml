@@ -42,6 +42,11 @@ dev = [
 ]
 hnsw = ["hnswlib"]
 
+[project.urls]
+"Homepage" = "https://github.com/MinishLab"
+"Bug Reports" = "https://github.com/MinishLab/vicinity/issues"
+"Source" = "https://github.com/MinishLab/vicinity"
+
 [tool.ruff]
 exclude = [".venv/"]
 line-length = 120
