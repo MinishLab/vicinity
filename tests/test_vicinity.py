@@ -75,8 +75,8 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     :param vicinity_instance: A Vicinity instance.
     :param query_vector: A query vector.
     """
-    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.PYNNDESCENT}:
-        # Don't test insert for HNSW backend and PyNNDescent backend
+    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
+        # Don't test insert for HNSW or Annoy backend.
         return
     new_item = ["item101"]
     new_vector = query_vector
@@ -88,9 +88,7 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     assert returned_item == "item101"
 
 
-def test_vicinity_delete(
-    backend_type: Backend, vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray
-) -> None:
+def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
 
@@ -100,8 +98,7 @@ def test_vicinity_delete(
     :param vectors: Array of vectors corresponding to items.
     """
     if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Don't test delete for ANNOY backend
-        # Don't test delete for PyNNDescent backend
+        # Don't test delete for Annoy and Pynndescent backend
         return
 
     # Get the vector corresponding to "item2"

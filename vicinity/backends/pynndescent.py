@@ -13,7 +13,7 @@ from vicinity.datatypes import Backend, QueryResult
 from vicinity.utils import normalize_or_copy
 
 
-@dataclass(frozen=True)
+@dataclass
 class PyNNDescentArgs(BaseArgs):
     n_neighbors: int = 15
     metric: Literal[

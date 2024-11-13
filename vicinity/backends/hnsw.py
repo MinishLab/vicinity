@@ -11,9 +11,9 @@ from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class HNSWArgs(BaseArgs):
-    dim: int | None = None
+    dim: int = 0
     space: Literal["cosine", "l2"] = "cosine"
     ef_construction: int = 200
     m: int = 16

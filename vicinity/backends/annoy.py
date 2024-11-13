@@ -13,9 +13,9 @@ from vicinity.datatypes import Backend, QueryResult
 from vicinity.utils import normalize
 
 
-@dataclass(frozen=True)
+@dataclass
 class AnnoyArgs(BaseArgs):
-    dim: int
+    dim: int = 0
     metric: Literal["dot", "euclidean", "cosine"] = "cosine"
     trees: int = 100
     length: int | None = None
@@ -93,6 +93,8 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
         """Save the vectors to a path."""
         path = Path(base_path) / "index.bin"
         self.index.save(str(path))
+        # NOTE: set the length before saving.
+        self.arguments.length = len(self)
         self.arguments.dump(base_path / "arguments.json")
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:

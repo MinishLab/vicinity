@@ -11,7 +11,7 @@ from numpy import typing as npt
 from vicinity.datatypes import Backend, QueryResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class BaseArgs:
     def dump(self, file: Path) -> None:
         """Dump the arguments to a file."""
