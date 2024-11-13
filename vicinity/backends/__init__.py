@@ -16,6 +16,10 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
         from vicinity.backends.annoy import AnnoyBackend
 
         return AnnoyBackend
+    elif backend == Backend.PYNNDESCENT:
+        from vicinity.backends.pynndescent import PyNNDescentBackend
+
+        return PyNNDescentBackend
 
 
 __all__ = ["get_backend_class", "AbstractBackend"]

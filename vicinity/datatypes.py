@@ -19,3 +19,4 @@ class Backend(str, Enum):
     HNSW = "hnsw"
     BASIC = "basic"
     ANNOY = "annoy"
+    PYNNDESCENT = "pynndescent"

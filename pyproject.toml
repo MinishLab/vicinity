@@ -39,9 +39,15 @@ dev = [
     "pytest",
     "pytest-coverage",
     "ruff",
+    "setuptools"
 ]
 hnsw = ["hnswlib"]
-annoy = ["annoy"]
+pynndescent = [
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"
