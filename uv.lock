@@ -258,17 +258,21 @@ wheels = [
 
 [[package]]
 name = "llvmlite"
-version = "0.39.1"
+version = "0.40.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/14/27/1468111538f33bd9fb13c0b2c1534c7a487cec8fadf14e318d73be18e4e1/llvmlite-0.39.1.tar.gz", hash = "sha256:b43abd7c82e805261c425d50335be9a6c4f84264e34d6d6e475207300005d572", size = 132819 }
+sdist = { url = "https://files.pythonhosted.org/packages/95/e0/369f1c0613c9532319ed3307f4289afc8338d3bf71c1875fdf43603a2d19/llvmlite-0.40.1.tar.gz", hash = "sha256:5cdb0d45df602099d833d50bd9e81353a5e036242d3c003c5b294fc61d1986b4", size = 136328 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/fb/7bb4a1fa11420dd01fdd8c370a5f2c812a70f1f8acf5a45c2b4c2c9d6338/llvmlite-0.39.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:6717c7a6e93c9d2c3d07c07113ec80ae24af45cde536b34363d4bcd9188091d9", size = 25493757 },
-    { url = "https://files.pythonhosted.org/packages/d9/86/685e82d14156becc7d260a80b46af3a079004f51657e4a2957cf872445cb/llvmlite-0.39.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ddab526c5a2c4ccb8c9ec4821fcea7606933dc53f510e2a6eebb45a418d3488a", size = 23147719 },
-    { url = "https://files.pythonhosted.org/packages/36/83/b5125da6f8f59c9ed77e259444e30c67da3f287938a20a61ccaa8e0591e9/llvmlite-0.39.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a3f331a323d0f0ada6b10d60182ef06c20a2f01be21699999d204c5750ffd0b4", size = 33807439 },
-    { url = "https://files.pythonhosted.org/packages/82/7d/479ea497d2b453064c28e531339c070d70a4a92b8674dd587ab4e126d618/llvmlite-0.39.1-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e2c00ff204afa721b0bb9835b5bf1ba7fba210eefcec5552a9e05a63219ba0dc", size = 37520655 },
-    { url = "https://files.pythonhosted.org/packages/91/38/6b50b0a8ef737083dc2f4a359d42282b2fb104dae97674dcfc85a48c693b/llvmlite-0.39.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:16f56eb1eec3cda3a5c526bc3f63594fc24e0c8d219375afeb336f289764c6c7", size = 34646601 },
-    { url = "https://files.pythonhosted.org/packages/09/1f/629a04882c9b3dea4848337b80c9b550d8c713dce87528f7f8c3ab3b277f/llvmlite-0.39.1-cp310-cp310-win32.whl", hash = "sha256:d0bfd18c324549c0fec2c5dc610fd024689de6f27c6cc67e4e24a07541d6e49b", size = 19149622 },
-    { url = "https://files.pythonhosted.org/packages/90/2c/fd3adee418409d8be7f4de0e183ed5fb0d18359f5a2367906e659b03b669/llvmlite-0.39.1-cp310-cp310-win_amd64.whl", hash = "sha256:7ebf1eb9badc2a397d4f6a6c8717447c81ac011db00064a00408bc83c923c0e4", size = 23231718 },
+    { url = "https://files.pythonhosted.org/packages/42/a6/ee609a7ec912b6fde1249f8ce659dabbc72d8bc31e23a5db38a1a98b624f/llvmlite-0.40.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:84ce9b1c7a59936382ffde7871978cddcda14098e5a76d961e204523e5c372fb", size = 30362776 },
+    { url = "https://files.pythonhosted.org/packages/53/2c/c684c6662e948ff1bb157fccc40ccb99e07176a34b845029f66313e6ab72/llvmlite-0.40.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:3673c53cb21c65d2ff3704962b5958e967c6fc0bd0cff772998face199e8d87b", size = 28087158 },
+    { url = "https://files.pythonhosted.org/packages/c5/93/077aba44d99aad58674f8dc28aefe5743d15827bc6e66302052df9e411a1/llvmlite-0.40.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bba2747cf5b4954e945c287fe310b3fcc484e2a9d1b0c273e99eb17d103bb0e6", size = 41130538 },
+    { url = "https://files.pythonhosted.org/packages/14/73/424ef49a4bb7bbc9c16f3fc66926cb3018699c69146cd130642c76ff2d97/llvmlite-0.40.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bbd5e82cc990e5a3e343a3bf855c26fdfe3bfae55225f00efd01c05bbda79918", size = 42118998 },
+    { url = "https://files.pythonhosted.org/packages/d1/f4/25df35f5e403cb146ed57fedcd43e8de22a5b45a597b2ec5a1ef6315f93b/llvmlite-0.40.1-cp310-cp310-win32.whl", hash = "sha256:09f83ea7a54509c285f905d968184bba00fc31ebf12f2b6b1494d677bb7dde9b", size = 23083918 },
+    { url = "https://files.pythonhosted.org/packages/6c/4f/e6f9dc0b34e5b8450ef757cd35afda999c8cc5098907a512cf0ecae840b5/llvmlite-0.40.1-cp310-cp310-win_amd64.whl", hash = "sha256:7b37297f3cbd68d14a97223a30620589d98ad1890e5040c9e5fc181063f4ed49", size = 27712433 },
+    { url = "https://files.pythonhosted.org/packages/2b/da/9de67270696d43ab28eba38c9a248f646e6b9a3fb2c7115504a2a986f55f/llvmlite-0.40.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:a66a5bd580951751b4268f4c3bddcef92682814d6bc72f3cd3bb67f335dd7097", size = 30362780 },
+    { url = "https://files.pythonhosted.org/packages/d3/fe/14ad307b173df79e8792f253c67e9edde6aefa00b25de031863662d223b4/llvmlite-0.40.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:467b43836b388eaedc5a106d76761e388dbc4674b2f2237bc477c6895b15a634", size = 28087146 },
+    { url = "https://files.pythonhosted.org/packages/a5/b9/709dd131b6f45252f18a3b318503a7b929fea99245dd220ef48a4675e819/llvmlite-0.40.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0c23edd196bd797dc3a7860799054ea3488d2824ecabc03f9135110c2e39fcbc", size = 41130536 },
+    { url = "https://files.pythonhosted.org/packages/a8/05/3e00ccd24027f059c7850abf13dc2d7d71aed99f6e431719d121707a2664/llvmlite-0.40.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a36d9f244b6680cb90bbca66b146dabb2972f4180c64415c96f7c8a2d8b60a36", size = 42118998 },
+    { url = "https://files.pythonhosted.org/packages/09/7a/3e0bec597ca9e3382ba87c139813ea0b05068d6d5358e05f4557a8c24d63/llvmlite-0.40.1-cp311-cp311-win_amd64.whl", hash = "sha256:5b3076dc4e9c107d16dc15ecb7f2faf94f7736cd2d5e9f4dc06287fd672452c1", size = 27700277 },
 ]
 
 [[package]]
@@ -337,22 +341,25 @@ wheels = [
 
 [[package]]
 name = "numba"
-version = "0.56.4"
+version = "0.57.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "llvmlite" },
     { name = "numpy" },
-    { name = "setuptools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/1e/de917b683bb5f0b6078fb1397293eab84c4eaa825fbf94d73d6488eb354f/numba-0.56.4.tar.gz", hash = "sha256:32d9fef412c81483d7efe0ceb6cf4d3310fde8b624a9cecca00f790573ac96ee", size = 2418748 }
+sdist = { url = "https://files.pythonhosted.org/packages/f0/51/cc9d67b9357ac04e7c838dfa880acbfee0c15e02ca5a35b3e064a36131f7/numba-0.57.1.tar.gz", hash = "sha256:33c0500170d213e66d90558ad6aca57d3e03e97bb11da82e6d87ab793648cb17", size = 2552795 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1a/66/de416cd8364c7e5cba8da9272809676e907e7045cdcb750f6ff5fff70c29/numba-0.56.4-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:9f62672145f8669ec08762895fe85f4cf0ead08ce3164667f2b94b2f62ab23c3", size = 2445977 },
-    { url = "https://files.pythonhosted.org/packages/95/39/41a11c34d56944f1bf49759f7e15d19d80508c0239ed9cd246a012374334/numba-0.56.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c602d015478b7958408d788ba00a50272649c5186ea8baa6cf71d4a1c761bba1", size = 2446602 },
-    { url = "https://files.pythonhosted.org/packages/28/8d/7b7dd56751eee1745c99dd6435d06c01ba40642cf3022b1c3e88d38a9dc0/numba-0.56.4-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:85dbaed7a05ff96492b69a8900c5ba605551afb9b27774f7f10511095451137c", size = 3212803 },
-    { url = "https://files.pythonhosted.org/packages/dc/b0/b722cde279d5c879c1bb7a307337b16a25068818a4ff5ee2e01fd2c605b4/numba-0.56.4-cp310-cp310-manylinux2014_i686.manylinux_2_17_i686.whl", hash = "sha256:f4cfc3a19d1e26448032049c79fc60331b104f694cf570a9e94f4e2c9d0932bb", size = 3165352 },
-    { url = "https://files.pythonhosted.org/packages/58/a4/859605be01d9979fecde5e94ed6662d9a85853f9849f396d9a84455f4846/numba-0.56.4-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4e08e203b163ace08bad500b0c16f6092b1eb34fd1fce4feaf31a67a3a5ecf3b", size = 3489422 },
-    { url = "https://files.pythonhosted.org/packages/a2/70/28f2c417a3660784b0df35edea9ea9201663606c7cdcd3f81b32dae11321/numba-0.56.4-cp310-cp310-win32.whl", hash = "sha256:0611e6d3eebe4cb903f1a836ffdb2bda8d18482bcd0a0dcc56e79e2aa3fefef5", size = 2458080 },
-    { url = "https://files.pythonhosted.org/packages/fa/a1/e9dad5793d45f08401aa6983a93d53423ce4a403ae333937fa2448b263b2/numba-0.56.4-cp310-cp310-win_amd64.whl", hash = "sha256:fbfb45e7b297749029cb28694abf437a78695a100e7c2033983d69f0ba2698d4", size = 2475506 },
+    { url = "https://files.pythonhosted.org/packages/f3/67/70d0fd1901971096c773bf89747c16023dbe8ce3cce1b7d2e94a87390ca7/numba-0.57.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:db8268eb5093cae2288942a8cbd69c9352f6fe6e0bfa0a9a27679436f92e4248", size = 2520181 },
+    { url = "https://files.pythonhosted.org/packages/f9/b4/bdd4823d7e9aa34abf03c21cd49bd0fd6ba87466dd350f48fed05d4302ba/numba-0.57.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:643cb09a9ba9e1bd8b060e910aeca455e9442361e80fce97690795ff9840e681", size = 2523018 },
+    { url = "https://files.pythonhosted.org/packages/44/cf/573c2aec50b1e4dce6e93fe3036dfa6858e660d9c6f92a649e357d6d7811/numba-0.57.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:53e9fab973d9e82c9f8449f75994a898daaaf821d84f06fbb0b9de2293dd9306", size = 3281574 },
+    { url = "https://files.pythonhosted.org/packages/aa/9d/e93ddc139fcd5b7201bcbdd1ac9c76534aac043fbbdb86ab4bd2e7aebae5/numba-0.57.1-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:c0602e4f896e6a6d844517c3ab434bc978e7698a22a733cc8124465898c28fa8", size = 3573231 },
+    { url = "https://files.pythonhosted.org/packages/26/09/003f2017009366f734e69a4b8ecc6712aafefe8e64f970589b08acdf7632/numba-0.57.1-cp310-cp310-win32.whl", hash = "sha256:3d6483c27520d16cf5d122868b79cad79e48056ecb721b52d70c126bed65431e", size = 2539686 },
+    { url = "https://files.pythonhosted.org/packages/f3/3e/6349c624303b78b6bbb97168c7fb38a1a0cb1605ae4c5d45af3b829f067a/numba-0.57.1-cp310-cp310-win_amd64.whl", hash = "sha256:a32ee263649aa3c3587b833d6311305379529570e6c20deb0c6f4fb5bc7020db", size = 2538125 },
+    { url = "https://files.pythonhosted.org/packages/6c/80/4378109514d72efe552a8899392fa6526b48eeca43c12eac314bf0819bff/numba-0.57.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4c078f84b5529a7fdb8413bb33d5100f11ec7b44aa705857d9eb4e54a54ff505", size = 2519895 },
+    { url = "https://files.pythonhosted.org/packages/ce/eb/c982ad64cc2a4cc0a6b95ea94da5566874a6eaffc585c789ef2dd77fc06a/numba-0.57.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e447c4634d1cc99ab50d4faa68f680f1d88b06a2a05acf134aa6fcc0342adeca", size = 2522748 },
+    { url = "https://files.pythonhosted.org/packages/bd/33/3a1e6c6f0952873a190a95d74a4a88f3f3949d3b45c0b1005d466d5f8c5b/numba-0.57.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:4838edef2df5f056cb8974670f3d66562e751040c448eb0b67c7e2fec1726649", size = 3286921 },
+    { url = "https://files.pythonhosted.org/packages/91/a1/cafa9c5490a00fc59d163e3bf3fd48cfbf9845ff134970c4174d4522aa8d/numba-0.57.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9b17fbe4a69dcd9a7cd49916b6463cd9a82af5f84911feeb40793b8bce00dfa7", size = 3578896 },
+    { url = "https://files.pythonhosted.org/packages/40/db/3a08f2ec91e0d6b0c68d94a42e80af005a0378c83c63cbbc9ee63143f2ed/numba-0.57.1-cp311-cp311-win_amd64.whl", hash = "sha256:93df62304ada9b351818ba19b1cfbddaf72cd89348e81474326ca0b23bf0bae1", size = 2557456 },
 ]
 
 [[package]]
@@ -864,11 +871,11 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
     { name = "hnswlib", marker = "extra == 'hnsw'" },
     { name = "ipython", marker = "extra == 'dev'" },
-    { name = "llvmlite", marker = "extra == 'pynndescent'", specifier = "==0.39.1" },
+    { name = "llvmlite", marker = "extra == 'pynndescent'", specifier = "==0.40.1" },
     { name = "mypy", marker = "extra == 'dev'" },
-    { name = "numba", marker = "extra == 'pynndescent'", specifier = "==0.56.4" },
+    { name = "numba", marker = "extra == 'pynndescent'", specifier = "==0.57.1" },
     { name = "numpy" },
-    { name = "numpy", marker = "extra == 'pynndescent'", specifier = "==1.23.5" },
+    { name = "numpy", marker = "extra == 'pynndescent'", specifier = ">=1.23.5" },
     { name = "orjson" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pynndescent", marker = "extra == 'pynndescent'", specifier = ">=0.5.10" },

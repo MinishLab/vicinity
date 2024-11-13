@@ -44,9 +44,9 @@ dev = [
 hnsw = ["hnswlib"]
 pynndescent = [
     "pynndescent>=0.5.10",
-    "numba==0.56.4",
-    "llvmlite==0.39.1",
-    "numpy==1.23.5"
+    "numba==0.57.1",
+    "llvmlite==0.40.1",
+    "numpy>=1.23.5"
 ]
 
 [project.urls]
