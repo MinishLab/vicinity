@@ -23,7 +23,7 @@ class PyNNDescentArgs(BaseArgs):
     ] = "cosine"
 
 
-class PyNNDescentBackend(AbstractBackend):
+class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
     argument_class = PyNNDescentArgs
 
     def __init__(

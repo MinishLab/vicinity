@@ -33,7 +33,7 @@ ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 
 class AbstractBackend(ABC, Generic[ArgType]):
-    argument_class: type[BaseArgs]
+    argument_class: type[ArgType]
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:
         """Initialize the backend with vectors."""
