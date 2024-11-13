@@ -42,7 +42,12 @@ dev = [
     "setuptools"
 ]
 hnsw = ["hnswlib"]
-pynndescent = ["pynndescent", "llvmlite==0.43.0"]
+pynndescent = [
+    "pynndescent>=0.5.10",
+    "numba==0.56.4",
+    "llvmlite==0.39.1",
+    "numpy==1.23.5"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"
