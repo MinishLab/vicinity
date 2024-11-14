@@ -4,14 +4,14 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 from numpy import typing as npt
 
 from vicinity.datatypes import Backend, QueryResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class BaseArgs:
     def dump(self, file: Path) -> None:
         """Dump the arguments to a file."""
@@ -32,8 +32,8 @@ class BaseArgs:
 ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 
-class AbstractBackend(ABC):
-    argument_class: type[BaseArgs]
+class AbstractBackend(ABC, Generic[ArgType]):
+    argument_class: type[ArgType]
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:
         """Initialize the backend with vectors."""

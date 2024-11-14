@@ -2,6 +2,15 @@ version = 1
 requires-python = ">=3.10"
 
 [[package]]
+name = "annoy"
+version = "1.17.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/38/e321b0e05d8cc068a594279fb7c097efb1df66231c295d482d7ad51b6473/annoy-1.17.3.tar.gz", hash = "sha256:9cbfebefe0a5f843eba29c6be4c84d601f4f41ad4ded0486f1b88c3b07739c15", size = 647460 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/c1/dafbf82add040db10e6663da2a719eea9b2ca7a3b4dc79dc42cc130b121b/annoy-1.17.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c33a5d4d344c136c84976bfb2825760142a8bb25335165e24e11c9afbfa8c2e9", size = 57745 },
+]
+
+[[package]]
 name = "asttokens"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -872,6 +881,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+annoy = [
+    { name = "annoy" },
+]
 dev = [
     { name = "black" },
     { name = "ipython" },
@@ -894,6 +906,7 @@ pynndescent = [
 
 [package.metadata]
 requires-dist = [
+    { name = "annoy", marker = "extra == 'annoy'" },
     { name = "black", marker = "extra == 'dev'" },
     { name = "hnswlib", marker = "extra == 'hnsw'" },
     { name = "ipython", marker = "extra == 'dev'" },

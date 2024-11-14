@@ -13,7 +13,7 @@ def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndar
     """
     Test Vicinity.init.
 
-    :param backend_type: The backend type to use (BASIC or HNSW).
+    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
@@ -32,7 +32,7 @@ def test_vicinity_from_vectors_and_items(backend_type: Backend, items: list[str]
     """
     Test Vicinity.from_vectors_and_items.
 
-    :param backend_type: The backend type to use (BASIC or HNSW).
+    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
@@ -67,7 +67,7 @@ def test_vicinity_query_threshold(vicinity_instance: Vicinity, query_vector: np.
     assert len(results) >= 1
 
 
-def test_vicinity_insert(backend_type: Backend, vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
+def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
     """
     Test Vicinity.insert method.
 
@@ -75,23 +75,20 @@ def test_vicinity_insert(backend_type: Backend, vicinity_instance: Vicinity, que
     :param vicinity_instance: A Vicinity instance.
     :param query_vector: A query vector.
     """
-    if backend_type == Backend.HNSW or backend_type == Backend.PYNNDESCENT:
-        # Don't test insert for HNSW backend and PyNNDescent backend
+    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
+        # Don't test insert for HNSW or Annoy backend.
         return
     new_item = ["item101"]
     new_vector = query_vector
-
     vicinity_instance.insert(new_item, new_vector[None, :])
 
-    results = vicinity_instance.query(query_vector, k=1)
+    results = vicinity_instance.query(query_vector, k=10)
     returned_item = results[0][0][0]
 
     assert returned_item == "item101"
 
 
-def test_vicinity_delete(
-    backend_type: Backend, vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray
-) -> None:
+def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
 
@@ -100,8 +97,8 @@ def test_vicinity_delete(
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if backend_type == Backend.PYNNDESCENT:
-        # Don't test delete for PyNNDescent backend
+    if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
+        # Don't test delete for Annoy and Pynndescent backend
         return
 
     # Get the vector corresponding to "item2"

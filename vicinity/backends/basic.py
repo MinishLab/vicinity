@@ -12,12 +12,11 @@ from vicinity.datatypes import Backend, Matrix, QueryResult
 from vicinity.utils import normalize, normalize_or_copy
 
 
-@dataclass(frozen=True)
-class BasicArgs(BaseArgs):
-    dim: int | None = None
+@dataclass
+class BasicArgs(BaseArgs): ...
 
 
-class BasicBackend(AbstractBackend):
+class BasicBackend(AbstractBackend[BasicArgs]):
     argument_class = BasicArgs
 
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
@@ -36,11 +35,9 @@ class BasicBackend(AbstractBackend):
         return Backend.BASIC
 
     @classmethod
-    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, dim: int | None = None) -> BasicBackend:
+    def from_vectors(cls: type[BasicBackend], vectors: npt.NDArray, **kwargs: Any) -> BasicBackend:
         """Create a new instance from vectors."""
-        if dim is None:
-            dim = vectors.shape[1]
-        return cls(vectors, BasicArgs(dim=dim))
+        return cls(vectors, BasicArgs())
 
     @classmethod
     def load(cls: type[BasicBackend], folder: Path) -> BasicBackend:
