@@ -82,14 +82,14 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
         # Don't test insert for HNSW or Annoy backend.
         return
-    new_item = ["item1001"]
+    new_item = ["item10001"]
     new_vector = query_vector
     vicinity_instance.insert(new_item, new_vector[None, :])
 
-    results = vicinity_instance.query(query_vector, k=20)
+    results = vicinity_instance.query(query_vector, k=100)
 
     returned_items = [item for item, _ in results[0]]
-    assert "item1001" in returned_items
+    assert "item10001" in returned_items
 
 
 def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
@@ -105,7 +105,8 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
         return
 
     elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
-        "hnsw"
+        "hnsw",
+        "ivfpqr",
     }:
         # Skip delete test for FAISS index types that do not support deletion
         return
@@ -163,7 +164,7 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :raises ValueError: If deleting items that do not exist.
     """
     with pytest.raises(ValueError):
-        vicinity_instance.delete(["item1002"])
+        vicinity_instance.delete(["item10002"])
 
 
 def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -173,7 +174,7 @@ def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_v
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If tokens and vectors lengths differ.
     """
-    new_items = ["item1002", "item1003"]
+    new_items = ["item10002", "item10003"]
     new_vector = query_vector
 
     with pytest.raises(ValueError):
@@ -187,7 +188,7 @@ def test_vicinity_insert_wrong_dimension(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If vectors have wrong dimension.
     """
-    new_item = ["item1002"]
+    new_item = ["item10002"]
     new_vector = np.array([[0.5, 0.5, 0.5]])
 
     with pytest.raises(ValueError):
