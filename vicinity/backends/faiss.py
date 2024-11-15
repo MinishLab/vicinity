@@ -21,11 +21,11 @@ class FaissArgs(BaseArgs):
     dim: int = 0
     index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "hnsw"
     metric: Literal["cosine", "l2"] = "cosine"
-    nlist: int = 100  # Used for IVF indexes
-    m: int = 8  # Used for PQ and HNSW
-    nbits: int = 8  # Used for LSH and PQ
-    refine_nbits: int = 8  # Used for IVFPQR
-    direct_map: bool = True  # Enable DirectMap for IVF indexes to allow deletion
+    nlist: int = 100
+    m: int = 8
+    nbits: int = 8
+    refine_nbits: int = 8
+    direct_map: bool = True
 
 
 class FaissBackend(AbstractBackend[FaissArgs]):
@@ -56,7 +56,21 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         direct_map: bool = True,
         **kwargs: Any,
     ) -> FaissBackend:
-        """Create a new instance from vectors."""
+        """
+        Create a new instance from vectors.
+
+        :param vectors: The vectors to index.
+        :param index_type: The type of FAISS index to use.
+        :param metric: The metric to use for similarity search.
+        :param nlist: The number of cells for IVF indexes.
+        :param m: The number of subquantizers for PQ and HNSW indexes.
+        :param nbits: The number of bits for LSH and PQ indexes.
+        :param refine_nbits: The number of bits for the refinement stage in IVFPQR indexes.
+        :param direct_map: Whether to enable DirectMap for IVF indexes. This allows deletion of vectors.
+        :param **kwargs: Additional arguments to pass to the backend.
+        :return: A new FaissBackend instance.
+        :raises ValueError: If an invalid index type is provided.
+        """
         dim = vectors.shape[1]
 
         # If using cosine, normalize vectors to unit length
@@ -81,9 +95,9 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             index.train(vectors)
         elif index_type == "pq":
             if not (1 <= nbits <= 16):
+                # Log a warning and adjust nbits to the maximum supported value for PQ
                 logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
-                nbits = 16  # Adjust to the maximum supported value for PQ
-
+                nbits = 16
             index = faiss.IndexPQ(dim, m, nbits)
             index.train(vectors)
         elif index_type == "ivf_scalar":
@@ -103,7 +117,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
         index.add(vectors)
 
-        # Enable DirectMap for IVF indexes if requested
+        # Enable DirectMap for IVF indexes if specified
         if isinstance(index, faiss.IndexIVF) and direct_map:
             index.set_direct_map_type(faiss.DirectMap.Hashtable)
 

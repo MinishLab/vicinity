@@ -75,6 +75,8 @@ Vicinity provides the following features:
 The following backends are supported:
 - `BASIC`: A simple flat index for vector storage and search.
 - `HNSW`: Hierarchical Navigable Small World Graph for approximate nearest neighbor search.
+- `FAISS`: All FAISS indexes for approximate nearest neighbor search are supported.
+- `ANNOY`: "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
 - `PYNNDescent`: Approximate nearest neighbor search using PyNNDescent.
 
 ## Usage
