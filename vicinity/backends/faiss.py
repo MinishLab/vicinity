@@ -69,8 +69,10 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             index = faiss.IndexLSH(dim, nbits)
         elif index_type == "scalar":
             index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit)
+            index.train(vectors)
         elif index_type == "pq":
             index = faiss.IndexPQ(dim, m, nbits)
+            index.train(vectors)
         elif index_type == "ivf_scalar":
             quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
             index = faiss.IndexIVFScalarQuantizer(quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit)

@@ -10,10 +10,11 @@ random_gen = np.random.default_rng(42)
 
 # Define supported FAISS index types
 FAISS_INDEX_TYPES = [
+    "flat",
     "ivf",
     "hnsw",
     "lsh",
-    # "scalar",
+    "scalar",
     # "pq",
     "ivf_scalar",
     # "ivfpq",
