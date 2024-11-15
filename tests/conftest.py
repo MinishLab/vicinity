@@ -15,7 +15,7 @@ FAISS_INDEX_TYPES = [
     "lsh",
     # "scalar",
     # "pq",
-    # "ivf_scalar",
+    "ivf_scalar",
     # "ivfpq",
     # "ivfpqr"
 ]
@@ -63,7 +63,7 @@ def vicinity_instance(request: pytest.FixtureRequest, items: list[str], vectors:
     # Handle FAISS backend with specific FAISS index types
     if backend_type == Backend.FAISS:
         return Vicinity.from_vectors_and_items(
-            vectors, items, backend_type=backend_type, index_type=index_type, nlist=4, nbits=32
+            vectors, items, backend_type=backend_type, index_type=index_type, nlist=2, nbits=32
         )
 
     # Handle non-FAISS backends without passing `index_type`
