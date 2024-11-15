@@ -15,7 +15,7 @@ FAISS_INDEX_TYPES = [
     "hnsw",
     "lsh",
     "scalar",
-    # "pq",
+    "pq",
     "ivf_scalar",
     # "ivfpq",
     # "ivfpqr"
@@ -25,13 +25,14 @@ FAISS_INDEX_TYPES = [
 @pytest.fixture(scope="session")
 def items() -> list[str]:
     """Fixture providing a list of item names."""
-    return [f"item{i}" for i in range(1, 101)]
+    return [f"item{i}" for i in range(1, 1001)]
 
 
 @pytest.fixture(scope="session")
 def vectors() -> np.ndarray:
-    """Fixture providing an array of vectors corresponding to items."""
-    return random_gen.random((100, 8))
+    """Fixture providing an array of vectors sampled from a normal distribution."""
+    # Sample 1000 vectors, each of dimension 8, from a normal distribution with mean=0 and std=1
+    return random_gen.normal(loc=0, scale=1, size=(1000, 8))
 
 
 @pytest.fixture(scope="session")
@@ -63,9 +64,14 @@ def vicinity_instance(request: pytest.FixtureRequest, items: list[str], vectors:
     backend_type, index_type = request.param
     # Handle FAISS backend with specific FAISS index types
     if backend_type == Backend.FAISS:
-        return Vicinity.from_vectors_and_items(
-            vectors, items, backend_type=backend_type, index_type=index_type, nlist=2, nbits=32
-        )
+        if index_type == "pq":
+            return Vicinity.from_vectors_and_items(
+                vectors, items, backend_type=backend_type, index_type=index_type, m=2, nbits=4
+            )
+        else:
+            return Vicinity.from_vectors_and_items(
+                vectors, items, backend_type=backend_type, index_type=index_type, nlist=2, nbits=32
+            )
 
     # Handle non-FAISS backends without passing `index_type`
     return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)

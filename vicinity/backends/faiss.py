@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -10,6 +11,8 @@ from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -54,7 +57,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     ) -> FaissBackend:
         """Create a new instance from vectors."""
         dim = vectors.shape[1]
-
         faiss_metric = faiss.METRIC_L2 if metric == "l2" else faiss.METRIC_INNER_PRODUCT
 
         if index_type == "flat":
@@ -71,6 +73,10 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit)
             index.train(vectors)
         elif index_type == "pq":
+            if not (1 <= nbits <= 16):
+                logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
+                nbits = 16  # Adjust to the maximum supported value for PQ
+
             index = faiss.IndexPQ(dim, m, nbits)
             index.train(vectors)
         elif index_type == "ivf_scalar":

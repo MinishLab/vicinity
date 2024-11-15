@@ -82,14 +82,14 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
         # Don't test insert for HNSW or Annoy backend.
         return
-    new_item = ["item101"]
+    new_item = ["item1001"]
     new_vector = query_vector
     vicinity_instance.insert(new_item, new_vector[None, :])
 
-    results = vicinity_instance.query(query_vector, k=10)
-    returned_item = results[0][0][0]
+    results = vicinity_instance.query(query_vector, k=20)
 
-    assert returned_item == "item101"
+    returned_items = [item for item, _ in results[0]]
+    assert "item1001" in returned_items
 
 
 def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
@@ -163,7 +163,7 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :raises ValueError: If deleting items that do not exist.
     """
     with pytest.raises(ValueError):
-        vicinity_instance.delete(["item102"])
+        vicinity_instance.delete(["item1002"])
 
 
 def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -173,7 +173,7 @@ def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_v
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If tokens and vectors lengths differ.
     """
-    new_items = ["item102", "item103"]
+    new_items = ["item1002", "item1003"]
     new_vector = query_vector
 
     with pytest.raises(ValueError):
@@ -187,7 +187,7 @@ def test_vicinity_insert_wrong_dimension(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If vectors have wrong dimension.
     """
-    new_item = ["item102"]
+    new_item = ["item1002"]
     new_vector = np.array([[0.5, 0.5, 0.5]])
 
     with pytest.raises(ValueError):
