@@ -1,11 +1,13 @@
 name: Run tests and upload coverage
 
 on:
-  push
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   test:
     name: Run tests with pytest
+    if: ${{ !github.event.pull_request.draft }}  # Skip draft PRs
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
