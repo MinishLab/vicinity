@@ -187,6 +187,33 @@ wheels = [
 ]
 
 [[package]]
+name = "faiss-cpu"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/92/57/f5af8d68f9a8ec943496aa8fa9b01d7c4e654e918b246f5a0e6c85df6e0d/faiss_cpu-1.9.0.tar.gz", hash = "sha256:587fcea9fa478e9307a388754824a032849d317894a607586c3cdd8c8aeb7233", size = 67785 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ea/c2/465250c99399921a33638d444e04e7174aafba3930cf911bf5f0782f9009/faiss_cpu-1.9.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:e415a149893629db2215776395460d0cf79ac5f56a62242de68f788a22b66818", size = 7661784 },
+    { url = "https://files.pythonhosted.org/packages/b1/1c/f8305ad0317d1cad85ec32dc94cd9b54e9b5a27776716a56adbfa270c53d/faiss_cpu-1.9.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:81f211896107a114450297571210684701d1fce5b998d8a06e2549f6be7af20c", size = 3215611 },
+    { url = "https://files.pythonhosted.org/packages/f9/31/264d61a9e225e5ef360216c05420670ff7bc2efbb4674138bb4a19f9df7f/faiss_cpu-1.9.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cf76982c45027817df7816232dad9d2f6471637ceaa76c1cc72e858c6e31d8d3", size = 3641823 },
+    { url = "https://files.pythonhosted.org/packages/8f/0d/bc1dd13611fddf0f15279d73f6cf0f60f2546bb6d4f2daddbc8395c5fc46/faiss_cpu-1.9.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:091d3df18dc9ae43e47203ff0c3c8ffcd51939a6de17e851751dcc263c86b16b", size = 27474929 },
+    { url = "https://files.pythonhosted.org/packages/10/3a/4b00c7076581795d8337e51dc65d1a1271b04f07c14b3de01cd32bb9ee96/faiss_cpu-1.9.0-cp310-cp310-win_amd64.whl", hash = "sha256:eababc154e95930045f86d2483aeb4ed8451b1bb9b97451a2633df20190f5ee2", size = 14862940 },
+    { url = "https://files.pythonhosted.org/packages/f5/a2/b346d976c0adcdeab7d23bf6f58eef6d1c5c9c0bf919353923cf91553049/faiss_cpu-1.9.0-cp311-cp311-macosx_10_14_x86_64.whl", hash = "sha256:b0e9208a36da519dc2eb90e4c44c66a6812a5b68457582d8ed21d04e910e3d1f", size = 7661789 },
+    { url = "https://files.pythonhosted.org/packages/6b/9f/f0a39439a938818f1add48bd7b79d4b8e12e60f2f0c1e4a0b37b295625e0/faiss_cpu-1.9.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:6a4b2871057560020b83ad7bb5aaf3b97b64f980f9af2ca99ba34eeb4fe38bdf", size = 3215612 },
+    { url = "https://files.pythonhosted.org/packages/d4/c4/5d83db571038082869265826f04b5d4f0a3249fcd2f0df736b35bae0e2c0/faiss_cpu-1.9.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7f1dc3a42ea386f49a86a9d09a3e30a40fa2e678395df5c2f5706c3f26f06751", size = 3641782 },
+    { url = "https://files.pythonhosted.org/packages/51/b2/4f9abd2b859cef0e2332d3ff032e1973281fac1204fa8da14effc326f528/faiss_cpu-1.9.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2baeed5f1d8b006533c71184cc29065892647774a3df9c6f6dc31c1b694f57fa", size = 27474817 },
+    { url = "https://files.pythonhosted.org/packages/87/2b/850200d901fd0409232d9bcae26228ab9aadf4803bbcc38f93d6f81cab37/faiss_cpu-1.9.0-cp311-cp311-win_amd64.whl", hash = "sha256:81d8fcb0ef92c9e7af2f7104e321895462681a598aff6d526a8da8272a61c1dd", size = 14862693 },
+    { url = "https://files.pythonhosted.org/packages/14/76/67475a3009c4aeccab462325144738fb62074ed6edbc9ab55cc9ddddc127/faiss_cpu-1.9.0-cp312-cp312-macosx_10_14_x86_64.whl", hash = "sha256:2ed784120f6be7a7cde90f507831e670b4edc94f20cc7955eef3ae5fba70d449", size = 7691461 },
+    { url = "https://files.pythonhosted.org/packages/31/28/6ece7a2bf3a4f53b25533353baf47e42055f16004e79554f3fcd975569f2/faiss_cpu-1.9.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:358be27446389c9df374fba17221ae5e45a7a8c943c4c675f81814d6fb7c31b1", size = 3217821 },
+    { url = "https://files.pythonhosted.org/packages/e5/20/822dd24d168a56f1af0f2aa276b183b2176659c44644e67757015e8272b1/faiss_cpu-1.9.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:31a0b5ec546c7455cf526326194ace125199769ccbc90bb69b464cd4a26b7f4d", size = 3651805 },
+    { url = "https://files.pythonhosted.org/packages/3b/27/45be1b5e71feef7d22f65c409658d698655a8c86547d20448388521a6697/faiss_cpu-1.9.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:89f03a4882e27c71ead60d84d06263d3f8592c842f0f469eeaf7883cfd4f2bfa", size = 27471710 },
+    { url = "https://files.pythonhosted.org/packages/51/d6/4228ddef6324abb7b6a62cf0dd72938147234770b1f04adcb23fa1a424bb/faiss_cpu-1.9.0-cp312-cp312-win_amd64.whl", hash = "sha256:39a163c2c3c33df10b82fd3b61cb6c8bd7884e2526f1393de32ed71814c5cbfb", size = 14864760 },
+]
+
+[[package]]
 name = "filelock"
 version = "3.16.1"
 source = { registry = "https://pypi.org/simple" }
@@ -894,6 +921,9 @@ dev = [
     { name = "ruff" },
     { name = "setuptools" },
 ]
+faiss = [
+    { name = "faiss-cpu" },
+]
 hnsw = [
     { name = "hnswlib" },
 ]
@@ -908,6 +938,7 @@ pynndescent = [
 requires-dist = [
     { name = "annoy", marker = "extra == 'annoy'" },
     { name = "black", marker = "extra == 'dev'" },
+    { name = "faiss-cpu", marker = "extra == 'faiss'" },
     { name = "hnswlib", marker = "extra == 'hnsw'" },
     { name = "ipython", marker = "extra == 'dev'" },
     { name = "llvmlite", marker = "extra == 'pynndescent'", specifier = ">=0.42.0" },

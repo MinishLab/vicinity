@@ -9,7 +9,7 @@ from vicinity import Vicinity
 from vicinity.datatypes import Backend
 
 
-def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
+def test_vicinity_init(backend_type: tuple[Backend, str], items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.init.
 
@@ -17,7 +17,8 @@ def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndar
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
-    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+    backend = backend_type[0]
+    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
     assert len(vicinity) == len(items)
     assert vicinity.items == items
     assert vicinity.dim == vectors.shape[1]
@@ -25,10 +26,12 @@ def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndar
     vectors = np.random.default_rng(42).random((len(items) - 1, 5))
 
     with pytest.raises(ValueError):
-        vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+        vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
 
-def test_vicinity_from_vectors_and_items(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
+def test_vicinity_from_vectors_and_items(
+    backend_type: tuple[Backend, str], items: list[str], vectors: np.ndarray
+) -> None:
     """
     Test Vicinity.from_vectors_and_items.
 
@@ -36,7 +39,8 @@ def test_vicinity_from_vectors_and_items(backend_type: Backend, items: list[str]
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
-    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+    backend: Backend = backend_type[0]
+    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
     assert len(vicinity) == len(items)
     assert vicinity.items == items
@@ -92,13 +96,21 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
     """
     Test Vicinity.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
 
-    :param backend_type: The backend type to use.
     :param vicinity_instance: A Vicinity instance.
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
     if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
         # Don't test delete for Annoy and Pynndescent backend
+        return
+
+    if vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
+        "pq",
+        "scalar",
+        "ivfpq",
+        "ivfpqr",
+    }:
+        # Skip delete test for FAISS index types that do not support deletion
         return
 
     # Get the vector corresponding to "item2"
