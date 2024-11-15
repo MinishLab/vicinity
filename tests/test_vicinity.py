@@ -39,7 +39,7 @@ def test_vicinity_from_vectors_and_items(
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
-    backend: Backend = backend_type[0]
+    backend = backend_type[0]
     vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
     assert len(vicinity) == len(items)
@@ -104,11 +104,8 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
         # Don't test delete for Annoy and Pynndescent backend
         return
 
-    if vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
-        "pq",
-        "scalar",
-        "ivfpq",
-        "ivfpqr",
+    elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
+        "hnsw"
     }:
         # Skip delete test for FAISS index types that do not support deletion
         return

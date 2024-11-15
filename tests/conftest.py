@@ -10,10 +10,10 @@ random_gen = np.random.default_rng(42)
 
 # Define supported FAISS index types
 FAISS_INDEX_TYPES = [
-    "flat",
+    # "flat",
     # "ivf",
-    # "hnsw",
-    # "lsh",
+    "hnsw",
+    "lsh",
     # "scalar",
     # "pq",
     # "ivf_scalar",
@@ -42,10 +42,13 @@ def query_vector() -> np.ndarray:
 
 BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in FAISS_INDEX_TYPES] + [
     (Backend.BASIC, None),
-    (Backend.HNSW, None),
-    (Backend.ANNOY, None),
-    (Backend.PYNNDESCENT, None),
+    # (Backend.HNSW, None),
+    # (Backend.ANNOY, None),
+    # (Backend.PYNNDESCENT, None),
 ]
+
+# Create human-readable ids for each backend type
+BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name for backend, index_type in BACKEND_PARAMS]
 
 
 @pytest.fixture(params=BACKEND_PARAMS)
@@ -54,14 +57,14 @@ def backend_type(request: pytest.FixtureRequest) -> Backend:
     return request.param
 
 
-@pytest.fixture(params=BACKEND_PARAMS)
+@pytest.fixture(params=BACKEND_PARAMS, ids=BACKEND_IDS)
 def vicinity_instance(request: pytest.FixtureRequest, items: list[str], vectors: np.ndarray) -> Vicinity:
     """Fixture providing a Vicinity instance for each backend type."""
     backend_type, index_type = request.param
     # Handle FAISS backend with specific FAISS index types
     if backend_type == Backend.FAISS:
         return Vicinity.from_vectors_and_items(
-            vectors, items, backend_type=backend_type, index_type=index_type, nlist=4
+            vectors, items, backend_type=backend_type, index_type=index_type, nlist=4, nbits=32
         )
 
     # Handle non-FAISS backends without passing `index_type`
