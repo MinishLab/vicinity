@@ -80,7 +80,7 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     :param query_vector: A query vector.
     """
     if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Don't test insert for HNSW or Annoy backend.
+        # Skip insert for HNSW or Annoy backends.
         return
     new_item = ["item10001"]
     new_vector = query_vector
@@ -101,7 +101,7 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
     :param vectors: Array of vectors corresponding to items.
     """
     if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Don't test delete for Annoy and Pynndescent backend
+        # Skip delete for Annoy and Pynndescent backend
         return
 
     elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {

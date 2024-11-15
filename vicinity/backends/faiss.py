@@ -11,6 +11,7 @@ from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
+from vicinity.utils import normalize
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +19,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FaissArgs(BaseArgs):
     dim: int = 0
-    index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "flat"
-    metric: Literal["l2", "inner_product"] = "l2"
+    index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "hnsw"
+    metric: Literal["cosine", "l2"] = "cosine"
     nlist: int = 100  # Used for IVF indexes
     m: int = 8  # Used for PQ and HNSW
     nbits: int = 8  # Used for LSH and PQ
@@ -47,7 +48,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         cls: type[FaissBackend],
         vectors: npt.NDArray,
         index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "flat",
-        metric: Literal["l2", "inner_product"] = "l2",
+        metric: Literal["cosine", "l2"] = "cosine",
         nlist: int = 100,
         m: int = 8,
         nbits: int = 8,
@@ -57,7 +58,13 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     ) -> FaissBackend:
         """Create a new instance from vectors."""
         dim = vectors.shape[1]
-        faiss_metric = faiss.METRIC_L2 if metric == "l2" else faiss.METRIC_INNER_PRODUCT
+
+        # If using cosine, normalize vectors to unit length
+        if metric == "cosine":
+            vectors = normalize(vectors)
+            faiss_metric = faiss.METRIC_INNER_PRODUCT
+        else:
+            faiss_metric = faiss.METRIC_L2
 
         if index_type == "flat":
             index = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
@@ -128,11 +135,17 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Perform a k-NN search in the FAISS index."""
+        if self.arguments.metric == "cosine":
+            vectors = normalize(vectors)
         distances, indices = self.index.search(vectors, k)
+        if self.arguments.metric == "cosine":
+            distances = 1 - distances
         return list(zip(indices, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
+        if self.arguments.metric == "cosine":
+            vectors = normalize(vectors)
         self.index.add(vectors)
 
     def delete(self, indices: list[int]) -> None:
