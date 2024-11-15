@@ -86,7 +86,7 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     new_vector = query_vector
     vicinity_instance.insert(new_item, new_vector[None, :])
 
-    results = vicinity_instance.query(query_vector, k=100)
+    results = vicinity_instance.query(query_vector, k=50)
 
     returned_items = [item for item, _ in results[0]]
     assert "item10001" in returned_items
