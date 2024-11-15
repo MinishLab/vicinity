@@ -25,7 +25,7 @@ class FaissArgs(BaseArgs):
     m: int = 8  # Used for PQ and HNSW
     nbits: int = 8  # Used for LSH and PQ
     refine_nbits: int = 8  # Used for IVFPQR
-    direct_map: bool = False  # Enable DirectMap for IVF indexes
+    direct_map: bool = True  # Enable DirectMap for IVF indexes to allow deletion
 
 
 class FaissBackend(AbstractBackend[FaissArgs]):
@@ -53,7 +53,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         m: int = 8,
         nbits: int = 8,
         refine_nbits: int = 8,
-        direct_map: bool = False,
+        direct_map: bool = True,
         **kwargs: Any,
     ) -> FaissBackend:
         """Create a new instance from vectors."""
@@ -151,7 +151,12 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend, if supported."""
         if hasattr(self.index, "remove_ids"):
-            id_selector = faiss.IDSelectorBatch(np.array(indices, dtype=np.int64))
+            # Check if direct_map is enabled and use IDSelectorArray if so
+            if isinstance(self.index, faiss.IndexIVF) and self.arguments.direct_map:
+                id_selector = faiss.IDSelectorArray(np.array(indices, dtype=np.int64))
+            else:
+                id_selector = faiss.IDSelectorBatch(np.array(indices, dtype=np.int64))
+
             self.index.remove_ids(id_selector)
         else:
             raise NotImplementedError("This FAISS index type does not support deletion.")
