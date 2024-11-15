@@ -190,7 +190,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
                 out.append(within_threshold_indices)
         else:
             # Fallback to search-based filtering for indexes that do not support range_search
-            distances, indices = self.index.search(vectors, 100)  # Arbitrarily large `k` to capture potential matches
+            distances, indices = self.index.search(vectors, 100)
 
             for dist, idx in zip(distances, indices):
                 # Convert distances for cosine if needed
