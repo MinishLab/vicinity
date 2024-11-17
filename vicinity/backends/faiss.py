@@ -15,6 +15,18 @@ from vicinity.utils import normalize
 
 logger = logging.getLogger(__name__)
 
+# FAISS indexes that support range_search
+RANGE_SEARCH_INDEXES = (faiss.IndexFlat, faiss.IndexIVFFlat, faiss.IndexScalarQuantizer, faiss.IndexIVFScalarQuantizer)
+# FAISS indexes that need to be trained before adding vectors
+TRAINABLE_INDEXES = (
+    faiss.IndexIVFFlat,
+    faiss.IndexScalarQuantizer,
+    faiss.IndexIVFScalarQuantizer,
+    faiss.IndexIVFPQ,
+    faiss.IndexPQ,
+    faiss.IndexIVFPQR,
+)
+
 
 @dataclass
 class FaissArgs(BaseArgs):
@@ -25,7 +37,6 @@ class FaissArgs(BaseArgs):
     m: int = 8
     nbits: int = 8
     refine_nbits: int = 8
-    direct_map: bool = True
 
 
 class FaissBackend(AbstractBackend[FaissArgs]):
@@ -39,9 +50,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         """Initialize the backend using a FAISS index."""
         super().__init__(arguments)
         self.index = index
-        # Enable DirectMap if specified and supported by index type
-        if isinstance(index, faiss.IndexIVF) and arguments.direct_map:
-            index.set_direct_map_type(faiss.DirectMap.Hashtable)
 
     @classmethod
     def from_vectors(  # noqa: C901
@@ -53,7 +61,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         m: int = 8,
         nbits: int = 8,
         refine_nbits: int = 8,
-        direct_map: bool = True,
         **kwargs: Any,
     ) -> FaissBackend:
         """
@@ -66,7 +73,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         :param m: The number of subquantizers for PQ and HNSW indexes.
         :param nbits: The number of bits for LSH and PQ indexes.
         :param refine_nbits: The number of bits for the refinement stage in IVFPQR indexes.
-        :param direct_map: Whether to enable DirectMap for IVF indexes. This allows deletion of vectors.
         :param **kwargs: Additional arguments to pass to the backend.
         :return: A new FaissBackend instance.
         :raises ValueError: If an invalid index type is provided.
@@ -80,45 +86,43 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         else:
             faiss_metric = faiss.METRIC_L2
 
+        if index_type.startswith("ivf"):
+            # Create a quantizer for IVF indexes
+            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
+
         if index_type == "flat":
             index = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
-        elif index_type == "ivf":
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
-            index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
-            index.train(vectors)
         elif index_type == "hnsw":
             index = faiss.IndexHNSWFlat(dim, m)
         elif index_type == "lsh":
             index = faiss.IndexLSH(dim, nbits)
         elif index_type == "scalar":
             index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit)
-            index.train(vectors)
         elif index_type == "pq":
             if not (1 <= nbits <= 16):
                 # Log a warning and adjust nbits to the maximum supported value for PQ
                 logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
                 nbits = 16
             index = faiss.IndexPQ(dim, m, nbits)
-            index.train(vectors)
+        elif index_type == "ivf":
+            index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
         elif index_type == "ivf_scalar":
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
             index = faiss.IndexIVFScalarQuantizer(quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit)
-            index.train(vectors)
         elif index_type == "ivfpq":
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
             index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits)
-            index.train(vectors)
         elif index_type == "ivfpqr":
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
             index = faiss.IndexIVFPQR(quantizer, dim, nlist, m, nbits, m, refine_nbits)
-            index.train(vectors)
         else:
             raise ValueError(f"Unsupported FAISS index type: {index_type}")
 
+        # Train the index if needed
+        if isinstance(index, TRAINABLE_INDEXES):
+            index.train(vectors)
+
         index.add(vectors)
 
-        # Enable DirectMap for IVF indexes if specified
-        if isinstance(index, faiss.IndexIVF) and direct_map:
+        # Enable DirectMap for IVF indexes so they can be used with delete
+        if isinstance(index, faiss.IndexIVF):
             index.set_direct_map_type(faiss.DirectMap.Hashtable)
 
         arguments = FaissArgs(
@@ -129,7 +133,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             m=m,
             nbits=nbits,
             refine_nbits=refine_nbits,
-            direct_map=direct_map,
         )
         return cls(index=index, arguments=arguments)
 
@@ -165,12 +168,12 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend, if supported."""
         if hasattr(self.index, "remove_ids"):
-            # Check if direct_map is enabled and use IDSelectorArray if so
-            if isinstance(self.index, faiss.IndexIVF) and self.arguments.direct_map:
+            if isinstance(self.index, faiss.IndexIVF):
+                # Use IDSelectorArray for IVF indexes
                 id_selector = faiss.IDSelectorArray(np.array(indices, dtype=np.int64))
             else:
+                # Use IDSelectorBatch for other indexes
                 id_selector = faiss.IDSelectorBatch(np.array(indices, dtype=np.int64))
-
             self.index.remove_ids(id_selector)
         else:
             raise NotImplementedError("This FAISS index type does not support deletion.")
@@ -183,25 +186,23 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         if self.arguments.metric == "cosine":
             vectors = normalize(vectors)
 
-        if isinstance(
-            self.index, (faiss.IndexFlat, faiss.IndexIVFFlat, faiss.IndexScalarQuantizer, faiss.IndexIVFScalarQuantizer)
-        ):
+        if isinstance(self.index, RANGE_SEARCH_INDEXES):
             # Use range_search for supported indexes
             radius = threshold
             lims, D, I = self.index.range_search(vectors, radius)
 
             for i in range(vectors.shape[0]):
                 start, end = lims[i], lims[i + 1]
-                indices = I[start:end]
-                distances = D[start:end]
+                idx = I[start:end]
+                dist = D[start:end]
 
-                # Convert distances for cosine if needed
+                # Convert dist for cosine if needed
                 if self.arguments.metric == "cosine":
-                    distances = 1 - distances
+                    dist = 1 - dist
 
-                # Only include indices within the threshold
-                within_threshold_indices = indices[distances < threshold]
-                out.append(within_threshold_indices)
+                # Only include idx within the threshold
+                within_threshold = idx[dist < threshold]
+                out.append(within_threshold)
         else:
             # Fallback to search-based filtering for indexes that do not support range_search
             distances, indices = self.index.search(vectors, 100)

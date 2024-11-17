@@ -8,7 +8,7 @@ from vicinity.datatypes import Backend
 
 random_gen = np.random.default_rng(42)
 
-FAISS_INDEX_TYPES = ["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"]
+_faiss_index_types = ["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"]
 
 
 @pytest.fixture(scope="session")
@@ -29,7 +29,7 @@ def query_vector() -> np.ndarray:
     return random_gen.random(8)
 
 
-BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in FAISS_INDEX_TYPES] + [
+BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_types] + [
     (Backend.BASIC, None),
     (Backend.HNSW, None),
     (Backend.ANNOY, None),

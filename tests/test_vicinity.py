@@ -8,12 +8,14 @@ import pytest
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
 
+BackendType = tuple[Backend, str]
 
-def test_vicinity_init(backend_type: tuple[Backend, str], items: list[str], vectors: np.ndarray) -> None:
+
+def test_vicinity_init(backend_type: BackendType, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.init.
 
-    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
+    :param backend_type: The backend type to use.
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
@@ -29,13 +31,11 @@ def test_vicinity_init(backend_type: tuple[Backend, str], items: list[str], vect
         vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
 
-def test_vicinity_from_vectors_and_items(
-    backend_type: tuple[Backend, str], items: list[str], vectors: np.ndarray
-) -> None:
+def test_vicinity_from_vectors_and_items(backend_type: BackendType, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.from_vectors_and_items.
 
-    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
+    :param backend_type: The backend type to use.
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
