@@ -121,22 +121,16 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend."""
-        # Perform the search
         results = self.index.search(vectors, k)
-        # Access the keys and distances from the results object
-        keys = results.keys  # or results.labels depending on the API
-        distances = results.distances
-
-        # Ensure that keys and distances are NumPy arrays
-        keys = np.array(keys)
-        distances = np.array(distances, dtype=np.float32)
+        # Access the keys and distances from the results object and convert to numpy arrays
+        keys = np.array(results.keys)
+        distances = np.array(results.distances, dtype=np.float32)
 
         # If querying a single vector, reshape to (1, k)
         if keys.ndim == 1:
             keys = keys.reshape(1, -1)
             distances = distances.reshape(1, -1)
 
-        # Return a list of tuples (keys_row, distances_row)
         return [(keys_row, distances_row) for keys_row, distances_row in zip(keys, distances)]
 
     def insert(self, vectors: npt.NDArray) -> None:
