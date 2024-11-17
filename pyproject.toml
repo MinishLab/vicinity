@@ -51,6 +51,7 @@ pynndescent = [
 ]
 annoy = ["annoy"]
 faiss = ["faiss-cpu"]
+usearch = ["usearch"]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"

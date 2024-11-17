@@ -26,5 +26,10 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
 
         return FaissBackend
 
+    elif backend == Backend.USEARCH:
+        from vicinity.backends.usearch import UsearchBackend
+
+        return UsearchBackend
+
 
 __all__ = ["get_backend_class", "AbstractBackend"]

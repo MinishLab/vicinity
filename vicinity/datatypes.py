@@ -21,3 +21,4 @@ class Backend(str, Enum):
     ANNOY = "annoy"
     PYNNDESCENT = "pynndescent"
     FAISS = "faiss"
+    USEARCH = "usearch"
