@@ -104,14 +104,17 @@ class FaissBackend(AbstractBackend[FaissArgs]):
                 logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
                 nbits = 16
             index = faiss.IndexPQ(dim, m, nbits)
-        elif index_type == "ivf":
-            index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
-        elif index_type == "ivf_scalar":
-            index = faiss.IndexIVFScalarQuantizer(quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit)
-        elif index_type == "ivfpq":
-            index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits)
-        elif index_type == "ivfpqr":
-            index = faiss.IndexIVFPQR(quantizer, dim, nlist, m, nbits, m, refine_nbits)
+        elif index_type.startswith("ivf"):
+            # Create a quantizer for IVF indexes
+            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
+            if index_type == "ivf":
+                index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
+            elif index_type == "ivf_scalar":
+                index = faiss.IndexIVFScalarQuantizer(quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit)
+            elif index_type == "ivfpq":
+                index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits)
+            elif index_type == "ivfpqr":
+                index = faiss.IndexIVFPQR(quantizer, dim, nlist, m, nbits, m, refine_nbits)
         else:
             raise ValueError(f"Unsupported FAISS index type: {index_type}")
 
