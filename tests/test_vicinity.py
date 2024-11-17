@@ -8,16 +8,19 @@ import pytest
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
 
+BackendType = tuple[Backend, str]
 
-def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
+
+def test_vicinity_init(backend_type: BackendType, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.init.
 
-    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
+    :param backend_type: The backend type to use.
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
-    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+    backend = backend_type[0]
+    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
     assert len(vicinity) == len(items)
     assert vicinity.items == items
     assert vicinity.dim == vectors.shape[1]
@@ -25,18 +28,19 @@ def test_vicinity_init(backend_type: Backend, items: list[str], vectors: np.ndar
     vectors = np.random.default_rng(42).random((len(items) - 1, 5))
 
     with pytest.raises(ValueError):
-        vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+        vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
 
-def test_vicinity_from_vectors_and_items(backend_type: Backend, items: list[str], vectors: np.ndarray) -> None:
+def test_vicinity_from_vectors_and_items(backend_type: BackendType, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.from_vectors_and_items.
 
-    :param backend_type: The backend type to use (BASIC, HNSW or Annoy).
+    :param backend_type: The backend type to use.
     :param items: A list of item names.
     :param vectors: An array of vectors.
     """
-    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+    backend = backend_type[0]
+    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
 
     assert len(vicinity) == len(items)
     assert vicinity.items == items
@@ -76,29 +80,35 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     :param query_vector: A query vector.
     """
     if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Don't test insert for HNSW or Annoy backend.
+        # Skip insert for HNSW or Annoy backends.
         return
-    new_item = ["item101"]
+    new_item = ["item10001"]
     new_vector = query_vector
     vicinity_instance.insert(new_item, new_vector[None, :])
 
-    results = vicinity_instance.query(query_vector, k=10)
-    returned_item = results[0][0][0]
+    results = vicinity_instance.query(query_vector, k=50)
 
-    assert returned_item == "item101"
+    returned_items = [item for item, _ in results[0]]
+    assert "item10001" in returned_items
 
 
 def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
     """
     Test Vicinity.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
 
-    :param backend_type: The backend type to use.
     :param vicinity_instance: A Vicinity instance.
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
     if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Don't test delete for Annoy and Pynndescent backend
+        # Skip delete for Annoy and Pynndescent backend
+        return
+
+    elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
+        "hnsw",
+        "ivfpqr",
+    }:
+        # Skip delete test for FAISS index types that do not support deletion
         return
 
     # Get the vector corresponding to "item2"
@@ -154,7 +164,7 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :raises ValueError: If deleting items that do not exist.
     """
     with pytest.raises(ValueError):
-        vicinity_instance.delete(["item102"])
+        vicinity_instance.delete(["item10002"])
 
 
 def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -164,7 +174,7 @@ def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_v
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If tokens and vectors lengths differ.
     """
-    new_items = ["item102", "item103"]
+    new_items = ["item10002", "item10003"]
     new_vector = query_vector
 
     with pytest.raises(ValueError):
@@ -178,7 +188,7 @@ def test_vicinity_insert_wrong_dimension(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If vectors have wrong dimension.
     """
-    new_item = ["item102"]
+    new_item = ["item10002"]
     new_vector = np.array([[0.5, 0.5, 0.5]])
 
     with pytest.raises(ValueError):

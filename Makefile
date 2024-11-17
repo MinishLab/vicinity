@@ -9,7 +9,7 @@ install: venv
 	uv run pre-commit install
 
 install-no-pre-commit:
-	uv pip install ".[dev,hnsw,pynndescent,annoy]"
+	uv pip install ".[dev,hnsw,pynndescent,annoy,faiss]"
 
 install-base:
 	uv sync --extra dev

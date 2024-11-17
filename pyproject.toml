@@ -49,6 +49,7 @@ pynndescent = [
     "numpy>=1.24.0"
 ]
 annoy = ["annoy"]
+faiss = ["faiss-cpu"]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"

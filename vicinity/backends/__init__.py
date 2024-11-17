@@ -21,5 +21,10 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
 
         return PyNNDescentBackend
 
+    elif backend == Backend.FAISS:
+        from vicinity.backends.faiss import FaissBackend
+
+        return FaissBackend
+
 
 __all__ = ["get_backend_class", "AbstractBackend"]
