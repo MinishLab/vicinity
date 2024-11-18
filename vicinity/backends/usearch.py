@@ -64,7 +64,10 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_search=expansion_search,
         )
         backend = cls(index, arguments=arguments)
-        backend.keys = [keys]
+        if isinstance(keys, np.ndarray):
+            backend.keys = keys.tolist()
+        else:
+            raise TypeError(f"Unexpected type for keys: {type(keys)}")
         backend.key_to_index = {key: idx for idx, key in enumerate(backend.keys)}
 
         return backend
