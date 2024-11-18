@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Sequence
+from typing import Any, Literal
 
 import numpy as np
 from numpy import typing as npt
