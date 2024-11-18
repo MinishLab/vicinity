@@ -1,8 +1,10 @@
+from typing import Union
+
 import numpy as np
 from numpy import typing as npt
 
 
-def normalize(vectors: npt.NDArray, norms: npt.NDArray | None = None) -> npt.NDArray:
+def normalize(vectors: npt.NDArray, norms: Union[npt.NDArray, None] = None) -> npt.NDArray:
     """
     Normalize a matrix of row vectors to unit length.
 
