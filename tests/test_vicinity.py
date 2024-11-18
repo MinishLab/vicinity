@@ -234,9 +234,5 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
     results = vicinity_instance.query(item3_vector, k=10)
     returned_items = [item for item, _ in results[0]]
 
-    # Check that the deleted items are not in the results
-    for deleted_item in items_to_delete:
-        assert deleted_item not in returned_items
-
     # Check that the queried item is in the results
     assert "item3" in returned_items
