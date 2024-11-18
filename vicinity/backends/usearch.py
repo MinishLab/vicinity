@@ -126,10 +126,8 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         # Ensure matches_list is always iterable
         if isinstance(results, BatchMatches):
             matches_list: list[Matches] = list(results)  # Convert BatchMatches to a list
-        elif isinstance(results, Matches):
-            matches_list = [results]  # Wrap single Matches into a list
         else:
-            raise TypeError("Unexpected type returned by search")
+            matches_list = [results]  # Wrap single Matches into a list
 
         for matches in matches_list:
             indices = []
@@ -179,10 +177,8 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         # Ensure matches_list is always iterable
         if isinstance(results, BatchMatches):
             matches_list: list[Matches] = list(results)  # Convert BatchMatches to a list
-        elif isinstance(results, Matches):
-            matches_list = [results]  # Wrap single Matches into a list
         else:
-            raise TypeError("Unexpected type returned by search")
+            matches_list = [results]  # Wrap single Matches into a list
 
         for matches in matches_list:
             keys = np.array(matches.keys, dtype=np.int32)
