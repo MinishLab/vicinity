@@ -9,6 +9,7 @@ from vicinity.datatypes import Backend
 random_gen = np.random.default_rng(42)
 
 _faiss_index_types = ["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"]
+# _faiss_index_types = ["ivf", "ivf_scalar", "ivfpq"]
 
 
 @pytest.fixture(scope="session")
@@ -36,6 +37,7 @@ BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_typ
     (Backend.PYNNDESCENT, None),
     (Backend.USEARCH, None),
 ]
+
 
 # Create human-readable ids for each backend type
 BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name for backend, index_type in BACKEND_PARAMS]
