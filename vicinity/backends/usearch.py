@@ -123,11 +123,12 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         results: Matches | BatchMatches = self.index.search(vectors, k)
         out: QueryResult = []
 
-        # Ensure matches_list is always iterable
         if isinstance(results, BatchMatches):
-            matches_list: list[Matches] = list(results)  # Convert BatchMatches to a list
+            # Convert BatchMatches to a list
+            matches_list: list[Matches] = list(results)
         else:
-            matches_list = [results]  # Wrap single Matches into a list
+            # Wrap single Matches into a list
+            matches_list = [results]
 
         for matches in matches_list:
             indices = []
@@ -145,14 +146,12 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Insert vectors into the backend."""
         keys: int | npt.NDArray = self.index.add(None, vectors)  # type: ignore
 
-        # Ensure `keys` is iterable
+        # Convert single key to an array
         if isinstance(keys, int):
-            keys = np.array([keys])  # Convert single key to an array
-        elif not isinstance(keys, np.ndarray):
-            raise TypeError(f"Unexpected type for keys: {type(keys)}")
+            keys = np.array([keys])
 
         start_idx = len(self.keys)
-        self.keys.extend(keys.tolist())  # Use `.tolist()` to ensure keys are a list of integers
+        self.keys.extend(keys.tolist())
         for i, key in enumerate(keys):
             self.key_to_index[int(key)] = start_idx + i
 
@@ -160,6 +159,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Delete vectors from the backend."""
         keys_to_delete = [self.keys[i] for i in indices]
         self.index.remove(keys_to_delete)
+
         # Remove keys and adjust self.keys
         for index in sorted(indices, reverse=True):
             key = self.keys[index]
@@ -176,9 +176,11 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
         # Ensure matches_list is always iterable
         if isinstance(results, BatchMatches):
-            matches_list: list[Matches] = list(results)  # Convert BatchMatches to a list
+            # Convert BatchMatches to a list
+            matches_list: list[Matches] = list(results)
         else:
-            matches_list = [results]  # Wrap single Matches into a list
+            # Wrap single Matches into a list
+            matches_list = [results]
 
         for matches in matches_list:
             keys = np.array(matches.keys, dtype=np.int32)
