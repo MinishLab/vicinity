@@ -1,9 +1,11 @@
+from typing import Union
+
 from vicinity.backends.base import AbstractBackend
 from vicinity.backends.basic import BasicBackend
 from vicinity.datatypes import Backend
 
 
-def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
+def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
     """Get all available backends."""
     backend = Backend(backend)
     if backend == Backend.BASIC:
