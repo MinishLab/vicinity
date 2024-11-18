@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from io import open
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Sequence, Union
 
 import numpy as np
 import orjson
@@ -29,7 +29,7 @@ class Vicinity:
         self,
         items: Sequence[str],
         backend: AbstractBackend,
-        metadata: dict[str, Any] | None = None,
+        metadata: Union[dict[str, Any], None] = None,
     ) -> None:
         """
         Initialize a Vicinity instance with an array and list of items.

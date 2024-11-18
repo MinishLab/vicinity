@@ -9,7 +9,6 @@ from vicinity.datatypes import Backend
 random_gen = np.random.default_rng(42)
 
 _faiss_index_types = ["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"]
-# _faiss_index_types = ["ivf", "ivf_scalar", "ivfpq"]
 
 
 @pytest.fixture(scope="session")

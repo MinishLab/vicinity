@@ -1,17 +1,17 @@
 from enum import Enum
 from pathlib import Path
-from typing import Iterable, TypeAlias
+from typing import Iterable, List, Tuple, Union
 
 import numpy as np
 from numpy import typing as npt
 
-PathLike = str | Path
-Matrix: TypeAlias = npt.NDArray | list[npt.NDArray]
-SimilarityItem = list[tuple[str, float]]
-SimilarityResult = list[SimilarityItem]
+PathLike = Union[str, Path]
+Matrix = Union[npt.NDArray, List[npt.NDArray]]
+SimilarityItem = List[Tuple[str, float]]
+SimilarityResult = List[SimilarityItem]
 # Tuple of (indices, distances)
-SingleQueryResult = tuple[npt.NDArray, npt.NDArray]
-QueryResult = list[SingleQueryResult]
+SingleQueryResult = Tuple[npt.NDArray, npt.NDArray]
+QueryResult = List[SingleQueryResult]
 Tokens = Iterable[str]
 
 
