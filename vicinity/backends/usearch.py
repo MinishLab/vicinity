@@ -46,7 +46,18 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         expansion_search: int,
         **kwargs: Any,
     ) -> UsearchBackend:
-        """Create a new instance from vectors."""
+        """
+        Create a new instance from vectors.
+
+        :param vectors: The vectors to index.
+        :param metric: The metric to use.
+        :param connectivity: The connectivity parameter.
+        :param expansion_add: The expansion add parameter.
+        :param expansion_search: The expansion search parameter.
+        :param **kwargs: Additional keyword arguments.
+        :return: A new instance of the backend.
+        :raises TypeError: If the type of keys is not supported.
+        """
         dim = vectors.shape[1]
         index = UsearchIndex(
             ndim=dim,
@@ -132,32 +143,6 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             out.append((np.array(indices, dtype=np.int32), np.array(distances, dtype=np.float32)))
         return out
 
-    # def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
-    #     """Query the backend."""
-    #     results = self.index.search(vectors, k)
-    #     out = []
-    #     #matches_list: list[Matches] | Matches | BatchMatches
-    #     matches_list: list[Matches] | BatchMatches
-    #     # Handle single and multiple query vectors
-    #     if hasattr(results, "counts"):
-    #         # BatchMatches: multiple queries
-    #         matches_list = results
-    #     else:
-    #         # Matches: single query
-    #         matches_list = [results]
-
-    #     for matches in matches_list:
-    #         indices = []
-    #         distances = []
-    #         for key, dist in zip(matches.keys, matches.distances):
-    #             # Map Usearch key back to Vicinity index
-    #             idx = self.key_to_index.get(int(key))
-    #             if idx is not None:
-    #                 indices.append(idx)
-    #                 distances.append(float(dist))
-    #         out.append((np.array(indices), np.array(distances)))
-    #     return out
-
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
         keys: int | npt.NDArray = self.index.add(None, vectors)  # type: ignore
@@ -185,30 +170,6 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         # Adjust key_to_index mapping for shifted indices
         for idx, key in enumerate(self.keys):
             self.key_to_index[key] = idx
-
-    # def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
-    #     """Threshold the backend."""
-    #     out: list[npt.NDArray] = []
-    #     results = self.index.search(vectors, 100)
-    #     matches_list: list[Matches] | BatchMatches
-    #     # Handle single and multiple query vectors
-    #     if hasattr(results, "counts"):
-    #         matches_list = results
-    #     else:
-    #         matches_list = [results]
-
-    #     for matches in matches_list:
-    #         keys = matches.keys
-    #         distances = matches.distances
-    #         mask = distances < threshold
-    #         filtered_keys = keys[mask]
-    #         indices = []
-    #         for key in filtered_keys:
-    #             idx = self.key_to_index.get(int(key))
-    #             if idx is not None:
-    #                 indices.append(idx)
-    #         out.append(np.array(indices))
-    #     return out
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
