@@ -145,11 +145,10 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
         keys: int | npt.NDArray = self.index.add(None, vectors)  # type: ignore
-
         # Convert single key to an array
         if isinstance(keys, int):
             keys = np.array([keys])
-
+        # Update keys and key_to_index mapping
         start_idx = len(self.keys)
         self.keys.extend(keys.tolist())
         for i, key in enumerate(keys):
@@ -159,22 +158,18 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Delete vectors from the backend."""
         keys_to_delete = [self.keys[i] for i in indices]
         self.index.remove(keys_to_delete)
-
         # Remove keys and adjust self.keys
         for index in sorted(indices, reverse=True):
-            key = self.keys[index]
-            del self.keys[index]
-            del self.key_to_index[key]
+            key = self.keys.pop(index)
+            self.key_to_index.pop(key)
         # Adjust key_to_index mapping for shifted indices
-        for idx, key in enumerate(self.keys):
-            self.key_to_index[key] = idx
+        self.key_to_index = {key: idx for idx, key in enumerate(self.keys)}
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
         out: list[npt.NDArray] = []
         results: Matches | BatchMatches = self.index.search(vectors, 100)
 
-        # Ensure matches_list is always iterable
         if isinstance(results, BatchMatches):
             # Convert BatchMatches to a list
             matches_list: list[Matches] = list(results)
