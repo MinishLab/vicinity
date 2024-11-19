@@ -6,7 +6,6 @@ from typing import Any, Literal
 
 import numpy as np
 from numpy import typing as npt
-from usearch.index import BatchMatches, Matches
 from usearch.index import Index as UsearchIndex
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
@@ -33,8 +32,6 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Initialize the backend using Usearch."""
         super().__init__(arguments)
         self.index = index
-        self.keys: list[Any] = []
-        self.key_to_index: dict[int, int] = {}
 
     @classmethod
     def from_vectors(
@@ -56,7 +53,6 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         :param expansion_search: The expansion search parameter.
         :param **kwargs: Additional keyword arguments.
         :return: A new instance of the backend.
-        :raises TypeError: If the type of keys is not supported.
         """
         dim = vectors.shape[1]
         index = UsearchIndex(
@@ -66,7 +62,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_add=expansion_add,
             expansion_search=expansion_search,
         )
-        keys = index.add(keys=None, vectors=vectors)  # type: ignore
+        index.add(keys=None, vectors=vectors)  # type: ignore
         arguments = UsearchArgs(
             dim=dim,
             metric=metric,
@@ -75,11 +71,6 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_search=expansion_search,
         )
         backend = cls(index, arguments=arguments)
-        if isinstance(keys, np.ndarray):
-            backend.keys = keys.tolist()
-        else:
-            raise TypeError(f"Unexpected type for keys: {type(keys)}")
-        backend.key_to_index = {key: idx for idx, key in enumerate(backend.keys)}
 
         return backend
 
@@ -119,73 +110,23 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         self.arguments.dump(base_path / "arguments.json")
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
-        """Query the backend."""
-        results: Matches | BatchMatches = self.index.search(vectors, k)
-        out: QueryResult = []
-
-        if isinstance(results, BatchMatches):
-            # Convert BatchMatches to a list
-            matches_list: list[Matches] = list(results)
-        else:
-            # Wrap single Matches into a list
-            matches_list = [results]
-
-        for matches in matches_list:
-            indices = []
-            distances = []
-            for key, dist in zip(matches.keys, matches.distances):
-                # Map Usearch key back to Vicinity index
-                idx = self.key_to_index.get(int(key))
-                if idx is not None:
-                    indices.append(idx)
-                    distances.append(float(dist))
-            out.append((np.array(indices, dtype=np.int32), np.array(distances, dtype=np.float32)))
-        return out
+        """Query the backend and return results as tuples of keys and distances."""
+        results = self.index.search(vectors, k)
+        keys = np.array(results.keys).reshape(-1, k)
+        distances = np.array(results.distances, dtype=np.float32).reshape(-1, k)
+        return list(zip(keys, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        keys: int | npt.NDArray = self.index.add(None, vectors)  # type: ignore
-        # Convert single key to an array
-        if isinstance(keys, int):
-            keys = np.array([keys])
-        # Update keys and key_to_index mapping
-        start_idx = len(self.keys)
-        self.keys.extend(keys.tolist())
-        for i, key in enumerate(keys):
-            self.key_to_index[int(key)] = start_idx + i
+        self.index.add(None, vectors)  # type: ignore
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the backend."""
-        keys_to_delete = [self.keys[i] for i in indices]
-        self.index.remove(keys_to_delete)
-        # Remove keys and adjust self.keys
-        for index in sorted(indices, reverse=True):
-            key = self.keys.pop(index)
-            self.key_to_index.pop(key)
-        # Adjust key_to_index mapping for shifted indices
-        self.key_to_index = {key: idx for idx, key in enumerate(self.keys)}
+        """Delete vectors from the index (not supported by pynndescent)."""
+        raise NotImplementedError("Dynamic deletion is not supported by pynndescent.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
-        """Threshold the backend."""
-        out: list[npt.NDArray] = []
-        results: Matches | BatchMatches = self.index.search(vectors, 100)
-
-        if isinstance(results, BatchMatches):
-            # Convert BatchMatches to a list
-            matches_list: list[Matches] = list(results)
-        else:
-            # Wrap single Matches into a list
-            matches_list = [results]
-
-        for matches in matches_list:
-            keys = np.array(matches.keys, dtype=np.int32)
-            distances = np.array(matches.distances, dtype=np.float32)
-            mask = distances < threshold
-            filtered_keys = keys[mask]
-            indices = []
-            for key in filtered_keys:
-                idx = self.key_to_index.get(int(key))
-                if idx is not None:
-                    indices.append(idx)
-            out.append(np.array(indices, dtype=np.int32))
-        return out
+        """Threshold the backend and return filtered keys."""
+        return [
+            np.array(keys_row)[np.array(distances_row, dtype=np.float32) < threshold]
+            for keys_row, distances_row in self.query(vectors, 100)
+        ]

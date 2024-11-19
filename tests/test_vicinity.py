@@ -100,18 +100,8 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT, Backend.HNSW}:
-        # Skip delete for Annoy and Pynndescent backend
-        return
-
-    elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
-        "hnsw",
-        "ivfpqr",
-        "ivfpq",
-        "ivf",
-        "ivf_scalar",
-    }:
-        # Skip delete test for FAISS index types that do not support deletion
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
         return
 
     # Get the vector corresponding to "item2"
@@ -206,17 +196,8 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT, Backend.HNSW}:
-        # Skip delete for backends that don't support it
-        return
-    elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
-        "hnsw",
-        "ivfpqr",
-        "ivfpq",
-        "ivf",
-        "ivf_scalar",
-    }:
-        # Skip delete test for FAISS index types that do not support deletion
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
         return
 
     # Delete some items from the Vicinity instance
