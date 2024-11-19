@@ -121,8 +121,8 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         self.index.add(None, vectors)  # type: ignore
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the index (not supported by pynndescent)."""
-        raise NotImplementedError("Dynamic deletion is not supported by pynndescent.")
+        """Delete vectors from the index (not supported by usearch)."""
+        raise NotImplementedError("Dynamic deletion is not supported by usearch.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend and return filtered keys."""
