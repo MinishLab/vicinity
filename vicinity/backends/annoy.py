@@ -113,11 +113,11 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        raise NotImplementedError("Annoy does not support insertion.")
+        raise NotImplementedError("Insertion is not supported in ANNOY backend.")
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""
-        raise NotImplementedError("Annoy does not support deletion.")
+        raise NotImplementedError("Deletion is not supported in ANNOY backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""

@@ -87,8 +87,7 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""
-        for index in indices:
-            self.index.mark_deleted(index)
+        raise NotImplementedError("Deletion is not supported in HNSW backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
