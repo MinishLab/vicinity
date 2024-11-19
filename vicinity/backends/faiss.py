@@ -172,7 +172,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         """Delete vectors from the backend, if supported."""
         if hasattr(self.index, "remove_ids"):
             if isinstance(self.index, faiss.IndexIVF):
-                raise NotImplementedError("Deletion for IVF indexes is not supported (yet).")
                 # Use IDSelectorArray for IVF indexes
                 id_selector = faiss.IDSelectorArray(np.array(indices, dtype=np.int64))
             else:

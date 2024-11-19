@@ -87,7 +87,6 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""
-        raise NotImplementedError("Deletion is not supported for HNSW (yet).")
         for index in indices:
             self.index.mark_deleted(index)
 
