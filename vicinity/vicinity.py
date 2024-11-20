@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from io import open
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Sequence, Union
 
 import numpy as np
 import orjson
@@ -29,7 +29,7 @@ class Vicinity:
         self,
         items: Sequence[str],
         backend: AbstractBackend,
-        metadata: dict[str, Any] | None = None,
+        metadata: Union[dict[str, Any], None] = None,
     ) -> None:
         """
         Initialize a Vicinity instance with an array and list of items.
@@ -219,10 +219,11 @@ class Vicinity:
         """
         try:
             curr_indices = [self.items.index(token) for token in tokens]
-        except KeyError as exc:
+        except ValueError as exc:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
         self.backend.delete(curr_indices)
 
-        for index in curr_indices:
+        # Delete items starting from the highest index
+        for index in sorted(curr_indices, reverse=True):
             self.items.pop(index)
