@@ -58,7 +58,7 @@ class Vicinity:
         cls: type[Vicinity],
         vectors: npt.NDArray,
         items: Sequence[str],
-        backend_type: Backend = Backend.BASIC,
+        backend_type: Backend | str = Backend.BASIC,
         **kwargs: Any,
     ) -> Vicinity:
         """
@@ -70,6 +70,7 @@ class Vicinity:
         :param **kwargs: Additional arguments to pass to the backend.
         :return: A Vicinity instance.
         """
+        backend_type = Backend(backend_type)
         backend_cls = get_backend_class(backend_type)
         arguments = backend_cls.argument_class(**kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
