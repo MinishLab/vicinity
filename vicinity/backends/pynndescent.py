@@ -68,12 +68,12 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         return list(zip(indices, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
-        """Insert vectors into the index (not supported by pynndescent)."""
-        raise NotImplementedError("Dynamic insertion is not supported by pynndescent.")
+        """Insert vectors into the backend."""
+        raise NotImplementedError("Insertion is not supported in pynndescent backend.")
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the index (not supported by pynndescent)."""
-        raise NotImplementedError("Dynamic deletion is not supported by pynndescent.")
+        """Delete vectors from the backend."""
+        raise NotImplementedError("Deletion is not supported in pynndescent backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Find neighbors within a distance threshold."""

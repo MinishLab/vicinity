@@ -124,10 +124,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
         index.add(vectors)
 
-        # Enable DirectMap for IVF indexes so they can be used with delete
-        if isinstance(index, faiss.IndexIVF):
-            index.set_direct_map_type(faiss.DirectMap.Hashtable)
-
         arguments = FaissArgs(
             dim=dim,
             index_type=index_type,
@@ -169,17 +165,8 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         self.index.add(vectors)
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the backend, if supported."""
-        if hasattr(self.index, "remove_ids"):
-            if isinstance(self.index, faiss.IndexIVF):
-                # Use IDSelectorArray for IVF indexes
-                id_selector = faiss.IDSelectorArray(np.array(indices, dtype=np.int64))
-            else:
-                # Use IDSelectorBatch for other indexes
-                id_selector = faiss.IDSelectorBatch(np.array(indices, dtype=np.int64))
-            self.index.remove_ids(id_selector)
-        else:
-            raise NotImplementedError("This FAISS index type does not support deletion.")
+        """Delete vectors from the backend."""
+        raise NotImplementedError("Deletion is not supported in FAISS backends.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Query vectors within a distance threshold, using range_search if supported."""

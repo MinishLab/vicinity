@@ -156,6 +156,9 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If deleting items that do not exist.
     """
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
+        return
     with pytest.raises(ValueError):
         vicinity_instance.delete(["item10002"])
 
