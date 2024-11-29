@@ -220,3 +220,18 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
 
     # Check that the queried item is in the results
     assert "item3" in returned_items
+
+
+def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> None:
+    """
+    Test the evaluate method of the Vicinity instance.
+
+    :param vicinity_instance: A Vicinity instance.
+    :param vectors: The full dataset vectors used to build the index.
+    """
+    query_vectors = vectors[:10]
+    qps, recall = vicinity_instance.evaluate(vectors, query_vectors)
+
+    # Ensure the QPS and recall values are within valid ranges
+    assert qps > 0
+    assert 0 <= recall <= 1
