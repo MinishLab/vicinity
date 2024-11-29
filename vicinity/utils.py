@@ -74,6 +74,7 @@ class Metric(Enum):
             mapping = {
                 "cos": cls.COSINE,
                 "cosine": cls.COSINE,
+                "dot": cls.COSINE,
                 "euclidean": cls.EUCLIDEAN,
                 "l2": cls.EUCLIDEAN,
                 "manhattan": cls.MANHATTAN,
