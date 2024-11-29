@@ -201,5 +201,5 @@ class EuclideanBasicBackend(BasicBackend):
         x_norm = (x**2).sum(1)
         dists_squared = (x_norm[:, None] + self.squared_norm_vectors[None, :]) - 2 * (x @ self._vectors.T)
         # Ensure non-negative distances
-        dists_squared = np.maximum(dists_squared, 1e-12)
+        dists_squared = np.clip(dists_squared, 0, None)
         return np.sqrt(dists_squared)
