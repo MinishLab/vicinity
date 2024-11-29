@@ -241,11 +241,11 @@ class Vicinity:
         query_vectors: npt.NDArray,
         k: int = 10,
         epsilon: float = 1e-3,
-    ) -> Any:
+    ) -> tuple[float, float]:
         """
         Evaluate the Vicinity instance on the given query vectors.
 
-        Computes recall using `knn_threshold` and measures QPS (Queries Per Second).
+        Computes recall and measures QPS (Queries Per Second).
 
         :param full_vectors: The full dataset vectors used to build the index.
         :param query_vectors: The query vectors to evaluate.
@@ -254,10 +254,8 @@ class Vicinity:
 
         :return: A tuple of (QPS, recall).
         """
-        import time
-
         # Create ground truth Vicinity instance
-        ground_truth_vicinity = Vicinity.from_vectors_and_items(
+        gt_vicinity = Vicinity.from_vectors_and_items(
             vectors=full_vectors,
             items=self.items,
             backend_type=Backend.BASIC,
@@ -265,27 +263,26 @@ class Vicinity:
         )
 
         # Compute ground truth results
-        dataset_distances = [
-            [dist for _, dist in neighbors] for neighbors in ground_truth_vicinity.query(query_vectors, k=k)
-        ]
+        gt_distances = [[dist for _, dist in neighbors] for neighbors in gt_vicinity.query(query_vectors, k=k)]
 
         # Start timer for approximate query
         start_time = time.perf_counter()
         run_results = self.query(query_vectors, k=k)
         elapsed_time = time.perf_counter() - start_time
 
+        # Compute QPS
         num_queries = len(query_vectors)
         qps = num_queries / elapsed_time if elapsed_time > 0 else float("inf")
 
         # Extract approximate distances
-        run_distances = [[dist for _, dist in neighbors] for neighbors in run_results]
+        approx_distances = [[dist for _, dist in neighbors] for neighbors in run_results]
 
         # Compute recall using knn_threshold
         recalls = []
-        for gt_distances, approx_distances in zip(dataset_distances, run_distances):
-            t = gt_distances[k - 1] + epsilon  # knn_threshold
-            recall = sum(1 for dist in approx_distances if dist <= t) / k
+        for _gt_distances, _approx_distances in zip(gt_distances, approx_distances):
+            t = _gt_distances[k - 1] + epsilon  # knn_threshold
+            recall = sum(1 for dist in _approx_distances if dist <= t) / k
             recalls.append(recall)
 
-        mean_recall = np.mean(recalls)
+        mean_recall = float(np.mean(recalls))
         return qps, mean_recall
