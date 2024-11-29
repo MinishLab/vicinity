@@ -47,6 +47,7 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
 
     @vectors.setter
     def vectors(self, x: Matrix) -> None:
+        """Set the vectors."""
         matrix = np.asarray(x)
         if np.ndim(matrix) != 2:
             raise ValueError(f"Your array does not have 2 dimensions: {np.ndim(matrix)}")
@@ -56,12 +57,12 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
     @abstractmethod
     def _update_precomputed_data(self) -> None:
         """Update precomputed data based on the metric."""
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def _dist(self, x: npt.NDArray) -> npt.NDArray:
         """Compute distances between x and self._vectors based on the metric."""
-        pass
+        raise NotImplementedError()
 
     @classmethod
     def from_vectors(cls, vectors: npt.NDArray, **kwargs: Any) -> BasicBackend:
@@ -100,7 +101,13 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         vectors: npt.NDArray,
         threshold: float,
     ) -> list[npt.NDArray]:
-        """Batched distance thresholding."""
+        """
+        Batched distance thresholding.
+
+        :param vectors: The vectors to threshold.
+        :param threshold: The threshold to use.
+        :return: A list of lists of indices of vectors that are below the threshold
+        """
         out: list[npt.NDArray] = []
         for i in range(0, len(vectors), 1024):
             batch = vectors[i : i + 1024]
@@ -117,7 +124,14 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         vectors: npt.NDArray,
         k: int,
     ) -> QueryResult:
-        """Batched distance query."""
+        """
+        Batched distance query.
+
+        :param vectors: The vectors to query.
+        :param k: The number of nearest neighbors to return.
+        :return: A list of tuples with the indices and distances.
+        :raises ValueError: If k is less than 1.
+        """
         if k < 1:
             raise ValueError(f"k should be >= 1, is now {k}")
 
@@ -125,17 +139,19 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         num_vectors = len(self.vectors)
         effective_k = min(k, num_vectors)
 
+        # Batch the queries
         for index in range(0, len(vectors), 1024):
             batch = vectors[index : index + 1024]
             distances = self._dist(batch)
 
-            # Use argpartition for efficiency
+            # Efficiently get the k smallest distances
             indices = np.argpartition(distances, kth=effective_k - 1, axis=1)[:, :effective_k]
             sorted_indices = np.take_along_axis(
                 indices, np.argsort(np.take_along_axis(distances, indices, axis=1)), axis=1
             )
             sorted_distances = np.take_along_axis(distances, sorted_indices, axis=1)
 
+            # Extend the output with tuples of (indices, distances)
             out.extend(zip(sorted_indices, sorted_distances))
 
         return out
