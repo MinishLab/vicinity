@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import logging
-import time
 from io import open
 from pathlib import Path
+from time import perf_counter
 from typing import Any, Sequence, Union
 
 import numpy as np
@@ -246,6 +246,7 @@ class Vicinity:
         Evaluate the Vicinity instance on the given query vectors.
 
         Computes recall and measures QPS (Queries Per Second).
+        For recall calculation, the same methodology is used as in the ann-benchmarks repository.
 
         :param full_vectors: The full dataset vectors used to build the index.
         :param query_vectors: The query vectors to evaluate.
@@ -266,9 +267,9 @@ class Vicinity:
         gt_distances = [[dist for _, dist in neighbors] for neighbors in gt_vicinity.query(query_vectors, k=k)]
 
         # Start timer for approximate query
-        start_time = time.perf_counter()
+        start_time = perf_counter()
         run_results = self.query(query_vectors, k=k)
-        elapsed_time = time.perf_counter() - start_time
+        elapsed_time = perf_counter() - start_time
 
         # Compute QPS
         num_queries = len(query_vectors)
@@ -277,10 +278,10 @@ class Vicinity:
         # Extract approximate distances
         approx_distances = [[dist for _, dist in neighbors] for neighbors in run_results]
 
-        # Compute recall using knn_threshold
+        # Compute recall using the ground truth and approximate distances
         recalls = []
         for _gt_distances, _approx_distances in zip(gt_distances, approx_distances):
-            t = _gt_distances[k - 1] + epsilon  # knn_threshold
+            t = _gt_distances[k - 1] + epsilon
             recall = sum(1 for dist in _approx_distances if dist <= t) / k
             recalls.append(recall)
 
