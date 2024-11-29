@@ -3,24 +3,25 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, Matrix, QueryResult
-from vicinity.utils import normalize, normalize_or_copy
+from vicinity.utils import Metric, normalize, normalize_or_copy
 
 
 @dataclass
 class BasicArgs(BaseArgs):
-    metric: Literal["cosine", "euclidean"] = "cosine"
+    metric: str = "cosine"
 
 
 class BasicBackend(AbstractBackend[BasicArgs], ABC):
     argument_class = BasicArgs
     _vectors: npt.NDArray
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
 
     def __init__(self, arguments: BasicArgs) -> None:
         """Initialize the backend."""
@@ -65,29 +66,38 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         raise NotImplementedError()
 
     @classmethod
-    def from_vectors(cls, vectors: npt.NDArray, **kwargs: Any) -> BasicBackend:
+    def from_vectors(
+        cls: type[BasicBackend],
+        vectors: npt.NDArray,
+        metric: Union[str, Metric],
+        **kwargs: Any,
+    ) -> BasicBackend:
         """Create a new instance from vectors."""
-        arguments = BasicArgs(**kwargs)
-        if arguments.metric == "cosine":
-            return CosineBasicBackend(vectors, arguments)
-        elif arguments.metric == "euclidean":
-            return EuclideanBasicBackend(vectors, arguments)
+        metric_enum = Metric.from_string(metric)
+
+        if metric_enum not in cls.supported_metrics:
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by BasicBackend.")
+
+        if metric_enum == Metric.COSINE:
+            return CosineBasicBackend(vectors, BasicArgs(metric=metric_enum.value))
+        elif metric_enum == Metric.EUCLIDEAN:
+            return EuclideanBasicBackend(vectors, BasicArgs(metric=metric_enum.value))
         else:
-            raise ValueError(f"Unsupported metric: {arguments.metric}")
+            raise ValueError(f"Unsupported metric: {metric_enum.value}")
 
     @classmethod
     def load(cls, folder: Path) -> BasicBackend:
         """Load the vectors from a path."""
         path = folder / "vectors.npy"
         arguments = BasicArgs.load(folder / "arguments.json")
-        with open(path, "rb") as f:
-            vectors = np.load(f)
-        if arguments.metric == "cosine":
-            return CosineBasicBackend(vectors, arguments)
-        elif arguments.metric == "euclidean":
-            return EuclideanBasicBackend(vectors, arguments)
+        metric_enum = Metric.from_string(arguments.metric)
+
+        if metric_enum == Metric.COSINE:
+            return CosineBasicBackend(np.load(path), arguments)
+        elif metric_enum == Metric.EUCLIDEAN:
+            return EuclideanBasicBackend(np.load(path), arguments)
         else:
-            raise ValueError(f"Unsupported metric: {arguments.metric}")
+            raise ValueError(f"Unsupported metric: {metric_enum.value}")
 
     def save(self, folder: Path) -> None:
         """Save the vectors to a path."""
@@ -101,13 +111,7 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         vectors: npt.NDArray,
         threshold: float,
     ) -> list[npt.NDArray]:
-        """
-        Batched distance thresholding.
-
-        :param vectors: The vectors to threshold.
-        :param threshold: The threshold to use.
-        :return: A list of lists of indices of vectors that are below the threshold
-        """
+        """Batched distance thresholding."""
         out: list[npt.NDArray] = []
         for i in range(0, len(vectors), 1024):
             batch = vectors[i : i + 1024]
@@ -116,7 +120,6 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
                 indices = np.flatnonzero(sims <= threshold)
                 sorted_indices = indices[np.argsort(sims[indices])]
                 out.append(sorted_indices)
-
         return out
 
     def query(
@@ -124,14 +127,7 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         vectors: npt.NDArray,
         k: int,
     ) -> QueryResult:
-        """
-        Batched distance query.
-
-        :param vectors: The vectors to query.
-        :param k: The number of nearest neighbors to return.
-        :return: A list of tuples with the indices and distances.
-        :raises ValueError: If k is less than 1.
-        """
+        """Batched distance query."""
         if k < 1:
             raise ValueError(f"k should be >= 1, is now {k}")
 
@@ -139,19 +135,16 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         num_vectors = len(self.vectors)
         effective_k = min(k, num_vectors)
 
-        # Batch the queries
         for index in range(0, len(vectors), 1024):
             batch = vectors[index : index + 1024]
             distances = self._dist(batch)
 
-            # Efficiently get the k smallest distances
             indices = np.argpartition(distances, kth=effective_k - 1, axis=1)[:, :effective_k]
             sorted_indices = np.take_along_axis(
                 indices, np.argsort(np.take_along_axis(distances, indices, axis=1)), axis=1
             )
             sorted_distances = np.take_along_axis(distances, sorted_indices, axis=1)
 
-            # Extend the output with tuples of (indices, distances)
             out.extend(zip(sorted_indices, sorted_distances))
 
         return out
@@ -216,6 +209,5 @@ class EuclideanBasicBackend(BasicBackend):
         """Compute Euclidean distance."""
         x_norm = (x**2).sum(1)
         dists_squared = (x_norm[:, None] + self.squared_norm_vectors[None, :]) - 2 * (x @ self._vectors.T)
-        # Ensure non-negative distances
-        dists_squared = np.clip(dists_squared, 0, None)
+        dists_squared = np.clip(dists_squared, 0, None)  # Ensure non-negative distances
         return np.sqrt(dists_squared)

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from enum import Enum
 from typing import Union
 
 import numpy as np
@@ -51,3 +54,38 @@ def normalize_or_copy(vectors: npt.NDArray) -> npt.NDArray:
     if all_unit_length:
         return vectors
     return normalize(vectors, norms)
+
+
+class Metric(Enum):
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
+    MANHATTAN = "manhattan"
+    INNER_PRODUCT = "inner_product"
+    L2_SQUARED = "l2sq"
+    HAMMING = "hamming"
+    TANIMOTO = "tanimoto"
+
+    @classmethod
+    def from_string(cls, metric: Union[str, Metric]) -> Metric:
+        """Convert a string or Metric enum to a Metric enum member."""
+        if isinstance(metric, cls):
+            return metric
+        if isinstance(metric, str):
+            mapping = {
+                "cos": cls.COSINE,
+                "cosine": cls.COSINE,
+                "euclidean": cls.EUCLIDEAN,
+                "l2": cls.EUCLIDEAN,
+                "manhattan": cls.MANHATTAN,
+                "l1": cls.MANHATTAN,
+                "inner_product": cls.INNER_PRODUCT,
+                "ip": cls.INNER_PRODUCT,
+                "l2sq": cls.L2_SQUARED,
+                "l2_squared": cls.L2_SQUARED,
+                "hamming": cls.HAMMING,
+                "tanimoto": cls.TANIMOTO,
+            }
+            metric_str = metric.lower()
+            if metric_str in mapping:
+                return mapping[metric_str]
+        raise ValueError(f"Unsupported metric: {metric}")
