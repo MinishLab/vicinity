@@ -35,14 +35,6 @@ There are many nearest neighbors packages and methods out there. However, we fou
 
  This is where Vicinity comes in. Instead of learning a new interface for each new package or backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
 
-## Table of contents
-
-- [Quickstart](#quickstart)
-- [Main Features](#main-features)
-- [Supported Backends](#supported-backends)
-  - [Backend Parameters](#backend-parameters)
-
-
 ## Quickstart
 
 Install the package with:
