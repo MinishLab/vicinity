@@ -1,6 +1,6 @@
 <div align="center">
 
-# Vicinity
+# Vicinity: Lightweight Nearest Neighbors
 
 </div>
 
