@@ -112,9 +112,9 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         for i in range(0, len(vectors), 1024):
             batch = vectors[i : i + 1024]
             distances = self._dist(batch)
-            for sims in distances:
-                indices = np.flatnonzero(sims <= threshold)
-                sorted_indices = indices[np.argsort(sims[indices])]
+            for dists in distances:
+                indices = np.flatnonzero(dists <= threshold)
+                sorted_indices = indices[np.argsort(dists[indices])]
                 out.append(sorted_indices)
 
         return out
@@ -171,26 +171,23 @@ class CosineBasicBackend(BasicBackend):
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
         """Initialize the cosine basic backend."""
         super().__init__(arguments)
-        self._vectors = vectors
-        self._norm_vectors: npt.NDArray | None = None
-        self._update_precomputed_data()
+        self._vectors = normalize_or_copy(vectors)
 
     def _update_precomputed_data(self) -> None:
         """Update precomputed data for cosine similarity."""
-        self._norm_vectors = normalize_or_copy(self._vectors)
-
-    @property
-    def norm_vectors(self) -> npt.NDArray:
-        """Return normalized vectors."""
-        if self._norm_vectors is None:
-            self._norm_vectors = normalize_or_copy(self._vectors)
-        return self._norm_vectors
+        pass
 
     def _dist(self, x: npt.NDArray) -> npt.NDArray:
         """Compute cosine distance."""
         x_norm = normalize(x)
-        sim = x_norm.dot(self.norm_vectors.T)
+        sim = x_norm.dot(self._vectors.T)
         return 1 - sim
+
+    def insert(self, vectors: npt.NDArray) -> None:
+        """Insert vectors into the vector space."""
+        # Normalize the new vectors
+        _norm_vectors = normalize_or_copy(vectors)
+        self._vectors = np.vstack([self._vectors, _norm_vectors])
 
 
 class EuclideanBasicBackend(BasicBackend):
