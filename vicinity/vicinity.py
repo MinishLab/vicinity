@@ -250,6 +250,8 @@ class Vicinity:
         Computes recall and measures QPS (Queries Per Second).
         For recall calculation, the same methodology is used as in the ann-benchmarks repository.
 
+        NOTE: this is only supported for Cosine and Euclidean metric backends.
+
         :param full_vectors: The full dataset vectors used to build the index.
         :param query_vectors: The query vectors to evaluate.
         :param k: The number of nearest neighbors to retrieve.
