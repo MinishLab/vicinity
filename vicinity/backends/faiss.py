@@ -47,6 +47,10 @@ class FaissArgs(BaseArgs):
 class FaissBackend(AbstractBackend[FaissArgs]):
     argument_class = FaissArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+    inverse_metric_mapping = {
+        Metric.COSINE: faiss.METRIC_INNER_PRODUCT,
+        Metric.EUCLIDEAN: faiss.METRIC_L2,
+    }
 
     def __init__(
         self,
@@ -75,14 +79,9 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by FaissBackend.")
 
-        # Map Metric enum to FAISS-specific metric
-        if metric_enum == Metric.COSINE:
-            faiss_metric = faiss.METRIC_INNER_PRODUCT
+        faiss_metric = cls._map_metric_to_string(metric_enum)
+        if faiss_metric == faiss.METRIC_INNER_PRODUCT:
             vectors = normalize(vectors)
-        elif metric_enum == Metric.EUCLIDEAN:
-            faiss_metric = faiss.METRIC_L2
-        else:
-            raise ValueError(f"Unsupported metric for FaissBackend: {metric_enum}")
 
         dim = vectors.shape[1]
 

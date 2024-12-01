@@ -8,6 +8,7 @@ from typing import Any, Generic, TypeVar
 
 from numpy import typing as npt
 
+from vicinity import Metric
 from vicinity.datatypes import Backend, QueryResult
 
 
@@ -34,6 +35,7 @@ ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 class AbstractBackend(ABC, Generic[ArgType]):
     argument_class: type[ArgType]
+    inverse_metric_mapping: dict[Metric, str] = {}
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:
         """Initialize the backend with vectors."""
@@ -92,6 +94,11 @@ class AbstractBackend(ABC, Generic[ArgType]):
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend."""
         raise NotImplementedError()
+
+    @classmethod
+    def _map_metric_to_string(cls, metric: Metric) -> str:
+        """Map a Metric enum to a backend-specific metric string."""
+        return cls.inverse_metric_mapping.get(metric, metric.value)
 
 
 BaseType = TypeVar("BaseType", bound=AbstractBackend)

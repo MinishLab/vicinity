@@ -23,6 +23,10 @@ class HNSWArgs(BaseArgs):
 class HNSWBackend(AbstractBackend[HNSWArgs]):
     argument_class = HNSWArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+    inverse_metric_mapping = {
+        Metric.COSINE: "cosine",
+        Metric.EUCLIDEAN: "l2",
+    }
 
     def __init__(
         self,
@@ -49,7 +53,7 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by HNSWBackend.")
 
         # Map Metric to HNSW's space parameter
-        metric = "l2" if metric_enum == Metric.EUCLIDEAN else "cosine"
+        metric = cls._map_metric_to_string(metric_enum)
         dim = vectors.shape[1]
         index = HnswIndex(space=metric, dim=dim)
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
