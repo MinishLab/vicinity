@@ -17,15 +17,15 @@
     </a>
     <a href="https://github.com/MinishLab/vicinity/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License - MIT"></a>
   </h2>
-</div>
+
 
 _Lightweight Nearest Neighbors with Flexible Backends_
 
 [Quickstart](#quickstart) •
 [Main Features](#main-features) •
-[Supported Backends](#supported-backends) •
+[Supported Backends](#supported-backends)
 
-
+</div>
 
 
 Vicinity is a light-weight, low-dependency vector store. It provides a simple and intuitive interface for nearest neighbor search, with support for different backends and evaluation.
