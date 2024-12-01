@@ -98,6 +98,9 @@ Vicinity provides the following features:
 The following backends are supported:
 - `BASIC`: A simple (exact matching) flat index for vector storage and search.
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
+- [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
+- [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
+- [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
 - [FAISS](https://github.com/facebookresearch/faiss): All FAISS indexes are supported:
   - `flat`: Exact search.
   - `ivf`: Inverted file search.
@@ -108,9 +111,9 @@ The following backends are supported:
   - `ivf_scalar`: Inverted file search with scalar quantizer.
   - `ivfpq`: Inverted file search with product quantizer.
   - `ivfpqr`: Inverted file search with product quantizer and refinement.
-- [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
-- [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
-- [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
+
+
+
 
 NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, and `Usearch`. The `BASIC` backend supports both insertion and deletion.
 
