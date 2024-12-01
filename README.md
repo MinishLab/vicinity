@@ -129,26 +129,6 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 
 
 
-### Backend Parameters
-
-| Backend        | Parameter          | Description                                                                                   | Default Value       |
-|----------------|--------------------|-----------------------------------------------------------------------------------------------|---------------------|
-| **Annoy**      | `metric`           | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
-|                | `trees`            | Number of trees to use for indexing.                                                          | `100`               |
-|                | `length`           | Optional length of the dataset.                                                               | `None`              |
-| **FAISS**      | `index_type`       | Type of FAISS index (`flat`, `ivf`, `hnsw`, `lsh`, `scalar`, `pq`, `ivf_scalar`, `ivfpq`, `ivfpqr`). | `"hnsw"`           |
-|                | `metric`           | Similarity metric to use (`cosine`, `l2`).                                                    | `"cosine"`          |
-|                | `nlist`            | Number of cells for IVF indexes.                                                              | `100`               |
-|                | `m`                | Number of subquantizers for PQ and HNSW indexes.                                              | `8`                 |
-|                | `nbits`            | Number of bits for LSH and PQ indexes.                                                        | `8`                 |
-|                | `refine_nbits`     | Number of bits for the refinement stage in IVFPQR indexes.                                    | `8`                 |
-| **HNSW**       | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
-|                | `ef_construction`  | Size of the dynamic list during index construction.                                           | `200`               |
-|                | `m`                | Number of connections per layer.                                                              | `16`                |
-| **PyNNDescent**| `n_neighbors`      | Number of neighbors to use for search.                                                        | `15`                |
-|                | `metric`           | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
-
-
 ## License
 
 MIT
