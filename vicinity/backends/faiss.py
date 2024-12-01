@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Union
 
 import faiss
 import numpy as np
@@ -11,12 +11,17 @@ from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
-from vicinity.utils import normalize
+from vicinity.utils import Metric, normalize
 
 logger = logging.getLogger(__name__)
 
 # FAISS indexes that support range_search
-RANGE_SEARCH_INDEXES = (faiss.IndexFlat, faiss.IndexIVFFlat, faiss.IndexScalarQuantizer, faiss.IndexIVFScalarQuantizer)
+RANGE_SEARCH_INDEXES = (
+    faiss.IndexFlat,
+    faiss.IndexIVFFlat,
+    faiss.IndexScalarQuantizer,
+    faiss.IndexIVFScalarQuantizer,
+)
 # FAISS indexes that need to be trained before adding vectors
 TRAINABLE_INDEXES = (
     faiss.IndexIVFFlat,
@@ -31,8 +36,8 @@ TRAINABLE_INDEXES = (
 @dataclass
 class FaissArgs(BaseArgs):
     dim: int = 0
-    index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "hnsw"
-    metric: Literal["cosine", "l2"] = "cosine"
+    index_type: str = "flat"
+    metric: str = "cosine"
     nlist: int = 100
     m: int = 8
     nbits: int = 8
@@ -41,6 +46,11 @@ class FaissArgs(BaseArgs):
 
 class FaissBackend(AbstractBackend[FaissArgs]):
     argument_class = FaissArgs
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+    inverse_metric_mapping = {
+        Metric.COSINE: faiss.METRIC_INNER_PRODUCT,
+        Metric.EUCLIDEAN: faiss.METRIC_L2,
+    }
 
     def __init__(
         self,
@@ -55,43 +65,29 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def from_vectors(  # noqa: C901
         cls: type[FaissBackend],
         vectors: npt.NDArray,
-        index_type: Literal["flat", "ivf", "hnsw", "lsh", "scalar", "pq", "ivf_scalar", "ivfpq", "ivfpqr"] = "flat",
-        metric: Literal["cosine", "l2"] = "cosine",
+        index_type: str = "flat",
+        metric: Union[str, Metric] = "cosine",
         nlist: int = 100,
         m: int = 8,
         nbits: int = 8,
         refine_nbits: int = 8,
         **kwargs: Any,
     ) -> FaissBackend:
-        """
-        Create a new instance from vectors.
+        """Create a new instance from vectors."""
+        metric_enum = Metric.from_string(metric)
 
-        :param vectors: The vectors to index.
-        :param index_type: The type of FAISS index to use.
-        :param metric: The metric to use for similarity search.
-        :param nlist: The number of cells for IVF indexes.
-        :param m: The number of subquantizers for PQ and HNSW indexes.
-        :param nbits: The number of bits for LSH and PQ indexes.
-        :param refine_nbits: The number of bits for the refinement stage in IVFPQR indexes.
-        :param **kwargs: Additional arguments to pass to the backend.
-        :return: A new FaissBackend instance.
-        :raises ValueError: If an invalid index type is provided.
-        """
+        if metric_enum not in cls.supported_metrics:
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by FaissBackend.")
+
+        faiss_metric = cls._map_metric_to_string(metric_enum)
+        if faiss_metric == faiss.METRIC_INNER_PRODUCT:
+            vectors = normalize(vectors)
+
         dim = vectors.shape[1]
 
-        # If using cosine, normalize vectors to unit length
-        if metric == "cosine":
-            vectors = normalize(vectors)
-            faiss_metric = faiss.METRIC_INNER_PRODUCT
-        else:
-            faiss_metric = faiss.METRIC_L2
-
-        if index_type.startswith("ivf"):
-            # Create a quantizer for IVF indexes
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
-
+        # Handle index creation based on index_type
         if index_type == "flat":
-            index = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
+            index = faiss.IndexFlat(dim, faiss_metric)
         elif index_type == "hnsw":
             index = faiss.IndexHNSWFlat(dim, m)
         elif index_type == "lsh":
@@ -100,13 +96,11 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit)
         elif index_type == "pq":
             if not (1 <= nbits <= 16):
-                # Log a warning and adjust nbits to the maximum supported value for PQ
                 logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
                 nbits = 16
             index = faiss.IndexPQ(dim, m, nbits)
         elif index_type.startswith("ivf"):
-            # Create a quantizer for IVF indexes
-            quantizer = faiss.IndexFlatL2(dim) if faiss_metric == faiss.METRIC_L2 else faiss.IndexFlatIP(dim)
+            quantizer = faiss.IndexFlat(dim, faiss_metric)
             if index_type == "ivf":
                 index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
             elif index_type == "ivf_scalar":
@@ -115,6 +109,8 @@ class FaissBackend(AbstractBackend[FaissArgs]):
                 index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits)
             elif index_type == "ivfpqr":
                 index = faiss.IndexIVFPQR(quantizer, dim, nlist, m, nbits, m, refine_nbits)
+            else:
+                raise ValueError(f"Unsupported FAISS index type: {index_type}")
         else:
             raise ValueError(f"Unsupported FAISS index type: {index_type}")
 
@@ -127,7 +123,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         arguments = FaissArgs(
             dim=dim,
             index_type=index_type,
-            metric=metric,
+            metric=metric_enum.value,
             nlist=nlist,
             m=m,
             nbits=nbits,
@@ -171,39 +167,25 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Query vectors within a distance threshold, using range_search if supported."""
         out: list[npt.NDArray] = []
-
-        # Normalize query vectors if using cosine similarity
         if self.arguments.metric == "cosine":
             vectors = normalize(vectors)
 
         if isinstance(self.index, RANGE_SEARCH_INDEXES):
-            # Use range_search for supported indexes
             radius = threshold
             lims, D, I = self.index.range_search(vectors, radius)
-
             for i in range(vectors.shape[0]):
                 start, end = lims[i], lims[i + 1]
                 idx = I[start:end]
                 dist = D[start:end]
-
-                # Convert dist for cosine if needed
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-
-                # Only include idx within the threshold
-                within_threshold = idx[dist < threshold]
-                out.append(within_threshold)
+                out.append(idx[dist < threshold])
         else:
-            # Fallback to search-based filtering for indexes that do not support range_search
             distances, indices = self.index.search(vectors, 100)
-
             for dist, idx in zip(distances, indices):
-                # Convert distances for cosine if needed
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-                # Filter based on the threshold
-                within_threshold = idx[dist < threshold]
-                out.append(within_threshold)
+                out.append(idx[dist < threshold])
 
         return out
 

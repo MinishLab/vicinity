@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -10,12 +10,13 @@ from usearch.index import Index as UsearchIndex
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
+from vicinity.utils import Metric
 
 
 @dataclass
 class UsearchArgs(BaseArgs):
     dim: int = 0
-    metric: Literal["cos", "ip", "l2sq", "hamming", "tanimoto"] = "cos"
+    metric: str = "cos"
     connectivity: int = 16
     expansion_add: int = 128
     expansion_search: int = 64
@@ -23,6 +24,14 @@ class UsearchArgs(BaseArgs):
 
 class UsearchBackend(AbstractBackend[UsearchArgs]):
     argument_class = UsearchArgs
+    supported_metrics = {Metric.COSINE, Metric.INNER_PRODUCT, Metric.L2_SQUARED, Metric.HAMMING, Metric.TANIMOTO}
+    inverse_metric_mapping = {
+        Metric.COSINE: "cos",
+        Metric.INNER_PRODUCT: "ip",
+        Metric.L2_SQUARED: "l2sq",
+        Metric.HAMMING: "hamming",
+        Metric.TANIMOTO: "tanimoto",
+    }
 
     def __init__(
         self,
@@ -37,23 +46,19 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
     def from_vectors(
         cls: type[UsearchBackend],
         vectors: npt.NDArray,
-        metric: Literal["cos", "ip", "l2sq", "hamming", "tanimoto"],
-        connectivity: int,
-        expansion_add: int,
-        expansion_search: int,
+        metric: Union[str, Metric] = "cos",
+        connectivity: int = 16,
+        expansion_add: int = 128,
+        expansion_search: int = 64,
         **kwargs: Any,
     ) -> UsearchBackend:
-        """
-        Create a new instance from vectors.
+        """Create a new instance from vectors."""
+        metric_enum = Metric.from_string(metric)
 
-        :param vectors: The vectors to index.
-        :param metric: The metric to use.
-        :param connectivity: The connectivity parameter.
-        :param expansion_add: The expansion add parameter.
-        :param expansion_search: The expansion search parameter.
-        :param **kwargs: Additional keyword arguments.
-        :return: A new instance of the backend.
-        """
+        if metric_enum not in cls.supported_metrics:
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by UsearchBackend.")
+
+        metric = cls._map_metric_to_string(metric_enum)
         dim = vectors.shape[1]
         index = UsearchIndex(
             ndim=dim,
@@ -70,9 +75,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_add=expansion_add,
             expansion_search=expansion_search,
         )
-        backend = cls(index, arguments=arguments)
-
-        return backend
+        return cls(index, arguments)
 
     @property
     def backend_type(self) -> Backend:
@@ -93,6 +96,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Load the index from a path."""
         path = Path(base_path) / "index.usearch"
         arguments = UsearchArgs.load(base_path / "arguments.json")
+
         index = UsearchIndex(
             ndim=arguments.dim,
             metric=arguments.metric,
@@ -121,8 +125,8 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         self.index.add(None, vectors)  # type: ignore
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the index (not supported by usearch)."""
-        raise NotImplementedError("Dynamic deletion is not supported by usearch.")
+        """Delete vectors from the index (not supported by Usearch)."""
+        raise NotImplementedError("Dynamic deletion is not supported in Usearch.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend and return filtered keys."""

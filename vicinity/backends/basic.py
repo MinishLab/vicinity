@@ -10,7 +10,7 @@ from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, Matrix, QueryResult
-from vicinity.utils import normalize, normalize_or_copy
+from vicinity.utils import Metric, normalize, normalize_or_copy
 
 
 @dataclass
@@ -21,6 +21,7 @@ class BasicArgs(BaseArgs):
 class BasicBackend(AbstractBackend[BasicArgs], ABC):
     argument_class = BasicArgs
     _vectors: npt.NDArray
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
 
     def __init__(self, arguments: BasicArgs) -> None:
         """Initialize the backend."""
@@ -116,7 +117,6 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
                 indices = np.flatnonzero(dists <= threshold)
                 sorted_indices = indices[np.argsort(dists[indices])]
                 out.append(sorted_indices)
-
         return out
 
     def query(
