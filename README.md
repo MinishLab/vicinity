@@ -20,7 +20,8 @@
 
 [Quickstart](#quickstart) •
 [Main Features](#main-features) •
-[Supported Backends](#supported-backends)
+[Supported Backends](#supported-backends) •
+[Installation](#installation)
 
 </div>
 
@@ -37,6 +38,10 @@ There are many nearest neighbors packages and methods out there. However, we fou
 Install the package with:
 ```bash
 pip install vicinity
+```
+Optinally, [install any of the supported backends](#installation), or simply install all of them with:
+```bash
+pip install vicinity[all]
 ```
 
 
@@ -91,12 +96,24 @@ Vicinity provides the following features:
 
 ## Supported Backends
 The following backends are supported:
-- `BASIC`: A simple flat index for vector storage and search.
+- `BASIC`: A simple (exact matching) flat index for vector storage and search.
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
-- [FAISS](https://github.com/facebookresearch/faiss): ANN search using FAISS. All FAISS indexes are supported.
+- [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
 - [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
 - [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
-- [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
+- [FAISS](https://github.com/facebookresearch/faiss): All FAISS indexes are supported:
+  - `flat`: Exact search.
+  - `ivf`: Inverted file search.
+  - `hnsw`: Hierarchical Navigable Small World Graph.
+  - `lsh`: Locality Sensitive Hashing.
+  - `scalar`: Scalar quantizer.
+  - `pq`: Product Quantizer.
+  - `ivf_scalar`: Inverted file search with scalar quantizer.
+  - `ivfpq`: Inverted file search with product quantizer.
+  - `ivfpqr`: Inverted file search with product quantizer and refinement.
+
+
+
 
 NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, and `Usearch`. The `BASIC` backend supports both insertion and deletion.
 
@@ -125,6 +142,22 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
 
 
+## Installation
+The following installation options are available:
+```bash
+# Install the base package
+pip install vicinity
+
+# Install all backends
+pip install vicinity[all]
+
+# Install specific backends
+pip install vicinity[annoy]
+pip install vicinity[faiss]
+pip install vicinity[hnsw]
+pip install vicinity[pynndescent]
+pip install vicinity[usearch]
+```
 
 ## License
 

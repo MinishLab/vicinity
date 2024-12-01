@@ -52,6 +52,16 @@ pynndescent = [
 annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
+all = [
+    "hnswlib",
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0",
+    "annoy",
+    "faiss-cpu",
+    "usearch"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"
