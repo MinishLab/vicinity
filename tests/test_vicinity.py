@@ -100,15 +100,8 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if vicinity_instance.backend.backend_type in {Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Skip delete for Annoy and Pynndescent backend
-        return
-
-    elif vicinity_instance.backend.backend_type == Backend.FAISS and vicinity_instance.backend.arguments.index_type in {
-        "hnsw",
-        "ivfpqr",
-    }:
-        # Skip delete test for FAISS index types that do not support deletion
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
         return
 
     # Get the vector corresponding to "item2"
@@ -163,6 +156,9 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If deleting items that do not exist.
     """
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
+        return
     with pytest.raises(ValueError):
         vicinity_instance.delete(["item10002"])
 
@@ -193,3 +189,54 @@ def test_vicinity_insert_wrong_dimension(vicinity_instance: Vicinity) -> None:
 
     with pytest.raises(ValueError):
         vicinity_instance.insert(new_item, new_vector)
+
+
+def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str], vectors: np.ndarray) -> None:
+    """
+    Test Vicinity's delete and query methods together to ensure that indices are correctly handled after deletions.
+
+    :param vicinity_instance: A Vicinity instance.
+    :param items: List of item names.
+    :param vectors: Array of vectors corresponding to items.
+    """
+    if vicinity_instance.backend.backend_type != Backend.BASIC:
+        # Skip delete for non-basic backends
+        return
+
+    # Delete some items from the Vicinity instance
+    items_to_delete = ["item2", "item4", "item6"]
+    vicinity_instance.delete(items_to_delete)
+
+    # Ensure the items are no longer in the items list
+    for item in items_to_delete:
+        assert item not in vicinity_instance.items
+
+    # Query using a vector of an item that wasn't deleted
+    item3_index = items.index("item3")
+    item3_vector = vectors[item3_index]
+
+    results = vicinity_instance.query(item3_vector, k=10)
+    returned_items = [item for item, _ in results[0]]
+
+    # Check that the queried item is in the results
+    assert "item3" in returned_items
+
+
+def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> None:
+    """
+    Test the evaluate method of the Vicinity instance.
+
+    :param vicinity_instance: A Vicinity instance.
+    :param vectors: The full dataset vectors used to build the index.
+    """
+    query_vectors = vectors[:10]
+    qps, recall = vicinity_instance.evaluate(vectors, query_vectors)
+
+    # Ensure the QPS and recall values are within valid ranges
+    assert qps > 0
+    assert 0 <= recall <= 1
+
+    # Test with an unsupported metric
+    vicinity_instance.backend.arguments.metric = "manhattan"
+    with pytest.raises(ValueError):
+        vicinity_instance.evaluate(vectors, query_vectors)

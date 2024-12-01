@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import logging
+import time
 from io import open
 from pathlib import Path
-from typing import Any, Sequence
+from time import perf_counter
+from typing import Any, Sequence, Union
 
 import numpy as np
 import orjson
 from numpy import typing as npt
 
-from vicinity.backends import AbstractBackend, get_backend_class
+from vicinity import Metric
+from vicinity.backends import AbstractBackend, BasicBackend, get_backend_class
 from vicinity.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
@@ -29,7 +32,7 @@ class Vicinity:
         self,
         items: Sequence[str],
         backend: AbstractBackend,
-        metadata: dict[str, Any] | None = None,
+        metadata: Union[dict[str, Any], None] = None,
     ) -> None:
         """
         Initialize a Vicinity instance with an array and list of items.
@@ -58,7 +61,7 @@ class Vicinity:
         cls: type[Vicinity],
         vectors: npt.NDArray,
         items: Sequence[str],
-        backend_type: Backend = Backend.BASIC,
+        backend_type: Backend | str = Backend.BASIC,
         **kwargs: Any,
     ) -> Vicinity:
         """
@@ -70,6 +73,7 @@ class Vicinity:
         :param **kwargs: Additional arguments to pass to the backend.
         :return: A Vicinity instance.
         """
+        backend_type = Backend(backend_type)
         backend_cls = get_backend_class(backend_type)
         arguments = backend_cls.argument_class(**kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
@@ -80,6 +84,11 @@ class Vicinity:
     def dim(self) -> int:
         """The dimensionality of the vectors."""
         return self.backend.dim
+
+    @property
+    def metric(self) -> str:
+        """The metric used by the backend."""
+        return self.backend.arguments.metric
 
     def query(
         self,
@@ -219,10 +228,78 @@ class Vicinity:
         """
         try:
             curr_indices = [self.items.index(token) for token in tokens]
-        except KeyError as exc:
+        except ValueError as exc:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
         self.backend.delete(curr_indices)
 
-        for index in curr_indices:
+        # Delete items starting from the highest index
+        for index in sorted(curr_indices, reverse=True):
             self.items.pop(index)
+
+    def evaluate(
+        self,
+        full_vectors: npt.NDArray,
+        query_vectors: npt.NDArray,
+        k: int = 10,
+        epsilon: float = 1e-3,
+    ) -> tuple[float, float]:
+        """
+        Evaluate the Vicinity instance on the given query vectors.
+
+        Computes recall and measures QPS (Queries Per Second).
+        For recall calculation, the same methodology is used as in the ann-benchmarks repository.
+
+        NOTE: this is only supported for Cosine and Euclidean metric backends.
+
+        :param full_vectors: The full dataset vectors used to build the index.
+        :param query_vectors: The query vectors to evaluate.
+        :param k: The number of nearest neighbors to retrieve.
+        :param epsilon: The epsilon threshold for recall calculation.
+        :return: A tuple of (QPS, recall).
+        :raises ValueError: If the metric is not supported by the BasicBackend.
+        """
+        try:
+            # Validate and map the metric using Metric.from_string
+            metric_enum = Metric.from_string(self.metric)
+            if metric_enum not in BasicBackend.supported_metrics:
+                raise ValueError(f"Unsupported metric '{metric_enum.value}' for BasicBackend.")
+            basic_metric = metric_enum.value
+        except ValueError as e:
+            raise ValueError(
+                f"Unsupported metric '{self.metric}' for evaluation with BasicBackend. "
+                f"Supported metrics are: {[m.value for m in BasicBackend.supported_metrics]}"
+            ) from e
+
+        # Create ground truth Vicinity instance
+        gt_vicinity = Vicinity.from_vectors_and_items(
+            vectors=full_vectors,
+            items=self.items,
+            backend_type=Backend.BASIC,
+            metric=basic_metric,
+        )
+
+        # Compute ground truth results
+        gt_distances = [[dist for _, dist in neighbors] for neighbors in gt_vicinity.query(query_vectors, k=k)]
+
+        # Start timer for approximate query
+        start_time = perf_counter()
+        run_results = self.query(query_vectors, k=k)
+        elapsed_time = perf_counter() - start_time
+
+        # Compute QPS
+        num_queries = len(query_vectors)
+        qps = num_queries / elapsed_time if elapsed_time > 0 else float("inf")
+
+        # Extract approximate distances
+        approx_distances = [[dist for _, dist in neighbors] for neighbors in run_results]
+
+        # Compute recall using the ground truth and approximate distances
+        recalls = []
+        for _gt_distances, _approx_distances in zip(gt_distances, approx_distances):
+            t = _gt_distances[k - 1] + epsilon
+            recall = sum(1 for dist in _approx_distances if dist <= t) / k
+            recalls.append(recall)
+
+        mean_recall = float(np.mean(recalls))
+        return qps, mean_recall

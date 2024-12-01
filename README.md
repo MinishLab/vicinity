@@ -37,6 +37,7 @@ Install the package with:
 pip install vicinity
 ```
 
+
 The following code snippet demonstrates how to use Vicinity for nearest neighbor search:
 ```python
 import numpy as np
@@ -68,17 +69,45 @@ vicinity = Vicinity.load('my_vector_store')
 Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
-- Dynamic Updates: Insert and delete items in the vector store.
 - Serialization: Save and load vector stores for persistence.
 - Easy to Use: Simple and intuitive API.
 
 ## Supported Backends
 The following backends are supported:
 - `BASIC`: A simple flat index for vector storage and search.
-- `HNSW`: Hierarchical Navigable Small World Graph for approximate nearest neighbor search.
-- `FAISS`: All FAISS indexes for approximate nearest neighbor search are supported.
-- `ANNOY`: "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
-- `PYNNDescent`: Approximate nearest neighbor search using PyNNDescent.
+- [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
+- [FAISS](https://github.com/facebookresearch/faiss): ANN search using FAISS. All FAISS indexes are supported.
+- [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
+- [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
+- [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
+
+NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, and `Usearch`. The `BASIC` backend supports both insertion and deletion.
+
+### Backend Parameters
+
+
+| Backend         | Parameter           | Description                                                                                   | Default Value       |
+|-----------------|---------------------|-----------------------------------------------------------------------------------------------|---------------------|
+| **Annoy**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
+|                 | `trees`             | Number of trees to use for indexing.                                                          | `100`               |
+|                 | `length`            | Optional length of the dataset.                                                               | `None`              |
+| **FAISS**       | `metric`            | Similarity metric to use (`cosine`, `l2`).                                                    | `"cosine"`          |
+|                 | `index_type`        | Type of FAISS index (`flat`, `ivf`, `hnsw`, `lsh`, `scalar`, `pq`, `ivf_scalar`, `ivfpq`, `ivfpqr`). | `"hnsw"`           |
+|                 | `nlist`             | Number of cells for IVF indexes.                                                              | `100`               |
+|                 | `m`                 | Number of subquantizers for PQ and HNSW indexes.                                              | `8`                 |
+|                 | `nbits`             | Number of bits for LSH and PQ indexes.                                                        | `8`                 |
+|                 | `refine_nbits`      | Number of bits for the refinement stage in IVFPQR indexes.                                    | `8`                 |
+| **HNSW**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
+|                 | `ef_construction`   | Size of the dynamic list during index construction.                                           | `200`               |
+|                 | `m`                 | Number of connections per layer.                                                              | `16`                |
+| **PyNNDescent** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
+|                 | `n_neighbors`       | Number of neighbors to use for search.                                                        | `15`                |
+| **Usearch**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
+|                 | `connectivity`      | Number of connections per node in the graph.                                                  | `16`                |
+|                 | `expansion_add`     | Number of candidates considered during graph construction.                                    | `128`               |
+|                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
+
+
 
 ### Backend Parameters
 

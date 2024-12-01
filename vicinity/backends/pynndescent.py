@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -10,21 +10,18 @@ from pynndescent import NNDescent
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
-from vicinity.utils import normalize_or_copy
+from vicinity.utils import Metric, normalize_or_copy
 
 
 @dataclass
 class PyNNDescentArgs(BaseArgs):
     n_neighbors: int = 15
-    metric: Literal[
-        "cosine",
-        "euclidean",
-        "manhattan",
-    ] = "cosine"
+    metric: str = "cosine"
 
 
 class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
     argument_class = PyNNDescentArgs
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN, Metric.MANHATTAN}
 
     def __init__(
         self,
@@ -40,10 +37,18 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         cls: type[PyNNDescentBackend],
         vectors: npt.NDArray,
         n_neighbors: int = 15,
-        metric: Literal["cosine", "euclidean", "manhattan"] = "cosine",
+        metric: Union[str, Metric] = "cosine",
+        **kwargs: Any,
     ) -> PyNNDescentBackend:
         """Create a new instance from vectors."""
-        index = NNDescent(vectors, n_neighbors=n_neighbors, metric=metric)
+        metric_enum = Metric.from_string(metric)
+
+        if metric_enum not in cls.supported_metrics:
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by PyNNDescentBackend.")
+
+        metric = metric_enum.value
+
+        index = NNDescent(vectors, n_neighbors=n_neighbors, metric=metric, **kwargs)
         arguments = PyNNDescentArgs(n_neighbors=n_neighbors, metric=metric)
         return cls(index=index, arguments=arguments)
 
@@ -68,12 +73,12 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         return list(zip(indices, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
-        """Insert vectors into the index (not supported by pynndescent)."""
-        raise NotImplementedError("Dynamic insertion is not supported by pynndescent.")
+        """Insert vectors into the backend."""
+        raise NotImplementedError("Insertion is not supported in PyNNDescent backend.")
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the index (not supported by pynndescent)."""
-        raise NotImplementedError("Dynamic deletion is not supported by pynndescent.")
+        """Delete vectors from the backend."""
+        raise NotImplementedError("Deletion is not supported in PyNNDescent backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Find neighbors within a distance threshold."""
@@ -99,7 +104,11 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         """Load the vectors and configuration from a specified path."""
         arguments = PyNNDescentArgs.load(base_path / "arguments.json")
         vectors = np.load(Path(base_path) / "vectors.npy")
-        index = NNDescent(vectors, n_neighbors=arguments.n_neighbors, metric=arguments.metric)
+
+        metric_enum = Metric.from_string(arguments.metric)
+        pynndescent_metric = metric_enum.value
+
+        index = NNDescent(vectors, n_neighbors=arguments.n_neighbors, metric=pynndescent_metric)
 
         # Load the neighbor graph if it was saved
         neighbor_graph_path = base_path / "neighbor_graph.npy"
