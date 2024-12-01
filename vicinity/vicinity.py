@@ -13,7 +13,8 @@ import numpy as np
 import orjson
 from numpy import typing as npt
 
-from vicinity.backends import AbstractBackend, get_backend_class
+from vicinity import Metric
+from vicinity.backends import AbstractBackend, BasicBackend, get_backend_class
 from vicinity.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
@@ -253,15 +254,27 @@ class Vicinity:
         :param query_vectors: The query vectors to evaluate.
         :param k: The number of nearest neighbors to retrieve.
         :param epsilon: The epsilon threshold for recall calculation.
-
         :return: A tuple of (QPS, recall).
+        :raises ValueError: If the metric is not supported by the BasicBackend.
         """
+        try:
+            # Validate and map the metric using Metric.from_string
+            metric_enum = Metric.from_string(self.metric)
+            if metric_enum not in BasicBackend.supported_metrics:
+                raise ValueError(f"Unsupported metric '{metric_enum.value}' for BasicBackend.")
+            basic_metric = metric_enum.value
+        except ValueError as e:
+            raise ValueError(
+                f"Unsupported metric '{self.metric}' for evaluation with BasicBackend. "
+                f"Supported metrics are: {[m.value for m in BasicBackend.supported_metrics]}"
+            ) from e
+
         # Create ground truth Vicinity instance
         gt_vicinity = Vicinity.from_vectors_and_items(
             vectors=full_vectors,
             items=self.items,
             backend_type=Backend.BASIC,
-            metric=self.metric,
+            metric=basic_metric,
         )
 
         # Compute ground truth results

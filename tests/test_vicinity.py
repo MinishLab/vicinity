@@ -235,3 +235,8 @@ def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> 
     # Ensure the QPS and recall values are within valid ranges
     assert qps > 0
     assert 0 <= recall <= 1
+
+    # Test with an unsupported metric
+    vicinity_instance.backend.arguments.metric = "manhattan"
+    with pytest.raises(ValueError):
+        vicinity_instance.evaluate(vectors, query_vectors)
