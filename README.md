@@ -96,9 +96,18 @@ Vicinity provides the following features:
 
 ## Supported Backends
 The following backends are supported:
-- `BASIC`: A simple flat index for vector storage and search.
+- `BASIC`: A simple (exact matching) flat index for vector storage and search.
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
-- [FAISS](https://github.com/facebookresearch/faiss): ANN search using FAISS. All FAISS indexes are supported.
+- [FAISS](https://github.com/facebookresearch/faiss): All FAISS indexes are supported:
+  - `flat`: Exact search.
+  - `ivf`: Inverted file search.
+  - `hnsw`: Hierarchical Navigable Small World Graph.
+  - `lsh`: Locality Sensitive Hashing.
+  - `scalar`: Scalar quantizer.
+  - `pq`: Product Quantizer.
+  - `ivf_scalar`: Inverted file search with scalar quantizer.
+  - `ivfpq`: Inverted file search with product quantizer.
+  - `ivfpqr`: Inverted file search with product quantizer and refinement.
 - [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
 - [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
 - [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
