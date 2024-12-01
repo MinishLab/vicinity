@@ -38,6 +38,10 @@ Install the package with:
 ```bash
 pip install vicinity
 ```
+Optinally, install any of the [supported backends](#supported-backends), or simply install all of them with:
+```bash
+pip install vicinity[all]
+```
 
 
 The following code snippet demonstrates how to use Vicinity for nearest neighbor search:
