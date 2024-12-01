@@ -1,6 +1,6 @@
 <div align="center">
 
-# Vicinity: The Lightweight Vector Store
+# Vicinity: Lightweight Nearest Neighbors with Flexible Backends
 
 </div>
 
@@ -19,6 +19,9 @@
   </h2>
 </div>
 
+Vicinity is a light-weight, low-dependency vector store. It provides a simple and intuitive interface for nearest neighbor search, with support for different backends and evaluation.
+
+Instead of learning a new interface for each backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
 
 ## Table of contents
 
@@ -26,9 +29,7 @@
 - [Main Features](#main-features)
 - [Supported Backends](#supported-backends)
   - [Backend Parameters](#backend-parameters)
-- [Usage](#usage)
 
-Vicinity is the lightest-weight vector store. Just put in some vectors, calculate query vectors, and off you go. It provides a simple and intuitive API for nearest neighbor search, with support for different backends.
 
 ## Quickstart
 
@@ -42,14 +43,14 @@ The following code snippet demonstrates how to use Vicinity for nearest neighbor
 ```python
 import numpy as np
 from vicinity import Vicinity
-from vicinity.datatypes import Backend
+from vicinity.datatypes import Backend, Metric
 
 # Create some dummy data
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
-# Initialize the Vicinity instance (using the basic backend)
-vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC)
+# Initialize the Vicinity instance (using the basic backend and cosine metric)
+vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC, metric=Metric.COSINE)
 
 # Query for nearest neighbors with a top-k search
 query_vector = np.random.rand(128)
@@ -65,11 +66,30 @@ vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
 ```
 
+Saving and loading a vector store:
+```python
+vicinity.save('my_vector_store')
+vicinity = Vicinity.load('my_vector_store')
+```
+
+Evaluating a backend:
+```python
+# Use the first 1000 vectors as query vectors
+query_vectors = vectors[:1000]
+
+# Evaluate the Vicinity instance by measuring the queries per second and recall
+qps, recall = vicinity.evaluate(
+    full_vectors=vectors,
+    query_vectors=query_vectors,
+)
+```
+
 ## Main Features
 Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
 - Serialization: Save and load vector stores for persistence.
+- Evaluation: Easily evaluate the performance of different backends.
 - Easy to Use: Simple and intuitive API.
 
 ## Supported Backends
@@ -122,93 +142,12 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                | `m`                | Number of subquantizers for PQ and HNSW indexes.                                              | `8`                 |
 |                | `nbits`            | Number of bits for LSH and PQ indexes.                                                        | `8`                 |
 |                | `refine_nbits`     | Number of bits for the refinement stage in IVFPQR indexes.                                    | `8`                 |
-| **HNSW**       | `space`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
+| **HNSW**       | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
 |                | `ef_construction`  | Size of the dynamic list during index construction.                                           | `200`               |
 |                | `m`                | Number of connections per layer.                                                              | `16`                |
 | **PyNNDescent**| `n_neighbors`      | Number of neighbors to use for search.                                                        | `15`                |
 |                | `metric`           | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
 
-
-## Usage
-
-<details>
-<summary>  Creating a Vector Store
- </summary>
-<br>
-
-You can create a Vicinity instance by providing items and their corresponding vectors:
-
-
-```python
-from vicinity import Vicinity
-import numpy as np
-
-items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
-vectors = np.random.rand(len(items), 128)
-
-vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items)
-```
-
-</details>
-
-<details>
-<summary>  Querying
- </summary>
-<br>
-
-Find the k nearest neighbors for a given vector:
-
-```python
-query_vector = np.random.rand(128)
-results = vicinity.query([query_vector], k=3)
-```
-
-Find all neighbors within a given threshold:
-
-```python
-query_vector = np.random.rand(128)
-results = vicinity.query_threshold([query_vector], threshold=0.9)
-```
-</details>
-
-<details>
-
-<summary>  Inserting and Deleting Items
- </summary>
-<br>
-
-Insert new items:
-
-```python
-new_items = ["ocarina", "bow"]
-new_vectors = np.random.rand(2, 128)
-vicinity.insert(new_items, new_vectors)
-```
-
-Delete items:
-
-```python
-vicinity.delete(["hookshot"])
-```
-</details>
-
-<details>
-<summary>  Saving and Loading
- </summary>
-<br>
-
-Save the vector store:
-
-```python
-vicinity.save('my_vector_store')
-```
-
-Load the vector store:
-
-```python
-vicinity = Vicinity.load('my_vector_store')
-```
-</details>
 
 ## License
 
