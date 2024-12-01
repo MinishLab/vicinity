@@ -52,6 +52,13 @@ pynndescent = [
 annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
+all = [
+    "vicinity[hnsw]",
+    "vicinity[pynndescent]",
+    "vicinity[annoy]",
+    "vicinity[faiss]",
+    "vicinity[usearch]"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/MinishLab"
