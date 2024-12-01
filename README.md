@@ -20,7 +20,8 @@
 
 [Quickstart](#quickstart) •
 [Main Features](#main-features) •
-[Supported Backends](#supported-backends)
+[Supported Backends](#supported-backends) •
+[Installation](#installation)
 
 </div>
 
@@ -129,6 +130,22 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
 
 
+## Installation
+The following installation options are available:
+```bash
+# Install the base package
+pip install vicinity
+
+# Install all backends
+pip install vicinity[all]
+
+# Install specific backends
+pip install vicinity[annoy]
+pip install vicinity[faiss]
+pip install vicinity[hnsw]
+pip install vicinity[pynndescent]
+pip install vicinity[usearch]
+```
 
 ## License
 
