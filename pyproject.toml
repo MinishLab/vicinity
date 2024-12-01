@@ -53,11 +53,14 @@ annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
 all = [
-    "vicinity[hnsw]",
-    "vicinity[pynndescent]",
-    "vicinity[annoy]",
-    "vicinity[faiss]",
-    "vicinity[usearch]"
+    "hnswlib",
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0",
+    "annoy",
+    "faiss-cpu",
+    "usearch"
 ]
 
 [project.urls]
