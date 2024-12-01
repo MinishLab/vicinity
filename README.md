@@ -21,7 +21,10 @@
 
 Vicinity is a light-weight, low-dependency vector store. It provides a simple and intuitive interface for nearest neighbor search, with support for different backends and evaluation.
 
-Instead of learning a new interface for each backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
+There are many nearest neighbors packages and methods out there. However, we found it difficult to compare them. Every package has its own interface, quirks, and limitations, and learning a new package can be time-consuming. In addition to that, how do you effectively compare different packages? How do you know which one is the best for your use case?
+
+
+ This is where Vicinity comes in. Instead of learning a new interface for each new package or backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
 
 ## Table of contents
 
