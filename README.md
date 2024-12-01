@@ -56,8 +56,10 @@ vectors = np.random.rand(len(items), 128)
 # Initialize the Vicinity instance (using the basic backend and cosine metric)
 vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC, metric=Metric.COSINE)
 
-# Query for nearest neighbors with a top-k search
+# Create a query vector
 query_vector = np.random.rand(128)
+
+# Query for nearest neighbors with a top-k search
 results = vicinity.query([query_vector], k=3)
 
 # Query for nearest neighbors with a threshold search
