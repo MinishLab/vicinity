@@ -39,7 +39,7 @@ Install the package with:
 ```bash
 pip install vicinity
 ```
-Optinally, install any of the [supported backends](#supported-backends), or simply install all of them with:
+Optinally, [install any of the supported backends](#installation), or simply install all of them with:
 ```bash
 pip install vicinity[all]
 ```
