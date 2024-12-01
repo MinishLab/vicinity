@@ -24,6 +24,11 @@ class AnnoyArgs(BaseArgs):
 class AnnoyBackend(AbstractBackend[AnnoyArgs]):
     argument_class = AnnoyArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN, Metric.INNER_PRODUCT}
+    inverse_metric_mapping = {
+        Metric.COSINE: "dot",
+        Metric.EUCLIDEAN: "euclidean",
+        Metric.INNER_PRODUCT: "dot",
+    }
 
     def __init__(
         self,
@@ -51,16 +56,10 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by AnnoyBackend.")
 
-        # Map Metric to Annoy's metric parameter
-        if metric_enum == Metric.COSINE:
-            metric = "dot"
+        metric = cls._map_metric_to_string(metric_enum)
+
+        if metric == "dot":
             vectors = normalize(vectors)
-        elif metric_enum == Metric.EUCLIDEAN:
-            metric = "euclidean"
-        elif metric_enum == Metric.INNER_PRODUCT:
-            metric = "dot"
-        else:
-            raise ValueError(f"Unsupported metric for AnnoyBackend: {metric_enum}")
 
         dim = vectors.shape[1]
         index = AnnoyIndex(f=dim, metric=metric)  # type: ignore

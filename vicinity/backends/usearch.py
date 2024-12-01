@@ -25,6 +25,13 @@ class UsearchArgs(BaseArgs):
 class UsearchBackend(AbstractBackend[UsearchArgs]):
     argument_class = UsearchArgs
     supported_metrics = {Metric.COSINE, Metric.INNER_PRODUCT, Metric.L2_SQUARED, Metric.HAMMING, Metric.TANIMOTO}
+    inverse_metric_mapping = {
+        Metric.COSINE: "cos",
+        Metric.INNER_PRODUCT: "ip",
+        Metric.L2_SQUARED: "l2sq",
+        Metric.HAMMING: "hamming",
+        Metric.TANIMOTO: "tanimoto",
+    }
 
     def __init__(
         self,
@@ -51,20 +58,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by UsearchBackend.")
 
-        # Map Metric enum to Usearch-compatible metric strings
-        if metric_enum == Metric.COSINE:
-            metric = "cos"
-        elif metric_enum == Metric.INNER_PRODUCT:
-            metric = "ip"
-        elif metric_enum == Metric.L2_SQUARED:
-            metric = "l2sq"
-        elif metric_enum == Metric.HAMMING:
-            metric = "hamming"
-        elif metric_enum == Metric.TANIMOTO:
-            metric = "tanimoto"
-        else:
-            raise ValueError(f"Unsupported metric for UsearchBackend: {metric_enum}")
-
+        metric = cls._map_metric_to_string(metric_enum)
         dim = vectors.shape[1]
         index = UsearchIndex(
             ndim=dim,
