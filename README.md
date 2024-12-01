@@ -62,12 +62,6 @@ results = vicinity.query([query_vector], k=3)
 
 # Query for nearest neighbors with a threshold search
 results = vicinity.query_threshold([query_vector], threshold=0.9)
-
-# Save the vector store
-vicinity.save('my_vector_store')
-
-# Load the vector store
-vicinity = Vicinity.load('my_vector_store')
 ```
 
 Saving and loading a vector store:
