@@ -48,8 +48,7 @@ pip install vicinity[all]
 The following code snippet demonstrates how to use Vicinity for nearest neighbor search:
 ```python
 import numpy as np
-from vicinity import Vicinity
-from vicinity.datatypes import Backend, Metric
+from vicinity import Vicinity, Backend, Metric
 
 # Create some dummy data
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
