@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -15,7 +15,7 @@ from vicinity.utils import Metric, normalize, normalize_or_copy
 
 @dataclass
 class BasicArgs(BaseArgs):
-    metric: Literal["cosine", "euclidean"] = "cosine"
+    metric: str = "cosine"
 
 
 class BasicBackend(AbstractBackend[BasicArgs], ABC):
@@ -66,15 +66,20 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         raise NotImplementedError()
 
     @classmethod
-    def from_vectors(cls, vectors: npt.NDArray, **kwargs: Any) -> BasicBackend:
+    def from_vectors(cls, vectors: npt.NDArray, metric: Union[str, Metric] = "cosine", **kwargs: Any) -> BasicBackend:
         """Create a new instance from vectors."""
-        arguments = BasicArgs(**kwargs)
-        if arguments.metric == "cosine":
+        metric_enum = Metric.from_string(metric)
+        if metric_enum not in cls.supported_metrics:
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by BasicBackend.")
+
+        metric = metric_enum.value
+        arguments = BasicArgs(metric=metric)
+        if metric == "cosine":
             return CosineBasicBackend(vectors, arguments)
-        elif arguments.metric == "euclidean":
+        elif metric == "euclidean":
             return EuclideanBasicBackend(vectors, arguments)
         else:
-            raise ValueError(f"Unsupported metric: {arguments.metric}")
+            raise ValueError(f"Unsupported metric: {metric}")
 
     @classmethod
     def load(cls, folder: Path) -> BasicBackend:
