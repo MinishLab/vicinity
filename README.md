@@ -6,7 +6,7 @@
 
 <div align="center">
     <picture>
-      <img width="45%" alt="Model2Vec logo" src="assets/images/vicinity_logo.png">
+      <img width="40%" alt="Model2Vec logo" src="assets/images/vicinity_logo.png">
     </picture>
   </a>
 </div>
