@@ -1,8 +1,3 @@
-<!-- <div align="center">
-
-# Vicinity: Lightweight Nearest Neighbors
-
-</div> -->
 
 <div align="center">
     <picture>
