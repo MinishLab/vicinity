@@ -60,7 +60,12 @@ items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
 # Initialize the Vicinity instance (using the basic backend and cosine metric)
-vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC, metric=Metric.COSINE)
+vicinity = Vicinity.from_vectors_and_items(
+    vectors=vectors,
+    items=items,
+    backend_type=Backend.BASIC,
+    metric=Metric.COSINE
+)
 
 # Create a query vector
 query_vector = np.random.rand(128)
