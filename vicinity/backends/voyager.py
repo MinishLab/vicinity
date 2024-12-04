@@ -29,7 +29,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         Metric.EUCLIDEAN: "l2",
     }
 
-    metric_mapping = {
+    metric_int_mapping = {
         "l2": 0,
         "cosine": 2,
     }
@@ -62,7 +62,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
 
         metric = cls._map_metric_to_string(metric_enum)
         dim = vectors.shape[1]
-        space = Space(value=cls.metric_mapping[metric])
+        space = Space(value=cls.metric_int_mapping[metric])
         index = Index(
             space=space,
             num_dimensions=dim,
