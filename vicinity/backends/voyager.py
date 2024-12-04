@@ -87,7 +87,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         path = Path(base_path) / "index.bin"
         arguments = VoyagerArgs.load(base_path / "arguments.json")
         index = Index.load(str(path))
-        raise cls(index, arguments=arguments)
+        return cls(index, arguments=arguments)
 
     def save(self, base_path: Path) -> None:
         """Save the vectors to a path."""
