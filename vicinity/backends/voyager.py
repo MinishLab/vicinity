@@ -111,7 +111,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
         out: list[npt.NDArray] = []
-        for x, y in self.query(vectors, 100):
+        for x, y in self.query(vectors, len(self)):
             out.append(x[y < threshold])
 
         return out
