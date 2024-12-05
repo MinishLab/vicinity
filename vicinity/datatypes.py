@@ -2,7 +2,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Iterable, List, Tuple, Union
 
-import numpy as np
 from numpy import typing as npt
 
 PathLike = Union[str, Path]
