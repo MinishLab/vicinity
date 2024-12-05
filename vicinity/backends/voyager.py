@@ -77,7 +77,6 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
 
     def query(self, query: npt.NDArray, k: int) -> QueryResult:
         """Query the backend for the nearest neighbors."""
-        query = normalize(query)
         indices, distances = self.index.query(query, k)
         return list(zip(indices, distances))
 
