@@ -100,13 +100,8 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         self.index.add_items(vectors)
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the backend.
-        Note that ids are marked as deleted, won't show up in results,
-        but they would still take up space.
-        Refer: https://spotify.github.io/voyager/python/reference.html#voyager.Index.mark_deleted
-        """
-        for _id in indices:
-            self.index.mark_deleted(_id)
+        """Delete vectors from the backend."""
+        raise NotImplementedError("Deletion is not supported in Voyager backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
