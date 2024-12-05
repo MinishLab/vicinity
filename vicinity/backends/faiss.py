@@ -13,6 +13,8 @@ from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
 from vicinity.utils import Metric, normalize
 
+FaissMetricType = Union[faiss.METRIC_INNER_PRODUCT, faiss.METRIC_L2]
+
 logger = logging.getLogger(__name__)
 
 # FAISS indexes that support range_search
@@ -37,7 +39,7 @@ TRAINABLE_INDEXES = (
 class FaissArgs(BaseArgs):
     dim: int = 0
     index_type: str = "flat"
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
     nlist: int = 100
     m: int = 8
     nbits: int = 8
@@ -47,7 +49,7 @@ class FaissArgs(BaseArgs):
 class FaissBackend(AbstractBackend[FaissArgs]):
     argument_class = FaissArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
-    inverse_metric_mapping = {
+    inverse_metric_mapping: dict[Metric, FaissMetricType] = {
         Metric.COSINE: faiss.METRIC_INNER_PRODUCT,
         Metric.EUCLIDEAN: faiss.METRIC_L2,
     }
@@ -123,7 +125,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         arguments = FaissArgs(
             dim=dim,
             index_type=index_type,
-            metric=metric_enum.value,
+            metric=metric_enum,
             nlist=nlist,
             m=m,
             nbits=nbits,

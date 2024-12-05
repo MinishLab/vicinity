@@ -16,7 +16,7 @@ from vicinity.utils import Metric, normalize_or_copy
 @dataclass
 class PyNNDescentArgs(BaseArgs):
     n_neighbors: int = 15
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
 
 
 class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
@@ -49,7 +49,7 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         metric = metric_enum.value
 
         index = NNDescent(vectors, n_neighbors=n_neighbors, metric=metric, **kwargs)
-        arguments = PyNNDescentArgs(n_neighbors=n_neighbors, metric=metric)
+        arguments = PyNNDescentArgs(n_neighbors=n_neighbors, metric=metric_enum)
         return cls(index=index, arguments=arguments)
 
     def __len__(self) -> int:
@@ -105,10 +105,7 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         arguments = PyNNDescentArgs.load(base_path / "arguments.json")
         vectors = np.load(Path(base_path) / "vectors.npy")
 
-        metric_enum = Metric.from_string(arguments.metric)
-        pynndescent_metric = metric_enum.value
-
-        index = NNDescent(vectors, n_neighbors=arguments.n_neighbors, metric=pynndescent_metric)
+        index = NNDescent(vectors, n_neighbors=arguments.n_neighbors, metric=arguments.metric.value)
 
         # Load the neighbor graph if it was saved
         neighbor_graph_path = base_path / "neighbor_graph.npy"
