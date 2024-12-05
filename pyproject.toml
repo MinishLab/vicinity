@@ -87,6 +87,7 @@ select = [
     "NPY",
     # Print: Forbid print statements
     "T20",
+    "F",
 ]
 ignore = [
     # Allow self and cls to be untyped, and allow Any type
