@@ -15,7 +15,7 @@ from vicinity.utils import Metric, normalize, normalize_or_copy
 
 @dataclass
 class BasicArgs(BaseArgs):
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
 
 
 class BasicBackend(AbstractBackend[BasicArgs], ABC):
@@ -72,11 +72,10 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by BasicBackend.")
 
-        metric = metric_enum.value
-        arguments = BasicArgs(metric=metric)
-        if metric == "cosine":
+        arguments = BasicArgs(metric=metric_enum)
+        if metric_enum == Metric.COSINE:
             return CosineBasicBackend(vectors, arguments)
-        elif metric == "euclidean":
+        elif metric_enum == Metric.EUCLIDEAN:
             return EuclideanBasicBackend(vectors, arguments)
         else:
             raise ValueError(f"Unsupported metric: {metric}")
@@ -88,9 +87,9 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         arguments = BasicArgs.load(folder / "arguments.json")
         with open(path, "rb") as f:
             vectors = np.load(f)
-        if arguments.metric == "cosine":
+        if arguments.metric == Metric.COSINE:
             return CosineBasicBackend(vectors, arguments)
-        elif arguments.metric == "euclidean":
+        elif arguments.metric == Metric.EUCLIDEAN:
             return EuclideanBasicBackend(vectors, arguments)
         else:
             raise ValueError(f"Unsupported metric: {arguments.metric}")

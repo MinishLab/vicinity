@@ -36,7 +36,7 @@ TRAINABLE_INDEXES = (
 class FaissArgs(BaseArgs):
     dim: int = 0
     index_type: str = "flat"
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
     nlist: int = 100
     m: int = 8
     nbits: int = 8
@@ -122,7 +122,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         arguments = FaissArgs(
             dim=dim,
             index_type=index_type,
-            metric=metric_enum.value,
+            metric=metric_enum,
             nlist=nlist,
             m=m,
             nbits=nbits,

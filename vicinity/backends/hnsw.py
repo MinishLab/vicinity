@@ -15,7 +15,7 @@ from vicinity.utils import Metric
 @dataclass
 class HNSWArgs(BaseArgs):
     dim: int = 0
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
     ef_construction: int = 200
     m: int = 16
 
@@ -58,7 +58,7 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
         index = HnswIndex(space=metric, dim=dim)
         index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
         index.add_items(vectors)
-        arguments = HNSWArgs(dim=dim, metric=metric, ef_construction=ef_construction, m=m)
+        arguments = HNSWArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m)
         return HNSWBackend(index, arguments=arguments)
 
     @property
@@ -80,7 +80,8 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
         """Load the vectors from a path."""
         path = Path(base_path) / "index.bin"
         arguments = HNSWArgs.load(base_path / "arguments.json")
-        index = HnswIndex(space=arguments.metric, dim=arguments.dim)
+        mapped_metric = cls.inverse_metric_mapping[arguments.metric]
+        index = HnswIndex(space=mapped_metric, dim=arguments.dim)
         index.load_index(str(path))
         return cls(index, arguments=arguments)
 

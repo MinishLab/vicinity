@@ -16,7 +16,7 @@ from vicinity.utils import Metric
 @dataclass
 class UsearchArgs(BaseArgs):
     dim: int = 0
-    metric: str = "cos"
+    metric: Metric = Metric.COSINE
     connectivity: int = 16
     expansion_add: int = 128
     expansion_search: int = 64
@@ -67,10 +67,10 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_add=expansion_add,
             expansion_search=expansion_search,
         )
-        index.add(keys=None, vectors=vectors)  # type: ignore
+        index.add(keys=None, vectors=vectors)  # type: ignore  # None keys are allowed but not typed
         arguments = UsearchArgs(
             dim=dim,
-            metric=metric,
+            metric=metric_enum,
             connectivity=connectivity,
             expansion_add=expansion_add,
             expansion_search=expansion_search,
@@ -99,7 +99,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
         index = UsearchIndex(
             ndim=arguments.dim,
-            metric=arguments.metric,
+            metric=cls._map_metric_to_string(arguments.metric),
             connectivity=arguments.connectivity,
             expansion_add=arguments.expansion_add,
             expansion_search=arguments.expansion_search,
@@ -122,7 +122,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        self.index.add(None, vectors)  # type: ignore
+        self.index.add(None, vectors)  # type: ignore  # None keys are allowed, but not typed.
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the index (not supported by Usearch)."""
