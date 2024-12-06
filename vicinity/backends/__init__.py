@@ -33,5 +33,10 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
 
         return UsearchBackend
 
+    elif backend == Backend.VOYAGER:
+        from vicinity.backends.voyager import VoyagerBackend
+
+        return VoyagerBackend
+
 
 __all__ = ["get_backend_class", "AbstractBackend"]
