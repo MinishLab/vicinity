@@ -120,7 +120,7 @@ The following backends are supported:
   - `ivf_scalar`: Inverted file search with scalar quantizer.
   - `ivfpq`: Inverted file search with product quantizer.
   - `ivfpqr`: Inverted file search with product quantizer and refinement.
-
+- [VOYAGER](https://github.com/spotify/voyager): Voyager is a library for performing fast approximate nearest-neighbor searches on an in-memory collection of vectors.
 
 
 
@@ -149,7 +149,9 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                 | `connectivity`      | Number of connections per node in the graph.                                                  | `16`                |
 |                 | `expansion_add`     | Number of candidates considered during graph construction.                                    | `128`               |
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
-
+| **VOYAGER**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
+|                 | `ef_construction`   | The number of vectors that this index searches through when inserting a new vector into the index.                                           | `200`               |
+|                 | `m`                 | The number of connections between nodes in the tree’s internal data structure.                                                              | `16`                |
 
 ## Installation
 The following installation options are available:
@@ -166,6 +168,7 @@ pip install vicinity[faiss]
 pip install vicinity[hnsw]
 pip install vicinity[pynndescent]
 pip install vicinity[usearch]
+pip install vicinity[voyager]
 ```
 
 ## License

@@ -52,6 +52,7 @@ pynndescent = [
 annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
+voyager = ["voyager"]
 all = [
     "hnswlib",
     "pynndescent>=0.5.10",
@@ -60,7 +61,8 @@ all = [
     "numpy>=1.24.0",
     "annoy",
     "faiss-cpu",
-    "usearch"
+    "usearch",
+    "voyager"
 ]
 
 [project.urls]

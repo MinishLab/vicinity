@@ -21,3 +21,4 @@ class Backend(str, Enum):
     PYNNDESCENT = "pynndescent"
     FAISS = "faiss"
     USEARCH = "usearch"
+    VOYAGER = "voyager"
