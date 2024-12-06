@@ -4,19 +4,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Union
 
-import numpy as np
 from numpy import typing as npt
 from voyager import Index, Space
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
-from vicinity.utils import Metric, normalize
+from vicinity.utils import Metric
 
 
 @dataclass
 class VoyagerArgs(BaseArgs):
     dim: int = 0
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
     ef_construction: int = 200
     m: int = 16
 
@@ -24,14 +23,9 @@ class VoyagerArgs(BaseArgs):
 class VoyagerBackend(AbstractBackend[VoyagerArgs]):
     argument_class = VoyagerArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
-    inverse_metric_mapping = {
-        Metric.COSINE: "cosine",
-        Metric.EUCLIDEAN: "l2",
-    }
-
-    metric_int_mapping = {
-        "l2": 0,
-        "cosine": 2,
+    _metric_to_space = {
+        Metric.COSINE: Space.Cosine,
+        Metric.EUCLIDEAN: Space.Euclidean,
     }
 
     def __init__(
@@ -56,13 +50,10 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         metric_enum = Metric.from_string(metric)
 
         if metric_enum not in cls.supported_metrics:
-            raise ValueError(
-                f"Metric '{metric_enum.value}' is not supported by VoyagerBackend."
-            )
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by VoyagerBackend.")
 
-        metric = cls._map_metric_to_string(metric_enum)
+        space = cls._metric_to_space[metric_enum]
         dim = vectors.shape[1]
-        space = Space(value=cls.metric_int_mapping[metric])
         index = Index(
             space=space,
             num_dimensions=dim,
@@ -72,7 +63,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         index.add_items(vectors)
         return cls(
             index,
-            VoyagerArgs(dim=dim, metric=metric, ef_construction=ef_construction, m=m),
+            VoyagerArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m),
         )
 
     def query(self, query: npt.NDArray, k: int) -> QueryResult:
