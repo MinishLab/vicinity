@@ -17,17 +17,17 @@ from vicinity.utils import Metric, normalize
 class AnnoyArgs(BaseArgs):
     dim: int = 0
     metric: Metric = Metric.COSINE
+    internal_metric: str = "dot"
     trees: int = 100
     length: int | None = None
 
 
 class AnnoyBackend(AbstractBackend[AnnoyArgs]):
     argument_class = AnnoyArgs
-    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN, Metric.INNER_PRODUCT}
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
     inverse_metric_mapping: dict[Metric, str] = {
         Metric.COSINE: "dot",
         Metric.EUCLIDEAN: "euclidean",
-        Metric.INNER_PRODUCT: "dot",
     }
 
     def __init__(
@@ -56,18 +56,18 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by AnnoyBackend.")
 
-        metric = cls._map_metric_to_string(metric_enum)
+        internal_metric = cls._map_metric_to_string(metric_enum)
 
-        if metric == "dot":
+        if metric_enum == Metric.COSINE:
             vectors = normalize(vectors)
 
         dim = vectors.shape[1]
-        index = AnnoyIndex(f=dim, metric=metric)  # type: ignore  # Expects literal, but we just give str.
+        index = AnnoyIndex(f=dim, metric=internal_metric)  # type: ignore
         for i, vector in enumerate(vectors):
             index.add_item(i, vector)
         index.build(trees)
 
-        arguments = AnnoyArgs(dim=dim, metric=metric_enum, trees=trees, length=len(vectors))
+        arguments = AnnoyArgs(dim=dim, metric=metric, trees=trees, length=len(vectors), internal_metric=internal_metric)  # type: ignore
         return AnnoyBackend(index, arguments=arguments)
 
     @property

@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Union
 
 import faiss
-import numpy as np
 from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs

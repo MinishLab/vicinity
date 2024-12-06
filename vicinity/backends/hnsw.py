@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Union
+from typing import Any, Union
 
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
