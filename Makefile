@@ -9,7 +9,7 @@ install: venv
 	uv run pre-commit install
 
 install-no-pre-commit:
-	uv pip install ".[all]"
+	uv pip install ".[dev,all]"
 
 install-base:
 	uv sync --extra dev
