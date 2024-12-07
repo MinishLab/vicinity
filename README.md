@@ -44,7 +44,7 @@ Install the package with:
 ```bash
 pip install vicinity
 ```
-Optinally, [install any of the supported backends](#installation), or simply install all of them with:
+Optionally, [install any of the supported backends](#installation), or simply install all of them with:
 ```bash
 pip install vicinity[all]
 ```
@@ -131,7 +131,7 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 
 | Backend         | Parameter           | Description                                                                                   | Default Value       |
 |-----------------|---------------------|-----------------------------------------------------------------------------------------------|---------------------|
-| **Annoy**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
+| **ANNOY**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
 |                 | `trees`             | Number of trees to use for indexing.                                                          | `100`               |
 |                 | `length`            | Optional length of the dataset.                                                               | `None`              |
 | **FAISS**       | `metric`            | Similarity metric to use (`cosine`, `l2`).                                                    | `"cosine"`          |
@@ -143,9 +143,9 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 | **HNSW**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
 |                 | `ef_construction`   | Size of the dynamic list during index construction.                                           | `200`               |
 |                 | `m`                 | Number of connections per layer.                                                              | `16`                |
-| **PyNNDescent** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
+| **PYNNDESCENT** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
 |                 | `n_neighbors`       | Number of neighbors to use for search.                                                        | `15`                |
-| **Usearch**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
+| **USEARCH**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
 |                 | `connectivity`      | Number of connections per node in the graph.                                                  | `16`                |
 |                 | `expansion_add`     | Number of candidates considered during graph construction.                                    | `128`               |
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
