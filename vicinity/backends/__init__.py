@@ -1,7 +1,7 @@
 from typing import Union
 
 from vicinity.backends.base import AbstractBackend
-from vicinity.backends.basic import BasicBackend
+from vicinity.backends.basic import BasicBackend, BasicVectorStore
 from vicinity.datatypes import Backend
 
 
@@ -39,4 +39,4 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
         return VoyagerBackend
 
 
-__all__ = ["get_backend_class", "AbstractBackend"]
+__all__ = ["get_backend_class", "AbstractBackend", "BasicVectorStore"]
