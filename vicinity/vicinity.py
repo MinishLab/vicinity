@@ -214,6 +214,8 @@ class Vicinity:
         backend = backend_cls.load(folder_path)
         if Path(folder_path / "store").exists():
             vector_store = BasicVectorStore.load(folder_path / "store")
+        else:
+            vector_store = None
 
         instance = cls(items, backend, metadata=metadata, vector_store=vector_store)
 
