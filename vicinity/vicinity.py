@@ -184,6 +184,10 @@ class Vicinity:
             file_handle.write(orjson.dumps(items_dict))
 
         self.backend.save(path)
+        if self.vector_store is not None:
+            store_path = path / "store"
+            store_path.mkdir(exist_ok=overwrite)
+            self.vector_store.save(store_path)
 
     @classmethod
     def load(cls, filename: PathLike) -> Vicinity:
@@ -208,8 +212,10 @@ class Vicinity:
 
         backend_cls: type[AbstractBackend] = get_backend_class(backend_type)
         backend = backend_cls.load(folder_path)
+        if Path(folder_path / "store").exists():
+            vector_store = BasicVectorStore.load(folder_path / "store")
 
-        instance = cls(items, backend, metadata=metadata)
+        instance = cls(items, backend, metadata=metadata, vector_store=vector_store)
 
         return instance
 
