@@ -1,9 +1,14 @@
+
 <div align="center">
-
-# Vicinity: Lightweight Nearest Neighbors
-
+    <picture>
+      <img width="40%" alt="Model2Vec logo" src="assets/images/vicinity_logo.png">
+    </picture>
+  </a>
 </div>
 
+<div align="center">
+  <h2>Lightweight Nearest Neighbors with Flexible Backends</h2>
+</div>
 
 <div align="center">
   <h2>
@@ -39,7 +44,7 @@ Install the package with:
 ```bash
 pip install vicinity
 ```
-Optinally, [install any of the supported backends](#installation), or simply install all of them with:
+Optionally, [install any of the supported backends](#installation), or simply install all of them with:
 ```bash
 pip install vicinity[all]
 ```
@@ -55,7 +60,12 @@ items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
 # Initialize the Vicinity instance (using the basic backend and cosine metric)
-vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=items, backend_type=Backend.BASIC, metric=Metric.COSINE)
+vicinity = Vicinity.from_vectors_and_items(
+    vectors=vectors,
+    items=items,
+    backend_type=Backend.BASIC,
+    metric=Metric.COSINE
+)
 
 # Create a query vector
 query_vector = np.random.rand(128)
@@ -110,7 +120,7 @@ The following backends are supported:
   - `ivf_scalar`: Inverted file search with scalar quantizer.
   - `ivfpq`: Inverted file search with product quantizer.
   - `ivfpqr`: Inverted file search with product quantizer and refinement.
-
+- [VOYAGER](https://github.com/spotify/voyager): Voyager is a library for performing fast approximate nearest-neighbor searches on an in-memory collection of vectors.
 
 
 
@@ -121,7 +131,7 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 
 | Backend         | Parameter           | Description                                                                                   | Default Value       |
 |-----------------|---------------------|-----------------------------------------------------------------------------------------------|---------------------|
-| **Annoy**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
+| **ANNOY**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
 |                 | `trees`             | Number of trees to use for indexing.                                                          | `100`               |
 |                 | `length`            | Optional length of the dataset.                                                               | `None`              |
 | **FAISS**       | `metric`            | Similarity metric to use (`cosine`, `l2`).                                                    | `"cosine"`          |
@@ -133,13 +143,15 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 | **HNSW**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
 |                 | `ef_construction`   | Size of the dynamic list during index construction.                                           | `200`               |
 |                 | `m`                 | Number of connections per layer.                                                              | `16`                |
-| **PyNNDescent** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
+| **PYNNDESCENT** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
 |                 | `n_neighbors`       | Number of neighbors to use for search.                                                        | `15`                |
-| **Usearch**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
+| **USEARCH**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
 |                 | `connectivity`      | Number of connections per node in the graph.                                                  | `16`                |
 |                 | `expansion_add`     | Number of candidates considered during graph construction.                                    | `128`               |
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |
-
+| **VOYAGER**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
+|                 | `ef_construction`   | The number of vectors that this index searches through when inserting a new vector into the index.                                           | `200`               |
+|                 | `m`                 | The number of connections between nodes in the tree’s internal data structure.                                                              | `16`                |
 
 ## Installation
 The following installation options are available:
@@ -156,6 +168,7 @@ pip install vicinity[faiss]
 pip install vicinity[hnsw]
 pip install vicinity[pynndescent]
 pip install vicinity[usearch]
+pip install vicinity[voyager]
 ```
 
 ## License

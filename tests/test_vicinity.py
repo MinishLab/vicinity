@@ -131,8 +131,48 @@ def test_vicinity_save_and_load(tmp_path: Path, vicinity_instance: Vicinity) -> 
     """
     save_path = tmp_path / "vicinity_data"
     vicinity_instance.save(save_path)
+    assert vicinity_instance.vector_store is None
 
-    Vicinity.load(save_path)
+    v = Vicinity.load(save_path)
+    assert v.vector_store is None
+
+
+def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_with_stored_vectors: Vicinity) -> None:
+    """
+    Test Vicinity.save and Vicinity.load.
+
+    :param tmp_path: Temporary directory provided by pytest.
+    :param vicinity_instance: A Vicinity instance.
+    """
+    save_path = tmp_path / "vicinity_data"
+    vicinity_instance_with_stored_vectors.save(save_path)
+
+    assert (save_path / "store").exists()
+    assert (save_path / "store" / "vectors.npy").exists()
+
+    v = Vicinity.load(save_path)
+    assert v.vector_store is not None
+
+
+def test_index_vector_store(vicinity_with_basic_backend: Vicinity, vectors: np.ndarray) -> None:
+    """
+    Index vectors in the Vicinity instance.
+
+    :param vicinity_instance: A Vicinity instance.
+    :param vectors: Array of vectors to index.
+    """
+    v = vicinity_with_basic_backend.get_vector_by_index(0)
+    assert np.allclose(v, vectors[0])
+
+    idx = [0, 1, 2, 3, 4, 10]
+    v = vicinity_with_basic_backend.get_vector_by_index(idx)
+    assert np.allclose(v, vectors[idx])
+
+    with pytest.raises(ValueError):
+        vicinity_with_basic_backend.get_vector_by_index([10_000])
+
+    with pytest.raises(ValueError):
+        vicinity_with_basic_backend.get_vector_by_index([-1])
 
 
 def test_vicinity_insert_duplicate(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:

@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Union
 
-from hnswlib import Index as HnswIndex
 from numpy import typing as npt
+from voyager import Index, Space
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
@@ -13,25 +13,25 @@ from vicinity.utils import Metric
 
 
 @dataclass
-class HNSWArgs(BaseArgs):
+class VoyagerArgs(BaseArgs):
     dim: int = 0
     metric: Metric = Metric.COSINE
     ef_construction: int = 200
     m: int = 16
 
 
-class HNSWBackend(AbstractBackend[HNSWArgs]):
-    argument_class = HNSWArgs
+class VoyagerBackend(AbstractBackend[VoyagerArgs]):
+    argument_class = VoyagerArgs
     supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
-    inverse_metric_mapping = {
-        Metric.COSINE: "cosine",
-        Metric.EUCLIDEAN: "l2",
+    _metric_to_space = {
+        Metric.COSINE: Space.Cosine,
+        Metric.EUCLIDEAN: Space.Euclidean,
     }
 
     def __init__(
         self,
-        index: HnswIndex,
-        arguments: HNSWArgs,
+        index: Index,
+        arguments: VoyagerArgs,
     ) -> None:
         """Initialize the backend using vectors."""
         super().__init__(arguments)
@@ -39,61 +39,51 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
 
     @classmethod
     def from_vectors(
-        cls: type[HNSWBackend],
+        cls: type[VoyagerBackend],
         vectors: npt.NDArray,
         metric: Union[str, Metric],
         ef_construction: int,
         m: int,
         **kwargs: Any,
-    ) -> HNSWBackend:
+    ) -> VoyagerBackend:
         """Create a new instance from vectors."""
         metric_enum = Metric.from_string(metric)
 
         if metric_enum not in cls.supported_metrics:
-            raise ValueError(f"Metric '{metric_enum.value}' is not supported by HNSWBackend.")
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by VoyagerBackend.")
 
-        # Map Metric to HNSW's space parameter
-        metric = cls._map_metric_to_string(metric_enum)
+        space = cls._metric_to_space[metric_enum]
         dim = vectors.shape[1]
-        index = HnswIndex(space=metric, dim=dim)
-        index.init_index(max_elements=vectors.shape[0], ef_construction=ef_construction, M=m)
+        index = Index(
+            space=space,
+            num_dimensions=dim,
+            M=m,
+            ef_construction=ef_construction,
+        )
         index.add_items(vectors)
-        arguments = HNSWArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m)
-        return HNSWBackend(index, arguments=arguments)
+        return cls(
+            index,
+            VoyagerArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m),
+        )
 
-    @property
-    def backend_type(self) -> Backend:
-        """The type of the backend."""
-        return Backend.HNSW
-
-    @property
-    def dim(self) -> int:
-        """Get the dimension of the space."""
-        return self.index.dim
-
-    def __len__(self) -> int:
-        """Get the number of vectors."""
-        return self.index.get_current_count()
+    def query(self, query: npt.NDArray, k: int) -> QueryResult:
+        """Query the backend for the nearest neighbors."""
+        indices, distances = self.index.query(query, k)
+        return list(zip(indices, distances))
 
     @classmethod
-    def load(cls: type[HNSWBackend], base_path: Path) -> HNSWBackend:
+    def load(cls: type[VoyagerBackend], base_path: Path) -> VoyagerBackend:
         """Load the vectors from a path."""
         path = Path(base_path) / "index.bin"
-        arguments = HNSWArgs.load(base_path / "arguments.json")
-        mapped_metric = cls.inverse_metric_mapping[arguments.metric]
-        index = HnswIndex(space=mapped_metric, dim=arguments.dim)
-        index.load_index(str(path))
+        arguments = VoyagerArgs.load(base_path / "arguments.json")
+        index = Index.load(str(path))
         return cls(index, arguments=arguments)
 
     def save(self, base_path: Path) -> None:
         """Save the vectors to a path."""
         path = Path(base_path) / "index.bin"
-        self.index.save_index(str(path))
+        self.index.save(str(path))
         self.arguments.dump(base_path / "arguments.json")
-
-    def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
-        """Query the backend."""
-        return list(zip(*self.index.knn_query(vectors, k)))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
@@ -101,12 +91,26 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""
-        raise NotImplementedError("Deletion is not supported in HNSW backend.")
+        raise NotImplementedError("Deletion is not supported in Voyager backend.")
 
     def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
         out: list[npt.NDArray] = []
-        for x, y in self.query(vectors, 100):
+        for x, y in self.query(vectors, len(self)):
             out.append(x[y < threshold])
 
         return out
+
+    @property
+    def backend_type(self) -> Backend:
+        """The type of the backend."""
+        return Backend.VOYAGER
+
+    @property
+    def dim(self) -> int:
+        """Get the dimension of the space."""
+        return self.index.num_dimensions
+
+    def __len__(self) -> int:
+        """Get the number of vectors."""
+        return self.index.num_elements

@@ -14,19 +14,25 @@ from vicinity.datatypes import Backend, QueryResult
 
 @dataclass
 class BaseArgs:
+    metric: Metric
+
     def dump(self, file: Path) -> None:
         """Dump the arguments to a file."""
         with open(file, "w") as f:
-            json.dump(asdict(self), f)
+            d = self.dict()
+            d["metric"] = d["metric"].value
+            json.dump(d, f)
 
     @classmethod
     def load(cls: type[ArgType], file: Path) -> ArgType:
         """Load the arguments from a file."""
         with open(file, "r") as f:
-            return cls(**json.load(f))
+            data = json.load(f)
+            data["metric"] = Metric.from_string(data["metric"])
+            return cls(**data)
 
     def dict(self) -> dict[str, Any]:
-        """Dump the arguments to a string."""
+        """Dump the arguments to a dict."""
         return asdict(self)
 
 

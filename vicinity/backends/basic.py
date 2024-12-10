@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, Union
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -15,26 +15,61 @@ from vicinity.utils import Metric, normalize, normalize_or_copy
 
 @dataclass
 class BasicArgs(BaseArgs):
-    metric: str = "cosine"
+    metric: Metric = Metric.COSINE
 
 
-class BasicBackend(AbstractBackend[BasicArgs], ABC):
-    argument_class = BasicArgs
-    _vectors: npt.NDArray
-    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+class BasicVectorStore:
+    def __init__(self, *, vectors: npt.NDArray, **kwargs: Any) -> None:
+        """
+        A basic vector store that just stores vectors.
 
-    def __init__(self, arguments: BasicArgs) -> None:
-        """Initialize the backend."""
-        super().__init__(arguments)
+        Note that we use kwargs in order to use this class as a mixin.
 
-    def __len__(self) -> int:
-        """Get the number of vectors."""
-        return self.vectors.shape[0]
+        :param vectors: The vectors to store.
+        :param **kwargs: Additional arguments. These are passed on to the super class.
+        """
+        super().__init__(**kwargs)
+        self._vectors = vectors
 
-    @property
-    def backend_type(self) -> Backend:
-        """The type of the backend."""
-        return Backend.BASIC
+    def _update_precomputed_data(self) -> None:
+        """Update precomputed data based on the metric."""
+        # NOTE: this is a no-op in the base implementation.
+        return
+
+    def get_by_index(self, indices: list[int]) -> npt.NDArray:
+        """Get vectors by index."""
+        return self._vectors[indices]
+
+    def insert(self, vectors: npt.NDArray) -> None:
+        """Insert vectors into the vector space."""
+        self._vectors = np.vstack([self._vectors, vectors])
+        self._update_precomputed_data()
+
+    def delete(self, indices: list[int]) -> None:
+        """Deletes specific indices from the vector space."""
+        self._vectors = np.delete(self._vectors, indices, axis=0)
+        self._update_precomputed_data()
+
+    def save(self, folder: Path) -> None:
+        """Save the vectors to a path."""
+        path = folder / "vectors.npy"
+        with open(path, "wb") as f:
+            np.save(f, self._vectors)
+
+    @staticmethod
+    def _load_vectors(folder: Path) -> npt.NDArray:
+        """Load the vectors from a path."""
+        path = folder / "vectors.npy"
+        with open(path, "rb") as f:
+            vectors = np.load(f)
+
+        return vectors
+
+    @classmethod
+    def load(cls, folder: Path) -> BasicVectorStore:
+        """Load the vectors from a path."""
+        vectors = cls._load_vectors(folder)
+        return cls(vectors=vectors)
 
     @property
     def dim(self) -> int:
@@ -55,10 +90,24 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         self._vectors = matrix
         self._update_precomputed_data()
 
-    @abstractmethod
-    def _update_precomputed_data(self) -> None:
-        """Update precomputed data based on the metric."""
-        raise NotImplementedError()
+
+class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
+    argument_class = BasicArgs
+    _vectors: npt.NDArray
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+
+    def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
+        """Initialize the backend."""
+        super().__init__(vectors=vectors, arguments=arguments)
+
+    def __len__(self) -> int:
+        """Get the number of vectors."""
+        return self.vectors.shape[0]
+
+    @property
+    def backend_type(self) -> Backend:
+        """The type of the backend."""
+        return Backend.BASIC
 
     @abstractmethod
     def _dist(self, x: npt.NDArray) -> npt.NDArray:
@@ -72,11 +121,10 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
         if metric_enum not in cls.supported_metrics:
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by BasicBackend.")
 
-        metric = metric_enum.value
-        arguments = BasicArgs(metric=metric)
-        if metric == "cosine":
+        arguments = BasicArgs(metric=metric_enum)
+        if metric_enum == Metric.COSINE:
             return CosineBasicBackend(vectors, arguments)
-        elif metric == "euclidean":
+        elif metric_enum == Metric.EUCLIDEAN:
             return EuclideanBasicBackend(vectors, arguments)
         else:
             raise ValueError(f"Unsupported metric: {metric}")
@@ -84,23 +132,19 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
     @classmethod
     def load(cls, folder: Path) -> BasicBackend:
         """Load the vectors from a path."""
-        path = folder / "vectors.npy"
         arguments = BasicArgs.load(folder / "arguments.json")
-        with open(path, "rb") as f:
-            vectors = np.load(f)
-        if arguments.metric == "cosine":
+        vectors = cls._load_vectors(folder)
+        if arguments.metric == Metric.COSINE:
             return CosineBasicBackend(vectors, arguments)
-        elif arguments.metric == "euclidean":
+        elif arguments.metric == Metric.EUCLIDEAN:
             return EuclideanBasicBackend(vectors, arguments)
         else:
             raise ValueError(f"Unsupported metric: {arguments.metric}")
 
     def save(self, folder: Path) -> None:
         """Save the vectors to a path."""
-        path = folder / "vectors.npy"
+        super().save(folder)
         self.arguments.dump(folder / "arguments.json")
-        with open(path, "wb") as f:
-            np.save(f, self._vectors)
 
     def threshold(
         self,
@@ -161,26 +205,12 @@ class BasicBackend(AbstractBackend[BasicArgs], ABC):
 
         return out
 
-    def insert(self, vectors: npt.NDArray) -> None:
-        """Insert vectors into the vector space."""
-        self._vectors = np.vstack([self._vectors, vectors])
-        self._update_precomputed_data()
-
-    def delete(self, indices: list[int]) -> None:
-        """Deletes specific indices from the vector space."""
-        self._vectors = np.delete(self._vectors, indices, axis=0)
-        self._update_precomputed_data()
-
 
 class CosineBasicBackend(BasicBackend):
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
         """Initialize the cosine basic backend."""
-        super().__init__(arguments)
-        self._vectors = normalize_or_copy(vectors)
-
-    def _update_precomputed_data(self) -> None:
-        """Update precomputed data for cosine similarity."""
-        pass
+        super().__init__(vectors=vectors, arguments=arguments)
+        self._vectors = normalize_or_copy(self._vectors)
 
     def _dist(self, x: npt.NDArray) -> npt.NDArray:
         """Compute cosine distance."""
@@ -198,21 +228,12 @@ class CosineBasicBackend(BasicBackend):
 class EuclideanBasicBackend(BasicBackend):
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
         """Initialize the Euclidean basic backend."""
-        super().__init__(arguments)
-        self._vectors = vectors
-        self._squared_norm_vectors: npt.NDArray | None = None
-        self._update_precomputed_data()
+        super().__init__(vectors=vectors, arguments=arguments)
+        self.squared_norm_vectors = (self._vectors**2).sum(1)
 
     def _update_precomputed_data(self) -> None:
         """Update precomputed data for Euclidean distance."""
-        self._squared_norm_vectors = (self._vectors**2).sum(1)
-
-    @property
-    def squared_norm_vectors(self) -> npt.NDArray:
-        """Return squared norms of vectors."""
-        if self._squared_norm_vectors is None:
-            self._squared_norm_vectors = (self._vectors**2).sum(1)
-        return self._squared_norm_vectors
+        self.squared_norm_vectors = (self._vectors**2).sum(1)
 
     def _dist(self, x: npt.NDArray) -> npt.NDArray:
         """Compute Euclidean distance."""

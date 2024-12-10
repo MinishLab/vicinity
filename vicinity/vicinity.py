@@ -3,18 +3,17 @@
 from __future__ import annotations
 
 import logging
-import time
 from io import open
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Sequence, Union
+from typing import Any, Iterable, Sequence, Union
 
 import numpy as np
 import orjson
 from numpy import typing as npt
 
 from vicinity import Metric
-from vicinity.backends import AbstractBackend, BasicBackend, get_backend_class
+from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
 from vicinity.datatypes import Backend, PathLike
 
 logger = logging.getLogger(__name__)
@@ -33,6 +32,7 @@ class Vicinity:
         items: Sequence[str],
         backend: AbstractBackend,
         metadata: Union[dict[str, Any], None] = None,
+        vector_store: BasicVectorStore | None = None,
     ) -> None:
         """
         Initialize a Vicinity instance with an array and list of items.
@@ -42,6 +42,7 @@ class Vicinity:
             aligned with the vectors.
         :param backend: The backend to use for the vector space.
         :param metadata: A dictionary containing metadata about the vector space.
+        :param vector_store: A simple vector store only used for storing actual vectors.
         :raises ValueError: If the length of the items and vectors are not the same.
         """
         if len(items) != len(backend):
@@ -51,6 +52,19 @@ class Vicinity:
         self.items: list[str] = list(items)
         self.backend: AbstractBackend = backend
         self.metadata = metadata or {}
+        self.vector_store = vector_store
+
+    def get_vector_by_index(self, index: int | Iterable[int]) -> npt.NDArray:
+        """Get a vector by index."""
+        if isinstance(index, int):
+            index = [index]
+        if not all(0 <= i < len(self.items) for i in index):
+            raise ValueError("Index out of bounds.")
+        if self.vector_store is None:
+            raise ValueError(
+                "No vector store was provided. To get items by index, create a vicinity index by passing store_vectors=True on index creation."
+            )
+        return self.vector_store.get_by_index(list(index))
 
     def __len__(self) -> int:
         """The number of the items in the vector space."""
@@ -62,6 +76,7 @@ class Vicinity:
         vectors: npt.NDArray,
         items: Sequence[str],
         backend_type: Backend | str = Backend.BASIC,
+        store_vectors: bool = False,
         **kwargs: Any,
     ) -> Vicinity:
         """
@@ -70,6 +85,7 @@ class Vicinity:
         :param vectors: The vectors to use.
         :param items: The items to use.
         :param backend_type: The type of backend to use.
+        :param store_vectors: Whether to store the raw vectors in the backend.
         :param **kwargs: Additional arguments to pass to the backend.
         :return: A Vicinity instance.
         """
@@ -77,8 +93,12 @@ class Vicinity:
         backend_cls = get_backend_class(backend_type)
         arguments = backend_cls.argument_class(**kwargs)
         backend = backend_cls.from_vectors(vectors, **arguments.dict())
+        if store_vectors:
+            vector_store = BasicVectorStore(vectors=vectors)
+        else:
+            vector_store = None
 
-        return cls(items, backend)
+        return cls(items, backend, vector_store=vector_store)
 
     @property
     def dim(self) -> int:
@@ -166,6 +186,10 @@ class Vicinity:
             file_handle.write(orjson.dumps(items_dict))
 
         self.backend.save(path)
+        if self.vector_store is not None:
+            store_path = path / "store"
+            store_path.mkdir(exist_ok=overwrite)
+            self.vector_store.save(store_path)
 
     @classmethod
     def load(cls, filename: PathLike) -> Vicinity:
@@ -190,8 +214,12 @@ class Vicinity:
 
         backend_cls: type[AbstractBackend] = get_backend_class(backend_type)
         backend = backend_cls.load(folder_path)
+        if Path(folder_path / "store").exists():
+            vector_store = BasicVectorStore.load(folder_path / "store")
+        else:
+            vector_store = None
 
-        instance = cls(items, backend, metadata=metadata)
+        instance = cls(items, backend, metadata=metadata, vector_store=vector_store)
 
         return instance
 
