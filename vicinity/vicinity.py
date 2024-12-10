@@ -58,11 +58,13 @@ class Vicinity:
         """Get a vector by index."""
         if isinstance(index, int):
             index = [index]
+        if not all(0 <= i < len(self.items) for i in index):
+            raise ValueError("Index out of bounds.")
         if self.vector_store is None:
             raise ValueError(
                 "No vector store was provided. To get items by index, create a vicinity index by passing store_vectors=True on index creation."
             )
-        return np.stack([self.vector_store[i] for i in index])
+        return self.vector_store.get_by_index(list(index))
 
     def __len__(self) -> int:
         """The number of the items in the vector space."""

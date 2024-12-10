@@ -36,9 +36,9 @@ class BasicVectorStore:
         # NOTE: this is a no-op in the base implementation.
         return
 
-    def __getitem__(self, key: int) -> npt.NDArray:
-        """Gets an item from the vector store."""
-        return self._vectors[key]
+    def get_by_index(self, indices: list[int]) -> npt.NDArray:
+        """Get vectors by index."""
+        return self._vectors[indices]
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the vector space."""
@@ -71,25 +71,6 @@ class BasicVectorStore:
         vectors = cls._load_vectors(folder)
         return cls(vectors=vectors)
 
-
-class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
-    argument_class = BasicArgs
-    _vectors: npt.NDArray
-    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
-
-    def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
-        """Initialize the backend."""
-        super().__init__(vectors=vectors, arguments=arguments)
-
-    def __len__(self) -> int:
-        """Get the number of vectors."""
-        return self.vectors.shape[0]
-
-    @property
-    def backend_type(self) -> Backend:
-        """The type of the backend."""
-        return Backend.BASIC
-
     @property
     def dim(self) -> int:
         """The size of the space."""
@@ -108,6 +89,25 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
             raise ValueError(f"Your array does not have 2 dimensions: {np.ndim(matrix)}")
         self._vectors = matrix
         self._update_precomputed_data()
+
+
+class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
+    argument_class = BasicArgs
+    _vectors: npt.NDArray
+    supported_metrics = {Metric.COSINE, Metric.EUCLIDEAN}
+
+    def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
+        """Initialize the backend."""
+        super().__init__(vectors=vectors, arguments=arguments)
+
+    def __len__(self) -> int:
+        """Get the number of vectors."""
+        return self.vectors.shape[0]
+
+    @property
+    def backend_type(self) -> Backend:
+        """The type of the backend."""
+        return Backend.BASIC
 
     @abstractmethod
     def _dist(self, x: npt.NDArray) -> npt.NDArray:

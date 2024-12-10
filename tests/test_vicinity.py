@@ -168,6 +168,12 @@ def test_index_vector_store(vicinity_with_basic_backend: Vicinity, vectors: np.n
     v = vicinity_with_basic_backend.get_vector_by_index(idx)
     assert np.allclose(v, vectors[idx])
 
+    with pytest.raises(ValueError):
+        vicinity_with_basic_backend.get_vector_by_index([10_000])
+
+    with pytest.raises(ValueError):
+        vicinity_with_basic_backend.get_vector_by_index([-1])
+
 
 def test_vicinity_insert_duplicate(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
     """
