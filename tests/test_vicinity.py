@@ -154,25 +154,25 @@ def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_w
     assert v.vector_store is not None
 
 
-def test_index_vector_store(vicinity_with_basic_backend: Vicinity, vectors: np.ndarray) -> None:
+def test_index_vector_store(vicinity_with_basic_backend_and_store: Vicinity, vectors: np.ndarray) -> None:
     """
     Index vectors in the Vicinity instance.
 
     :param vicinity_instance: A Vicinity instance.
     :param vectors: Array of vectors to index.
     """
-    v = vicinity_with_basic_backend.get_vector_by_index(0)
+    v = vicinity_with_basic_backend_and_store.get_vector_by_index(0)
     assert np.allclose(v, vectors[0])
 
     idx = [0, 1, 2, 3, 4, 10]
-    v = vicinity_with_basic_backend.get_vector_by_index(idx)
+    v = vicinity_with_basic_backend_and_store.get_vector_by_index(idx)
     assert np.allclose(v, vectors[idx])
 
     with pytest.raises(ValueError):
-        vicinity_with_basic_backend.get_vector_by_index([10_000])
+        vicinity_with_basic_backend_and_store.get_vector_by_index([10_000])
 
     with pytest.raises(ValueError):
-        vicinity_with_basic_backend.get_vector_by_index([-1])
+        vicinity_with_basic_backend_and_store.get_vector_by_index([-1])
 
 
 def test_vicinity_insert_duplicate(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -201,6 +201,35 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
         return
     with pytest.raises(ValueError):
         vicinity_instance.delete(["item10002"])
+
+
+def test_vicinity_insert_with_store(vicinity_with_basic_backend_and_store: Vicinity) -> None:
+    """
+    Test that Vicinity.insert raises ValueError when trying to insert vectors into a Vicinity instance with stored vectors.
+
+    :param vicinity_with_basic_backend_and_store: A Vicinity instance with stored vectors.
+    """
+    new_item = ["item10002"]
+    new_vector = np.full((1, vicinity_with_basic_backend_and_store.dim), 0.5)
+
+    vicinity_with_basic_backend_and_store.insert(new_item, new_vector)
+    assert vicinity_with_basic_backend_and_store.vector_store is not None
+    assert len(vicinity_with_basic_backend_and_store) == len(vicinity_with_basic_backend_and_store.vector_store)
+
+
+def test_vicinity_delete_with_store(vicinity_with_basic_backend_and_store: Vicinity) -> None:
+    """
+    Test Vicinity.delete method by verifying that the vector for a deleted item is not returned in subsequent queries.
+
+    :param vicinity_with_basic_backend_and_store: A Vicinity instance.
+    """
+    assert vicinity_with_basic_backend_and_store.vector_store is not None
+    # Delete "item2" from the Vicinity instance
+    vicinity_with_basic_backend_and_store.delete(["item2"])
+
+    # Ensure "item2" is no longer in the items list
+    assert "item2" not in vicinity_with_basic_backend_and_store.items
+    assert len(vicinity_with_basic_backend_and_store) == len(vicinity_with_basic_backend_and_store.vector_store)
 
 
 def test_vicinity_insert_mismatched_lengths(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:

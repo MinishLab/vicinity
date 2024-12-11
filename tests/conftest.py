@@ -110,6 +110,6 @@ def vicinity_instance_with_stored_vectors(
 
 
 @pytest.fixture()
-def vicinity_with_basic_backend(vectors: np.ndarray, items: list[str]) -> Vicinity:
+def vicinity_with_basic_backend_and_store(vectors: np.ndarray, items: list[str]) -> Vicinity:
     """Fixture providing a BasicBackend instance."""
     return Vicinity.from_vectors_and_items(vectors, items, backend_type=Backend.BASIC, store_vectors=True)

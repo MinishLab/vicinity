@@ -243,6 +243,8 @@ class Vicinity:
                 raise ValueError(f"Token {token} is already in the vector space.")
             self.items.append(token)
         self.backend.insert(vectors)
+        if self.vector_store is not None:
+            self.vector_store.insert(vectors)
 
     def delete(self, tokens: Sequence[str]) -> None:
         """
@@ -260,6 +262,8 @@ class Vicinity:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
         self.backend.delete(curr_indices)
+        if self.vector_store is not None:
+            self.vector_store.delete(curr_indices)
 
         # Delete items starting from the highest index
         for index in sorted(curr_indices, reverse=True):
