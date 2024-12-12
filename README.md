@@ -71,10 +71,14 @@ vicinity = Vicinity.from_vectors_and_items(
 query_vector = np.random.rand(128)
 
 # Query for nearest neighbors with a top-k search
-results = vicinity.query([query_vector], k=3)
+results = vicinity.query(query_vector, k=3)
 
 # Query for nearest neighbors with a threshold search
-results = vicinity.query_threshold([query_vector], threshold=0.9)
+results = vicinity.query_threshold(query_vector, threshold=0.9)
+
+# Query with a list of query vectors
+query_vectors = np.random.rand(5, 128)
+results = vicinity.query(query_vectors, k=3)
 ```
 
 Saving and loading a vector store:
