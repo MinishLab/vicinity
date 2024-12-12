@@ -113,7 +113,7 @@ The following backends are supported:
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
 - [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
 - [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
-- [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
+- [PYNNDESCENT](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
 - [FAISS](https://github.com/facebookresearch/faiss): All FAISS indexes are supported:
   - `flat`: Exact search.
   - `ivf`: Inverted file search.
