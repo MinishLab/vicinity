@@ -71,10 +71,14 @@ vicinity = Vicinity.from_vectors_and_items(
 query_vector = np.random.rand(128)
 
 # Query for nearest neighbors with a top-k search
-results = vicinity.query([query_vector], k=3)
+results = vicinity.query(query_vector, k=3)
 
 # Query for nearest neighbors with a threshold search
-results = vicinity.query_threshold([query_vector], threshold=0.9)
+results = vicinity.query_threshold(query_vector, threshold=0.9)
+
+# Query with a list of query vectors
+query_vectors = np.random.rand(5, 128)
+results = vicinity.query(query_vectors, k=3)
 ```
 
 Saving and loading a vector store:
@@ -109,7 +113,7 @@ The following backends are supported:
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
 - [USEARCH](https://github.com/unum-cloud/usearch): ANN search using Usearch. This uses a highly optimized version of the HNSW algorithm.
 - [ANNOY](https://github.com/spotify/annoy): "Approximate Nearest Neighbors Oh Yeah" for approximate nearest neighbor search.
-- [PYNNDescent](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
+- [PYNNDESCENT](https://github.com/lmcinnes/pynndescent): ANN search using PyNNDescent.
 - [FAISS](https://github.com/facebookresearch/faiss): All FAISS indexes are supported:
   - `flat`: Exact search.
   - `ivf`: Inverted file search.
@@ -131,6 +135,7 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 
 | Backend         | Parameter           | Description                                                                                   | Default Value       |
 |-----------------|---------------------|-----------------------------------------------------------------------------------------------|---------------------|
+| **BASIC**       | `metric`            | Similarity metric to use (`cosine`, `euclidean`).                                             | `"cosine"`          |
 | **ANNOY**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
 |                 | `trees`             | Number of trees to use for indexing.                                                          | `100`               |
 |                 | `length`            | Optional length of the dataset.                                                               | `None`              |
