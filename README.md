@@ -135,6 +135,7 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 
 | Backend         | Parameter           | Description                                                                                   | Default Value       |
 |-----------------|---------------------|-----------------------------------------------------------------------------------------------|---------------------|
+| **BASIC**       | `metric`            | Similarity metric to use (`cosine`, `euclidean`).                                             | `"cosine"`          |
 | **ANNOY**       | `metric`            | Similarity metric to use (`dot`, `euclidean`, `cosine`).                                      | `"cosine"`          |
 |                 | `trees`             | Number of trees to use for indexing.                                                          | `100`               |
 |                 | `length`            | Optional length of the dataset.                                                               | `None`              |
