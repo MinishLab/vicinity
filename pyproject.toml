@@ -1,9 +1,9 @@
 [project]
-name = "nearest"
-description = "Nearest neighbors"
+name = "vicinity"
+description = "Lightweight Nearest Neighbors with Flexible Backends"
 readme = { file = "README.md", content-type = "text/markdown" }
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [{ name = "Stéphan Tulkens", email = "stephantul@gmail.com"}, {name = "Thomas van Dongen", email = "thomas123@live.nl"}]
 
@@ -15,6 +15,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -39,8 +40,35 @@ dev = [
     "pytest",
     "pytest-coverage",
     "ruff",
+    "setuptools"
 ]
 hnsw = ["hnswlib"]
+pynndescent = [
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0"
+]
+annoy = ["annoy"]
+faiss = ["faiss-cpu"]
+usearch = ["usearch"]
+voyager = ["voyager"]
+all = [
+    "hnswlib",
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0",
+    "annoy",
+    "faiss-cpu",
+    "usearch",
+    "voyager"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/MinishLab"
+"Bug Reports" = "https://github.com/MinishLab/vicinity/issues"
+"Source" = "https://github.com/MinishLab/vicinity"
 
 [tool.ruff]
 exclude = [".venv/"]
@@ -61,6 +89,7 @@ select = [
     "NPY",
     # Print: Forbid print statements
     "T20",
+    "F",
 ]
 ignore = [
     # Allow self and cls to be untyped, and allow Any type
@@ -85,10 +114,10 @@ warn_unused_configs = true
 ignore_missing_imports = true
 
 [tool.setuptools]
-packages = ["nearest"]
+packages = ["vicinity"]
 
 [tool.setuptools_scm]
 # can be empty if no extra settings are needed, presence enables setuptools_scm
 
 [tool.setuptools.dynamic]
-version = {attr = "nearest.version.__version__"}
+version = {attr = "vicinity.version.__version__"}

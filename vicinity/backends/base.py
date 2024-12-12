@@ -4,38 +4,44 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 from numpy import typing as npt
 
-from nearest.datatypes import Backend, QueryResult
+from vicinity import Metric
+from vicinity.datatypes import Backend, QueryResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class BaseArgs:
-    dim: int | None = None
+    metric: Metric
 
     def dump(self, file: Path) -> None:
         """Dump the arguments to a file."""
         with open(file, "w") as f:
-            json.dump(asdict(self), f)
+            d = self.dict()
+            d["metric"] = d["metric"].value
+            json.dump(d, f)
 
     @classmethod
     def load(cls: type[ArgType], file: Path) -> ArgType:
         """Load the arguments from a file."""
         with open(file, "r") as f:
-            return cls(**json.load(f))
+            data = json.load(f)
+            data["metric"] = Metric.from_string(data["metric"])
+            return cls(**data)
 
     def dict(self) -> dict[str, Any]:
-        """Dump the arguments to a string."""
+        """Dump the arguments to a dict."""
         return asdict(self)
 
 
 ArgType = TypeVar("ArgType", bound=BaseArgs)
 
 
-class AbstractBackend(ABC):
-    argument_class: type[BaseArgs]
+class AbstractBackend(ABC, Generic[ArgType]):
+    argument_class: type[ArgType]
+    inverse_metric_mapping: dict[Metric, str] = {}
 
     def __init__(self, arguments: ArgType, *args: Any, **kwargs: Any) -> None:
         """Initialize the backend with vectors."""
@@ -94,6 +100,11 @@ class AbstractBackend(ABC):
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend."""
         raise NotImplementedError()
+
+    @classmethod
+    def _map_metric_to_string(cls, metric: Metric) -> str:
+        """Map a Metric enum to a backend-specific metric string."""
+        return cls.inverse_metric_mapping.get(metric, metric.value)
 
 
 BaseType = TypeVar("BaseType", bound=AbstractBackend)
