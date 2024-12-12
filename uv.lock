@@ -1087,7 +1087,7 @@ wheels = [
 
 [[package]]
 name = "vicinity"
-version = "0.3.0"
+version = "0.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
@@ -1105,6 +1105,7 @@ all = [
     { name = "numpy" },
     { name = "pynndescent" },
     { name = "usearch" },
+    { name = "voyager" },
 ]
 annoy = [
     { name = "annoy" },
@@ -1133,6 +1134,9 @@ pynndescent = [
 ]
 usearch = [
     { name = "usearch" },
+]
+voyager = [
+    { name = "voyager" },
 ]
 
 [package.metadata]
@@ -1164,6 +1168,8 @@ requires-dist = [
     { name = "tqdm" },
     { name = "usearch", marker = "extra == 'all'" },
     { name = "usearch", marker = "extra == 'usearch'" },
+    { name = "voyager", marker = "extra == 'all'" },
+    { name = "voyager", marker = "extra == 'voyager'" },
 ]
 
 [[package]]
@@ -1178,6 +1184,40 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8c/b3/7b6a79c5c8cf6d90ea681310e169cf2db2884f4d583d16c6e1d5a75a4e04/virtualenv-20.27.1.tar.gz", hash = "sha256:142c6be10212543b32c6c45d3d3893dff89112cc588b7d0879ae5a1ec03a47ba", size = 6491145 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ae/92/78324ff89391e00c8f4cf6b8526c41c6ef36b4ea2d2c132250b1a6fc2b8d/virtualenv-20.27.1-py3-none-any.whl", hash = "sha256:f11f1b8a29525562925f745563bfd48b189450f61fb34c4f9cc79dd5aa32a1f4", size = 3117838 },
+]
+
+[[package]]
+name = "voyager"
+version = "2.0.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/d9/62399eb8a907da7f9eba0e2facf78925d54ba644a9be671cd98e7b4f547f/voyager-2.0.9-cp310-cp310-macosx_10_13_universal2.whl", hash = "sha256:f3cfe84666314daaf51836f77dabaafeb064bcbe5d9435d9c97886af19ae2876", size = 731200 },
+    { url = "https://files.pythonhosted.org/packages/51/70/0d90ebf90ca6fa415513b63925f4b21aeebd9f6400ecce5dffdb3743039f/voyager-2.0.9-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:956a60f864a586991cdde09373caf5630ab3319c47b6cdad4bf05ea8ba96a578", size = 377180 },
+    { url = "https://files.pythonhosted.org/packages/6e/af/76bb88b390bbf9c1dcbab90acd669168294c6d20b6a230b7333b432eee1b/voyager-2.0.9-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:56e6e7d6f1597207141d224d5420dc690ae27a2feb6c4164180cecc453cd5816", size = 356644 },
+    { url = "https://files.pythonhosted.org/packages/2b/b9/a514e2f88b7cdf35cb182064d5859258488cfe7e7b82bfff012d9cffd746/voyager-2.0.9-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7be032a8ae5447ce289f1c95f349e825e9d4edc915db7ea1b2c273940de2acbe", size = 4211154 },
+    { url = "https://files.pythonhosted.org/packages/db/95/1032e54e27eeac13f9affaf1fdeb834cc389f728316c9e7244c0e57c3e98/voyager-2.0.9-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ed85d23006f98091a137f637894560d1020ba25217b5332729417ac0a200b0bd", size = 4280843 },
+    { url = "https://files.pythonhosted.org/packages/2c/dc/395551a312110ad53cdac4f0126708d02c2d5c11c9f63ecf6a64985fab56/voyager-2.0.9-cp310-cp310-win_amd64.whl", hash = "sha256:053f22b23bd090f6376cf026c31653d3c040f9eaf0c6d1267e766a442a5b8ff8", size = 199722 },
+    { url = "https://files.pythonhosted.org/packages/c2/17/ace9aaf1e65553dae2ce3ba947e922e6bd16aa89abe558543471b5fe065c/voyager-2.0.9-cp311-cp311-macosx_10_13_universal2.whl", hash = "sha256:d270b29bafb5a133abd611a03b1b9ec7b03a44361966609abef72dde2518eb5e", size = 734474 },
+    { url = "https://files.pythonhosted.org/packages/3b/73/83d047ad7f6cb4fad426ed6f8b6c249c3ffecffa85ebb017e6d4e725aa0c/voyager-2.0.9-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:216c517dd66e0095f5f14277627a233c081797119028737f71168f094bacb9d0", size = 378460 },
+    { url = "https://files.pythonhosted.org/packages/92/3e/7648441cf72258fc2e5cb9be6f39890684f15a06f66db42f12a8041e4e30/voyager-2.0.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:a2ea7f5e61bb7de06d0196b1fbd43826908c6f2811576c94d97e353e7b32cb78", size = 358415 },
+    { url = "https://files.pythonhosted.org/packages/42/02/0f7c5e4d9eaf83d932ab0c89e93117166575163f670a6200f55a56dae268/voyager-2.0.9-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4c451b25d449ac6923f7424a3255995f97263ed694fa873119703da01a09f6d7", size = 4237185 },
+    { url = "https://files.pythonhosted.org/packages/38/7c/47598f5630b97cf7cf8f29ac390b8beab24adeb3f322d004244660b96e8f/voyager-2.0.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ecd1e690a69a044b988fd102676bb8584ed423af4b7aa9e69349203690263aad", size = 4304425 },
+    { url = "https://files.pythonhosted.org/packages/1a/95/fa3f090d8e1bdbd8401e9944080f3c12d1e8f1385980da4151f6ab62a783/voyager-2.0.9-cp311-cp311-win_amd64.whl", hash = "sha256:5e1c264f4202b551ca8cb5a33d456f451c598ea7b9680134177dc5443819f328", size = 200738 },
+    { url = "https://files.pythonhosted.org/packages/22/fa/455fbd3a709403dd98f910b1ba5bfd9bf38db3e718edd03c8758ecb3b750/voyager-2.0.9-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:2d344617a1c97d6b317f13e801b3377a55f1e5b91786f9354dcde12b7945b3e0", size = 736030 },
+    { url = "https://files.pythonhosted.org/packages/d4/9f/ee29e306901be0ea521b464c3533bd95d49dbe08c54df64cd49bbb13918e/voyager-2.0.9-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:d58682f2f8d9cfccb95d2278eeec01ed76f90636cf6123db7850eb9a4b7e70e7", size = 380145 },
+    { url = "https://files.pythonhosted.org/packages/e5/83/d9b40742c17f674cbafec55b751804e68ee9b492cfb02fddc72f060beb17/voyager-2.0.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:510485dafa539ae130f2ad8bf7c95b21a2fa454f0b25581b37be3ca36bab29a1", size = 358094 },
+    { url = "https://files.pythonhosted.org/packages/33/61/e705ee3154450802912d35e881261182c01ba0e65cc83c6ef16b84c56e1b/voyager-2.0.9-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a4015db48c0c5d596e8bc536f4b05b601a2138e6439e00b06410e18286896273", size = 4234321 },
+    { url = "https://files.pythonhosted.org/packages/13/7a/4ac271fb5a8068f97dd6446622d679d26237a772ab12d1e6241cc0848dca/voyager-2.0.9-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:805f1736e5fe309ae8884e572b78d9816ff4fd6f1ef364298a2f62566ea86bc9", size = 4312789 },
+    { url = "https://files.pythonhosted.org/packages/b4/f6/906b21d4b42df264fc231c74753ca164f14cb09d40cd6b3a32d293aa0418/voyager-2.0.9-cp312-cp312-win_amd64.whl", hash = "sha256:abc7041ba8047d25942afe457db597be6f33161a669aac00dfffc00b7d833bfa", size = 201868 },
+    { url = "https://files.pythonhosted.org/packages/9f/9a/f5467d52356995c9f64cb27a99211142abead24290bfb8ccfb38168ef91d/voyager-2.0.9-cp39-cp39-macosx_10_13_universal2.whl", hash = "sha256:a38b7a232367095ef28350889b0c4ec8ce9f53c0a7839f2b06f517b652938e2c", size = 731403 },
+    { url = "https://files.pythonhosted.org/packages/ab/be/ecef9dfce07c535af6d11a4011a4a8693c4174ca8f87495e9ba30c8c7884/voyager-2.0.9-cp39-cp39-macosx_10_13_x86_64.whl", hash = "sha256:e5968f516a94832a599c9c1b64246b7f81344ed3fb49247fbdaba7e673c1e8a9", size = 377365 },
+    { url = "https://files.pythonhosted.org/packages/55/99/d31f596e887d998c81671b8e345925f07ccc36dee7144dbf80f1c86fb187/voyager-2.0.9-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f4095d4012479fa53b21f8a65c7790e844c3634a8ead1fca04f69a4a34ebc362", size = 356976 },
+    { url = "https://files.pythonhosted.org/packages/6f/43/096fcfa3443d37d8b5e4163b49b0d91f0456022df59017a8ae25ae4482d9/voyager-2.0.9-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d55f85d36111e950d42e7d78accca84c582d5606ec1bae2d4b2da41ccc3e7f2e", size = 4209912 },
+    { url = "https://files.pythonhosted.org/packages/ff/51/c35a343471746e8964cb5d002a3367f5e28f5787c2c0689e0566a7406f66/voyager-2.0.9-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:83e1dd648040df093ddda74a6f361ec912caf981d20dfdd4b0d3bd7fb230147b", size = 4280035 },
+    { url = "https://files.pythonhosted.org/packages/ba/6c/5643effb7e495f8ee5c346e7b41961cb8d4dd6ef6952b24ec929a868f41c/voyager-2.0.9-cp39-cp39-win_amd64.whl", hash = "sha256:a2b17036c9b825f7062eb09ac613ca1e3fdb11712b1fc6d58bbbc201698e09c9", size = 196377 },
 ]
 
 [[package]]

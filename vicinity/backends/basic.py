@@ -90,6 +90,10 @@ class BasicVectorStore:
         self._vectors = matrix
         self._update_precomputed_data()
 
+    def __len__(self) -> int:
+        """Get the number of vectors."""
+        return self.vectors.shape[0]
+
 
 class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
     argument_class = BasicArgs
@@ -99,10 +103,6 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
     def __init__(self, vectors: npt.NDArray, arguments: BasicArgs) -> None:
         """Initialize the backend."""
         super().__init__(vectors=vectors, arguments=arguments)
-
-    def __len__(self) -> int:
-        """Get the number of vectors."""
-        return self.vectors.shape[0]
 
     @property
     def backend_type(self) -> Backend:
