@@ -115,9 +115,10 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend and return results as tuples of keys and distances."""
+        k = min(k, len(self))
         results = self.index.search(vectors, k)
-        keys = np.array(results.keys).reshape(-1, k)
-        distances = np.array(results.distances, dtype=np.float32).reshape(-1, k)
+        keys = np.atleast_2d(results.keys)
+        distances = np.atleast_2d(results.distances)
         return list(zip(keys, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:

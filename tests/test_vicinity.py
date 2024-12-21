@@ -58,6 +58,10 @@ def test_vicinity_query(vicinity_instance: Vicinity, query_vector: np.ndarray) -
 
     assert len(results) == 1
 
+    results = vicinity_instance.query(np.stack([query_vector, query_vector]), k=2)
+
+    assert results[0] == results[1]
+
 
 def test_vicinity_query_threshold(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
     """
@@ -69,6 +73,10 @@ def test_vicinity_query_threshold(vicinity_instance: Vicinity, query_vector: np.
     results = vicinity_instance.query_threshold(query_vector, threshold=0.7)
 
     assert len(results) >= 1
+
+    results = vicinity_instance.query_threshold(np.stack([query_vector, query_vector]), threshold=0.7)
+
+    assert results[0] == results[1]
 
 
 def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
