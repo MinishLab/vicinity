@@ -146,6 +146,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Perform a k-NN search in the FAISS index."""
+        k = min(len(self), k)
         if self.arguments.metric == "cosine":
             vectors = normalize(vectors)
         distances, indices = self.index.search(vectors, k)

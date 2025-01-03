@@ -93,6 +93,7 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend."""
+        k = min(k, len(self))
         return list(zip(*self.index.knn_query(vectors, k)))
 
     def insert(self, vectors: npt.NDArray) -> None:
