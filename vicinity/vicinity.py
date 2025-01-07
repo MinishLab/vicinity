@@ -14,7 +14,7 @@ from numpy import typing as npt
 
 from vicinity import Metric
 from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
-from vicinity.datatypes import Backend, PathLike
+from vicinity.datatypes import Backend, PathLike, QueryResult
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +114,7 @@ class Vicinity:
         self,
         vectors: npt.NDArray,
         k: int = 10,
-    ) -> list[list[tuple[str, float]]]:
+    ) -> list[QueryResult]:
         """
         Find the nearest neighbors to some arbitrary vector.
 
@@ -141,7 +141,7 @@ class Vicinity:
         vectors: npt.NDArray,
         threshold: float = 0.5,
         max_k: int = 100,
-    ) -> list[list[str]]:
+    ) -> list[QueryResult]:
         """
         Find the nearest neighbors to some arbitrary vector with some threshold. Note: the output is not sorted.
 
@@ -150,15 +150,16 @@ class Vicinity:
         :param max_k: The maximum number of neighbors to consider for the threshold query.
 
         :return: For each item in the input, the items above the threshold are returned in the form of
-            (NAME, SIMILARITY) tuples.
+                (NAME, SIMILARITY) tuples.
         """
-        vectors = np.array(vectors)
+        vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
             vectors = vectors[None, :]
 
         out = []
-        for indexes, _ in self.backend.threshold(vectors, threshold, max_k=max_k):
-            out.append([self.items[idx] for idx in indexes])
+        for indices, distances in self.backend.threshold(vectors, threshold, max_k=max_k):
+            distances.clip(min=0, out=distances)
+            out.append([(self.items[idx], dist) for idx, dist in zip(indices, distances)])
 
         return out
 
