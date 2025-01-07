@@ -150,22 +150,25 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
         self,
         vectors: npt.NDArray,
         threshold: float,
-    ) -> list[npt.NDArray]:
+        max_k: int,
+    ) -> QueryResult:
         """
         Batched distance thresholding.
 
         :param vectors: The vectors to threshold.
         :param threshold: The threshold to use.
-        :return: A list of lists of indices of vectors that are below the threshold
+        :param max_k: The maximum number of neighbors to consider.
+        :return: A list of tuples with the indices and distances.
         """
-        out: list[npt.NDArray] = []
+        out: QueryResult = []
         for i in range(0, len(vectors), 1024):
             batch = vectors[i : i + 1024]
             distances = self._dist(batch)
             for dists in distances:
-                indices = np.flatnonzero(dists <= threshold)
-                sorted_indices = indices[np.argsort(dists[indices])]
-                out.append(sorted_indices)
+                mask = dists <= threshold
+                indices = np.flatnonzero(mask)
+                filtered_distances = dists[mask]
+                out.append((indices, filtered_distances))
         return out
 
     def query(

@@ -104,10 +104,10 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
         """Delete vectors from the backend."""
         raise NotImplementedError("Deletion is not supported in HNSW backend.")
 
-    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
+    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Threshold the backend."""
-        out: list[npt.NDArray] = []
-        for x, y in self.query(vectors, 100):
-            out.append(x[y < threshold])
+        out: QueryResult = []
+        for x, y in self.query(vectors, max_k):
+            out.append((x[y < threshold], y[y < threshold]))
 
         return out

@@ -92,7 +92,7 @@ class AbstractBackend(ABC, Generic[ArgType]):
         raise NotImplementedError()
 
     @abstractmethod
-    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
+    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Threshold the backend."""
         raise NotImplementedError()
 
