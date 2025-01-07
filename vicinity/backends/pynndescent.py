@@ -86,7 +86,8 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         indices, distances = self.index.query(normalized_vectors, k=max_k)
         out: QueryResult = []
         for idx, dist in zip(indices, distances):
-            out.append((idx[dist < threshold], dist[dist < threshold]))
+            mask = dist < threshold
+            out.append((idx[mask], dist[mask]))
         return out
 
     def save(self, base_path: Path) -> None:

@@ -130,5 +130,6 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
         """Threshold the backend."""
         out: QueryResult = []
         for x, y in self.query(vectors, max_k):
-            out.append((x[y < threshold], y[y < threshold]))
+            mask = y < threshold
+            out.append((x[mask], y[mask]))
         return out

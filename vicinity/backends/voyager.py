@@ -98,7 +98,8 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         """Threshold the backend."""
         out: list[tuple[npt.NDArray, npt.NDArray]] = []
         for x, y in self.query(vectors, max_k):
-            out.append((x[y < threshold], y[y < threshold]))
+            mask = y < threshold
+            out.append((x[mask], y[mask]))
 
         return out
 

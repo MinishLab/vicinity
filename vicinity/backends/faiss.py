@@ -179,13 +179,15 @@ class FaissBackend(AbstractBackend[FaissArgs]):
                 dist = D[start:end]
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-                out.append((idx[dist < threshold], dist[dist < threshold]))
+                mask = dist < threshold
+                out.append((idx[mask], dist[mask]))
         else:
             distances, indices = self.index.search(vectors, max_k)
             for dist, idx in zip(distances, indices):
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-                out.append((idx[dist < threshold], dist[dist < threshold]))
+                mask = dist < threshold
+                out.append((idx[mask], dist[mask]))
 
         return out
 
