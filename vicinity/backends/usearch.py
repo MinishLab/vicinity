@@ -129,12 +129,9 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         """Delete vectors from the index (not supported by Usearch)."""
         raise NotImplementedError("Dynamic deletion is not supported in Usearch.")
 
-    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
-        """Query vectors within a distance threshold and return keys and distances."""
-        out: QueryResult = []
-        for keys_row, distances_row in self.query(vectors, max_k):
-            keys_row = np.array(keys_row)
-            distances_row = np.array(distances_row, dtype=np.float32)
-            mask = distances_row < threshold
-            out.append((keys_row[mask], distances_row[mask]))
-        return out
+    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
+        """Threshold the backend and return filtered keys."""
+        return [
+            np.array(keys_row)[np.array(distances_row, dtype=np.float32) < threshold]
+            for keys_row, distances_row in self.query(vectors, 100)
+        ]

@@ -140,24 +140,21 @@ class Vicinity:
         self,
         vectors: npt.NDArray,
         threshold: float = 0.5,
-        max_k: int = 100,
     ) -> list[list[str]]:
         """
-        Find the nearest neighbors to some arbitrary vector with some threshold. Note: the output is not sorted.
+        Find the nearest neighbors to some arbitrary vector with some threshold.
 
         :param vectors: The vectors to find the most similar vectors to.
         :param threshold: The threshold to use.
-        :param max_k: The maximum number of neighbors to consider for the threshold query.
 
-        :return: For each item in the input, the items above the threshold are returned in the form of
-            (NAME, SIMILARITY) tuples.
+        :return: For each item in the input, all items above the threshold are returned.
         """
         vectors = np.array(vectors)
         if np.ndim(vectors) == 1:
             vectors = vectors[None, :]
 
         out = []
-        for indexes, _ in self.backend.threshold(vectors, threshold, max_k=max_k):
+        for indexes in self.backend.threshold(vectors, threshold):
             out.append([self.items[idx] for idx in indexes])
 
         return out

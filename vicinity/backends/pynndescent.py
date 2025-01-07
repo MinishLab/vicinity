@@ -80,14 +80,15 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         """Delete vectors from the backend."""
         raise NotImplementedError("Deletion is not supported in PyNNDescent backend.")
 
-    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
+    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Find neighbors within a distance threshold."""
         normalized_vectors = normalize_or_copy(vectors)
-        indices, distances = self.index.query(normalized_vectors, k=max_k)
-        out: QueryResult = []
+        indices, distances = self.index.query(normalized_vectors, k=100)
+        result = []
         for idx, dist in zip(indices, distances):
-            out.append((idx[dist < threshold], dist[dist < threshold]))
-        return out
+            within_threshold = idx[dist < threshold]
+            result.append(within_threshold)
+        return result
 
     def save(self, base_path: Path) -> None:
         """Save the vectors and configuration to a specified path."""

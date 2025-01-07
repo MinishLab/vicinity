@@ -94,11 +94,11 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         """Delete vectors from the backend."""
         raise NotImplementedError("Deletion is not supported in Voyager backend.")
 
-    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
+    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
         """Threshold the backend."""
-        out: list[tuple[npt.NDArray, npt.NDArray]] = []
-        for x, y in self.query(vectors, max_k):
-            out.append((x[y < threshold], y[y < threshold]))
+        out: list[npt.NDArray] = []
+        for x, y in self.query(vectors, len(self)):
+            out.append(x[y < threshold])
 
         return out
 
