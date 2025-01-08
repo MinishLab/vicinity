@@ -164,9 +164,9 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         """Delete vectors from the backend."""
         raise NotImplementedError("Deletion is not supported in FAISS backends.")
 
-    def threshold(self, vectors: npt.NDArray, threshold: float) -> list[npt.NDArray]:
+    def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Query vectors within a distance threshold, using range_search if supported."""
-        out: list[npt.NDArray] = []
+        out: QueryResult = []
         if self.arguments.metric == "cosine":
             vectors = normalize(vectors)
 
@@ -179,13 +179,15 @@ class FaissBackend(AbstractBackend[FaissArgs]):
                 dist = D[start:end]
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-                out.append(idx[dist < threshold])
+                mask = dist < threshold
+                out.append((idx[mask], dist[mask]))
         else:
-            distances, indices = self.index.search(vectors, 100)
+            distances, indices = self.index.search(vectors, max_k)
             for dist, idx in zip(distances, indices):
                 if self.arguments.metric == "cosine":
                     dist = 1 - dist
-                out.append(idx[dist < threshold])
+                mask = dist < threshold
+                out.append((idx[mask], dist[mask]))
 
         return out
 
