@@ -38,5 +38,10 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
 
         return VoyagerBackend
 
+    elif backend == Backend.FLATNAV:
+        from vicinity.backends.flatnav import FlatNavBackend
+
+        return FlatNavBackend
+
 
 __all__ = ["get_backend_class", "AbstractBackend", "BasicVectorStore"]
