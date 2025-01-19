@@ -53,6 +53,7 @@ annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
 voyager = ["voyager"]
+flatnav = ["flatnav"]
 all = [
     "hnswlib",
     "pynndescent>=0.5.10",
@@ -62,7 +63,8 @@ all = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager"
+    "voyager",
+    "flatnav"
 ]
 
 [project.urls]
