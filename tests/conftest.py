@@ -46,11 +46,15 @@ BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_typ
     (Backend.PYNNDESCENT, None),
     (Backend.USEARCH, None),
     (Backend.VOYAGER, None),
+    (Backend.FLATNAV, None),
 ]
 
 
 # Create human-readable ids for each backend type
-BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name for backend, index_type in BACKEND_PARAMS]
+BACKEND_IDS = [
+    f"{backend.name}-{index_type}" if index_type else backend.name
+    for backend, index_type in BACKEND_PARAMS
+]
 
 
 @pytest.fixture(params=BACKEND_PARAMS)
@@ -60,7 +64,9 @@ def backend_type(request: pytest.FixtureRequest) -> Backend:
 
 
 @pytest.fixture(params=BACKEND_PARAMS, ids=BACKEND_IDS)
-def vicinity_instance(request: pytest.FixtureRequest, items: list[str], vectors: np.ndarray) -> Vicinity:
+def vicinity_instance(
+    request: pytest.FixtureRequest, items: list[str], vectors: np.ndarray
+) -> Vicinity:
     """Fixture providing a Vicinity instance for each backend type."""
     backend_type, index_type = request.param
     # Handle FAISS backend with specific FAISS index types
@@ -99,17 +105,35 @@ def vicinity_instance_with_stored_vectors(
         if index_type in ("pq", "ivfpq", "ivfpqr"):
             # Use smaller values for pq indexes since the dataset is small
             return Vicinity.from_vectors_and_items(
-                vectors, items, backend_type=backend_type, index_type=index_type, m=2, nbits=4, store_vectors=True
+                vectors,
+                items,
+                backend_type=backend_type,
+                index_type=index_type,
+                m=2,
+                nbits=4,
+                store_vectors=True,
             )
         else:
             return Vicinity.from_vectors_and_items(
-                vectors, items, backend_type=backend_type, index_type=index_type, nlist=2, nbits=32, store_vectors=True
+                vectors,
+                items,
+                backend_type=backend_type,
+                index_type=index_type,
+                nlist=2,
+                nbits=32,
+                store_vectors=True,
             )
 
-    return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type, store_vectors=True)
+    return Vicinity.from_vectors_and_items(
+        vectors, items, backend_type=backend_type, store_vectors=True
+    )
 
 
 @pytest.fixture()
-def vicinity_with_basic_backend_and_store(vectors: np.ndarray, items: list[str]) -> Vicinity:
+def vicinity_with_basic_backend_and_store(
+    vectors: np.ndarray, items: list[str]
+) -> Vicinity:
     """Fixture providing a BasicBackend instance."""
-    return Vicinity.from_vectors_and_items(vectors, items, backend_type=Backend.BASIC, store_vectors=True)
+    return Vicinity.from_vectors_and_items(
+        vectors, items, backend_type=Backend.BASIC, store_vectors=True
+    )
