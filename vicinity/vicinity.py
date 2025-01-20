@@ -241,11 +241,7 @@ class Vicinity:
         if vectors.shape[1] != self.dim:
             raise ValueError("The inserted vectors must have the same dimension as the backend.")
 
-        for token in tokens:
-            for item in self.items:
-                if item == token:
-                    raise ValueError(f"Token {token} is already in the vector space.")
-            self.items.append(token)
+        self.items.extend(tokens)
         self.backend.insert(vectors)
         if self.vector_store is not None:
             self.vector_store.insert(vectors)
