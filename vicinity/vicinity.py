@@ -256,15 +256,17 @@ class Vicinity:
         :param tokens: A list of tokens to remove from the vector space.
         :raises ValueError: If any passed tokens are not in the vector space.
         """
-        seen_tokens = []
+        tokens_to_find = list(tokens)
         curr_indices = []
         for idx, elem in enumerate(self.items):
-            for token in tokens:
-                if elem == token:
-                    curr_indices.append(idx)
-                    seen_tokens.append(token)
-        if len(seen_tokens) < len(tokens):
-            raise ValueError("Not all tokens were in the vector space.")
+            matching_tokens = [t for t in tokens_to_find if t == elem]
+            if matching_tokens:
+                curr_indices.append(idx)
+                for t in matching_tokens:
+                    tokens_to_find.remove(t)
+
+        if tokens_to_find:
+            raise ValueError(f"Tokens {tokens_to_find} were not in the vector space.")
 
         self.backend.delete(curr_indices)
         if self.vector_store is not None:
