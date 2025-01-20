@@ -241,9 +241,8 @@ class Vicinity:
         if vectors.shape[1] != self.dim:
             raise ValueError("The inserted vectors must have the same dimension as the backend.")
 
-        item_set = set(self.items)
         for token in tokens:
-            for item in item_set:
+            for item in self.items:
                 if item == token:
                     raise ValueError(f"Token {token} is already in the vector space.")
             self.items.append(token)
@@ -261,13 +260,15 @@ class Vicinity:
         :param tokens: A list of tokens to remove from the vector space.
         :raises ValueError: If any passed tokens are not in the vector space.
         """
-        try:
-            curr_indices = []
-            for idx, elem in enumerate(self.items):
-                if elem in tokens:
+        seen_tokens = []
+        curr_indices = []
+        for idx, elem in enumerate(self.items):
+            for token in tokens:
+                if elem == token:
                     curr_indices.append(idx)
-        except ValueError as exc:
-            raise ValueError(f"Token {exc} was not in the vector space.") from exc
+                    seen_tokens.append(token)
+        if len(seen_tokens) < len(tokens):
+            raise ValueError("Not all tokens were in the vector space.")
 
         self.backend.delete(curr_indices)
         if self.vector_store is not None:

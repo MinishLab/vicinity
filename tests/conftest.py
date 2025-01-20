@@ -24,7 +24,7 @@ _faiss_index_types = [
 @pytest.fixture(scope="session")
 def items() -> list[str]:
     """Fixture providing a list of item names."""
-    return [f"item{i}" for i in range(1, 10001)]
+    return [f"item{i}" if i % 2 == 0 else {"name": f"item{i}", "id": i} for i in range(1, 10001)]
 
 
 @pytest.fixture(scope="session")
