@@ -289,14 +289,14 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
         assert item not in vicinity_instance.items
 
     # Query using a vector of an item that wasn't deleted
-    existsing_item_index = 3
-    item3_vector = vectors[existsing_item_index]
+    existing_item_index = 3
+    item3_vector = vectors[existing_item_index]
 
     results = vicinity_instance.query(item3_vector, k=10)
     returned_items = [item for item, _ in results[0]]
 
     # Check that the queried item is in the results
-    assert items[existsing_item_index] in returned_items
+    assert items[existing_item_index] in returned_items
 
 
 def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> None:
