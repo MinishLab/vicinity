@@ -28,6 +28,18 @@ def items() -> list[str]:
 
 
 @pytest.fixture(scope="session")
+def non_serializable_items() -> list[str]:
+    """Fixture providing a list of non-serializable items."""
+
+    class NonSerializable:
+        def __init__(self, name: str, id: int) -> None:
+            self.name = name
+            self.id = id
+
+    return [NonSerializable(f"item{i}", i) for i in range(1, 10001)]
+
+
+@pytest.fixture(scope="session")
 def vectors() -> np.ndarray:
     """Fixture providing an array of vectors corresponding to items."""
     return random_gen.random((10000, 8))

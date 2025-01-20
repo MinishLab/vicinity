@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from orjson import JSONEncodeError
 
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
@@ -160,6 +161,21 @@ def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_w
 
     v = Vicinity.load(save_path)
     assert v.vector_store is not None
+
+
+def test_vicinity_save_and_load_non_serializable_items(
+    tmp_path: Path, non_serializable_items: list[str], vectors: np.ndarray
+) -> None:
+    """
+    Test Vicinity.save and Vicinity.load with non-serializable items.
+
+    :param tmp_path: Temporary directory provided by pytest.
+    :param non_serializable_items: A list of non-serializable items.
+    """
+    vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=non_serializable_items)
+    save_path = tmp_path / "vicinity_data"
+    with pytest.raises(JSONEncodeError):
+        vicinity.save(save_path)
 
 
 def test_index_vector_store(vicinity_with_basic_backend_and_store: Vicinity, vectors: np.ndarray) -> None:

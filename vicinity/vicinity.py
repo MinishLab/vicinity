@@ -178,6 +178,7 @@ class Vicinity:
         :param folder: The path to which to save the JSON file. The vectors are saved separately. The JSON contains a path to the numpy file.
         :param overwrite: Whether to overwrite the JSON and numpy files if they already exist.
         :raises ValueError: If the path is not a directory.
+        :raises JSONEncodeError: If the items are not serializable.
         """
         path = Path(folder)
         path.mkdir(parents=True, exist_ok=overwrite)
