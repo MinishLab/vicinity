@@ -81,12 +81,14 @@ results = vicinity.query(query_vectors, k=3)
 ```
 
 Saving and loading a vector store:
+
 ```python
 vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
 ```
 
 Evaluating a backend:
+
 ```python
 # Use the first 1000 vectors as query vectors
 query_vectors = vectors[:1000]
