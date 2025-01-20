@@ -29,7 +29,7 @@ class Vicinity:
 
     def __init__(
         self,
-        items: Sequence[str],
+        items: Sequence[Any],
         backend: AbstractBackend,
         metadata: Union[dict[str, Any], None] = None,
         vector_store: BasicVectorStore | None = None,
@@ -49,7 +49,7 @@ class Vicinity:
             raise ValueError(
                 "Your vector space and list of items are not the same length: " f"{len(backend)} != {len(items)}"
             )
-        self.items: list[str] = list(items)
+        self.items: list[Any] = list(items)
         self.backend: AbstractBackend = backend
         self.metadata = metadata or {}
         self.vector_store = vector_store
@@ -74,7 +74,7 @@ class Vicinity:
     def from_vectors_and_items(
         cls: type[Vicinity],
         vectors: npt.NDArray,
-        items: Sequence[str],
+        items: Sequence[Any],
         backend_type: Backend | str = Backend.BASIC,
         store_vectors: bool = False,
         **kwargs: Any,
@@ -211,7 +211,7 @@ class Vicinity:
 
         with open(folder_path / "data.json", "rb") as file_handle:
             data: dict[str, Any] = orjson.loads(file_handle.read())
-        items: Sequence[str] = data["items"]
+        items: Sequence[Any] = data["items"]
 
         metadata: dict[str, Any] = data["metadata"]
         backend_type = Backend(data["backend_type"])
@@ -227,7 +227,7 @@ class Vicinity:
 
         return instance
 
-    def insert(self, tokens: Sequence[str], vectors: npt.NDArray) -> None:
+    def insert(self, tokens: Sequence[Any], vectors: npt.NDArray) -> None:
         """
         Insert new items into the vector space.
 
@@ -243,14 +243,20 @@ class Vicinity:
 
         item_set = set(self.items)
         for token in tokens:
-            if token in item_set:
-                raise ValueError(f"Token {token} is already in the vector space.")
-            self.items.append(token)
+            if isinstance(token, str):
+                if token in item_set:
+                    raise ValueError(f"Token {token} is already in the vector space.")
+                self.items.append(token)
+            else:
+                for item in self.items:
+                    if item == token:
+                        raise ValueError(f"Token {token} is already in the vector space.")
+                self.items.append(token)
         self.backend.insert(vectors)
         if self.vector_store is not None:
             self.vector_store.insert(vectors)
 
-    def delete(self, tokens: Sequence[str]) -> None:
+    def delete(self, tokens: Sequence[Any]) -> None:
         """
         Delete tokens from the vector space.
 
@@ -261,7 +267,13 @@ class Vicinity:
         :raises ValueError: If any passed tokens are not in the vector space.
         """
         try:
-            curr_indices = [self.items.index(token) for token in tokens]
+            if isinstance(tokens[0], str):
+                curr_indices = [self.items.index(token) for token in tokens]
+            else:
+                curr_indices = []
+                for idx, elem in enumerate(self.items):
+                    if elem in tokens:
+                        curr_indices.append(idx)
         except ValueError as exc:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
