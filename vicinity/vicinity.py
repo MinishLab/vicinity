@@ -243,15 +243,10 @@ class Vicinity:
 
         item_set = set(self.items)
         for token in tokens:
-            if isinstance(token, str):
-                if token in item_set:
+            for item in item_set:
+                if item == token:
                     raise ValueError(f"Token {token} is already in the vector space.")
-                self.items.append(token)
-            else:
-                for item in self.items:
-                    if item == token:
-                        raise ValueError(f"Token {token} is already in the vector space.")
-                self.items.append(token)
+            self.items.append(token)
         self.backend.insert(vectors)
         if self.vector_store is not None:
             self.vector_store.insert(vectors)
@@ -267,13 +262,10 @@ class Vicinity:
         :raises ValueError: If any passed tokens are not in the vector space.
         """
         try:
-            if isinstance(tokens[0], str):
-                curr_indices = [self.items.index(token) for token in tokens]
-            else:
-                curr_indices = []
-                for idx, elem in enumerate(self.items):
-                    if elem in tokens:
-                        curr_indices.append(idx)
+            curr_indices = []
+            for idx, elem in enumerate(self.items):
+                if elem in tokens:
+                    curr_indices.append(idx)
         except ValueError as exc:
             raise ValueError(f"Token {exc} was not in the vector space.") from exc
 
