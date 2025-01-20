@@ -11,6 +11,7 @@ from typing import Any, Iterable, Sequence, Union
 import numpy as np
 import orjson
 from numpy import typing as npt
+from orjson import JSONEncodeError
 
 from vicinity import Metric
 from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
@@ -185,9 +186,11 @@ class Vicinity:
             raise ValueError(f"Path {path} should be a directory.")
 
         items_dict = {"items": self.items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
-
-        with open(path / "data.json", "wb") as file_handle:
-            file_handle.write(orjson.dumps(items_dict))
+        try:
+            with open(path / "data.json", "wb") as file_handle:
+                file_handle.write(orjson.dumps(items_dict))
+        except JSONEncodeError as e:
+            raise JSONEncodeError(f"Items could not be encoded to JSON because they are not serializable: {e}")
 
         self.backend.save(path)
         if self.vector_store is not None:
