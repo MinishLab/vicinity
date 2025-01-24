@@ -35,8 +35,7 @@ Vicinity is a light-weight, low-dependency vector store. It provides a simple an
 
 There are many nearest neighbors packages and methods out there. However, we found it difficult to compare them. Every package has its own interface, quirks, and limitations, and learning a new package can be time-consuming. In addition to that, how do you effectively evaluate different packages? How do you know which one is the best for your use case?
 
-
- This is where Vicinity comes in. Instead of learning a new interface for each new package or backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
+This is where Vicinity comes in. Instead of learning a new interface for each new package or backend, Vicinity provides a unified interface for all backends. This allows you to easily experiment with different indexing methods and distance metrics and choose the best one for your use case. Vicinity also provides a simple way to evaluate the performance of different backends, allowing you to measure the queries per second and recall.
 
 ## Quickstart
 
@@ -49,13 +48,13 @@ Optionally, [install any of the supported backends](#installation), or simply in
 pip install vicinity[all]
 ```
 
-
 The following code snippet demonstrates how to use Vicinity for nearest neighbor search:
+
 ```python
 import numpy as np
 from vicinity import Vicinity, Backend, Metric
 
-# Create some dummy data
+# Create some dummy data as strings or other serializable objects
 items = ["triforce", "master sword", "hylian shield", "boomerang", "hookshot"]
 vectors = np.random.rand(len(items), 128)
 
@@ -82,12 +81,14 @@ results = vicinity.query(query_vectors, k=3)
 ```
 
 Saving and loading a vector store:
+
 ```python
 vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
 ```
 
 Evaluating a backend:
+
 ```python
 # Use the first 1000 vectors as query vectors
 query_vectors = vectors[:1000]
@@ -100,6 +101,7 @@ qps, recall = vicinity.evaluate(
 ```
 
 ## Main Features
+
 Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
@@ -108,6 +110,7 @@ Vicinity provides the following features:
 - Easy to Use: Simple and intuitive API.
 
 ## Supported Backends
+
 The following backends are supported:
 - `BASIC`: A simple (exact matching) flat index for vector storage and search.
 - [HNSW](https://github.com/nmslib/hnswlib): Hierarchical Navigable Small World Graph (HNSW) for ANN search using hnswlib.
@@ -125,8 +128,6 @@ The following backends are supported:
   - `ivfpq`: Inverted file search with product quantizer.
   - `ivfpqr`: Inverted file search with product quantizer and refinement.
 - [VOYAGER](https://github.com/spotify/voyager): Voyager is a library for performing fast approximate nearest-neighbor searches on an in-memory collection of vectors.
-
-
 
 NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, and `Usearch`. The `BASIC` backend supports both insertion and deletion.
 
@@ -159,7 +160,9 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                 | `m`                 | The number of connections between nodes in the tree’s internal data structure.                                                              | `16`                |
 
 ## Installation
+
 The following installation options are available:
+
 ```bash
 # Install the base package
 pip install vicinity

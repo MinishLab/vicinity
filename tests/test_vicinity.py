@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from orjson import JSONEncodeError
 
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
@@ -162,6 +163,21 @@ def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_w
     assert v.vector_store is not None
 
 
+def test_vicinity_save_and_load_non_serializable_items(
+    tmp_path: Path, non_serializable_items: list[str], vectors: np.ndarray
+) -> None:
+    """
+    Test Vicinity.save and Vicinity.load with non-serializable items.
+
+    :param tmp_path: Temporary directory provided by pytest.
+    :param non_serializable_items: A list of non-serializable items.
+    """
+    vicinity = Vicinity.from_vectors_and_items(vectors=vectors, items=non_serializable_items)
+    save_path = tmp_path / "vicinity_data"
+    with pytest.raises(JSONEncodeError):
+        vicinity.save(save_path)
+
+
 def test_index_vector_store(vicinity_with_basic_backend_and_store: Vicinity, vectors: np.ndarray) -> None:
     """
     Index vectors in the Vicinity instance.
@@ -183,18 +199,17 @@ def test_index_vector_store(vicinity_with_basic_backend_and_store: Vicinity, vec
         vicinity_with_basic_backend_and_store.get_vector_by_index([-1])
 
 
-def test_vicinity_insert_duplicate(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
+def test_vicinity_insert_duplicate(items: list[str], vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
     """
     Test that Vicinity.insert raises ValueError when inserting duplicate items.
 
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If inserting items that already exist.
     """
-    new_items = ["item1"]
     new_vector = query_vector
 
     with pytest.raises(ValueError):
-        vicinity_instance.insert(new_items, new_vector[None, :])
+        vicinity_instance.insert(items[0], new_vector[None, :])
 
 
 def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
@@ -281,7 +296,8 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
         return
 
     # Delete some items from the Vicinity instance
-    items_to_delete = ["item2", "item4", "item6"]
+    non_existing_items_indices = [0, 1, 2]
+    items_to_delete = [items[i] for i in non_existing_items_indices]
     vicinity_instance.delete(items_to_delete)
 
     # Ensure the items are no longer in the items list
@@ -289,14 +305,14 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
         assert item not in vicinity_instance.items
 
     # Query using a vector of an item that wasn't deleted
-    item3_index = items.index("item3")
-    item3_vector = vectors[item3_index]
+    existing_item_index = 3
+    item3_vector = vectors[existing_item_index]
 
     results = vicinity_instance.query(item3_vector, k=10)
     returned_items = [item for item, _ in results[0]]
 
     # Check that the queried item is in the results
-    assert "item3" in returned_items
+    assert items[existing_item_index] in returned_items
 
 
 def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> None:
