@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import logging
 from io import open
 from pathlib import Path
@@ -19,8 +20,13 @@ from vicinity.datatypes import Backend, PathLike, QueryResult
 
 logger = logging.getLogger(__name__)
 
+if importlib.util.find_spec("huggingface_hub") is not None and importlib.util.find_spec("datasets") is not None:
+    from vicinity.integrations.huggingface import HuggingFaceMixin
+else:
+    HuggingFaceMixin = object
 
-class Vicinity:
+
+class Vicinity(HuggingFaceMixin):
     """
     Work with vector representations of items.
 
