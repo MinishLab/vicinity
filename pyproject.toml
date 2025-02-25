@@ -43,6 +43,7 @@ dev = [
     "setuptools"
 ]
 hnsw = ["hnswlib"]
+huggingface = ["datasets"]
 pynndescent = [
     "pynndescent>=0.5.10",
     "numba>=0.59.0",
@@ -54,6 +55,7 @@ faiss = ["faiss-cpu"]
 usearch = ["usearch"]
 voyager = ["voyager"]
 all = [
+    "datasets",
     "hnswlib",
     "pynndescent>=0.5.10",
     "numba>=0.59.0",

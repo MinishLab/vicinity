@@ -1,55 +1,51 @@
+from __future__ import annotations
+
 import json
+import logging
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-
-from huggingface_hub import DatasetCard, upload_file, upload_folder
 
 from vicinity.backends import BasicVectorStore, get_backend_class
 from vicinity.datatypes import Backend
 
 if TYPE_CHECKING:
+    from huggingface_hub import CommitInfo
+
     from vicinity.vicinity import Vicinity
+
+_HUB_IMPORT_ERROR = ImportError(
+    "`datasets` and `huggingface_hub` are required to push to the Hugging Face Hub. Please install them with `pip install 'vicinity[huggingface]'`"
+)
+
+logger = logging.getLogger(__name__)
 
 
 class HuggingFaceMixin:
-    def save_to_hub(
-        self,
-        repo_id: str,
-        token: str | None = None,
-        private: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        """
-        Save the Vicinity instance to the Hugging Face Hub.
-
-        Args:
-            repo_id: The repository ID on the Hugging Face Hub
-            token: Optional authentication token for private repositories
-            private: Whether to create a private repository
-            **kwargs: Additional arguments passed to push_to_hub()
-
-        """
-        self.push_to_hub(repo_id, token=token, private=private, **kwargs)
-
     def push_to_hub(
         self,
+        model_name_or_path: str,
         repo_id: str,
         token: str | None = None,
         private: bool = False,
         **kwargs: Any,
-    ) -> None:
+    ) -> "CommitInfo":
         """
         Push the Vicinity instance to the Hugging Face Hub.
 
-        Args:
-            repo_id: The repository ID on the Hugging Face Hub
-            token: Optional authentication token for private repositories
-            private: Whether to create a private repository
-            **kwargs: Additional arguments passed to Dataset.push_to_hub()
-
+        :param model_name_or_path: The name of the model or the path to the local directory
+            that was used to create the embeddings in the Vicinity instance.
+        :param repo_id: The repository ID on the Hugging Face Hub
+        :param token: Optional authentication token for private repositories
+        :param private: Whether to create a private repository
+        :param **kwargs: Additional arguments passed to Dataset.push_to_hub()
+        :return: The commit info
         """
-        from datasets import Dataset
+        try:
+            from datasets import Dataset
+            from huggingface_hub import DatasetCard, upload_file, upload_folder
+        except ImportError:
+            raise _HUB_IMPORT_ERROR
 
         # Create and push dataset with items and vectors
         if isinstance(self.items[0], dict):
@@ -76,7 +72,11 @@ class HuggingFaceMixin:
             )
 
             # Save and upload config
-            config = {"metadata": self.metadata, "backend_type": self.backend.backend_type.value}
+            config = {
+                "metadata": self.metadata,
+                "backend_type": self.backend.backend_type.value,
+                "model_name_or_path": model_name_or_path,
+            }
             config_path = temp_path / "config.json"
             config_path.write_text(json.dumps(config))
             upload_file(
@@ -87,43 +87,11 @@ class HuggingFaceMixin:
                 path_in_repo="config.json",
             )
 
-        # DatasetCard
-        DatasetCard(
-            content=(
-                f"""
----
-tags:
-- vicinity
-- vector-store
----
-
-# Dataset Card for {repo_id}
-
-This dataset was created using the [vicinity](https://github.com/MinishLab/vicinity) library, a lightweight nearest neighbors library with flexible backends.
-
-It contains a vector space with {len(self.items)} items.
-
-## Usage
-
-You can load this dataset using the following code:
-
-```python
-from vicinity import Vicinity
-vicinity = Vicinity.load_from_hub("{repo_id}")
-```
-
-After loading the dataset, you can use the `vicinity.query` method to find the nearest neighbors to a vector.
-
-## Configuration
-
-The configuration of the dataset is stored in the `config.json` file. The vector backend is stored in the `backend` folder.
-
-```bash
-{json.dumps(config, indent=2)}
-```
-"""
-            )
-        ).push_to_hub(repo_id, token=token, repo_type="dataset")
+        # Load the dataset card template from the related path
+        template_path = Path(__file__).parent / "dataset_card_template.md"
+        template = template_path.read_text()
+        content = template.format(repo_id=repo_id, num_items=len(self.items), config=json.dumps(config, indent=4))
+        return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
     @classmethod
     def load_from_hub(cls, repo_id: str, token: str | None = None, **kwargs: Any) -> "Vicinity":
@@ -132,11 +100,14 @@ The configuration of the dataset is stored in the `config.json` file. The vector
 
         :param repo_id: The repository ID on the Hugging Face Hub.
         :param token: Optional authentication token for private repositories.
-        :param kwargs: Additional arguments passed to load_dataset.
+        :param **kwargs: Additional arguments passed to load_dataset.
         :return: A Vicinity instance loaded from the Hub.
         """
-        from datasets import load_dataset
-        from huggingface_hub import snapshot_download
+        try:
+            from datasets import load_dataset
+            from huggingface_hub import snapshot_download
+        except ImportError:
+            raise _HUB_IMPORT_ERROR
 
         # Load dataset and extract items and vectors
         dataset = load_dataset(repo_id, token=token, split="train", **kwargs)
@@ -155,7 +126,9 @@ The configuration of the dataset is stored in the `config.json` file. The vector
         repo_path = Path(snapshot_download(repo_id=repo_id, token=token, repo_type="dataset"))
         with open(repo_path / "config.json") as f:
             config = json.load(f)
+            model_name_or_path = config.pop("model_name_or_path")
 
+        print(f"Embeddings in Vicinity instance were created from model name or path: {model_name_or_path}")
         backend_type = Backend(config["backend_type"])
         backend = get_backend_class(backend_type).load(repo_path / "backend")
 
