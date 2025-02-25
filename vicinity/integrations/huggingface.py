@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 _HUB_IMPORT_ERROR = ImportError(
     "`datasets` and `huggingface_hub` are required to push to the Hugging Face Hub. Please install them with `pip install 'vicinity[huggingface]'`"
 )
+_MODEL_NAME_OR_PATH_PRINT_STATEMENT = (
+    "Embeddings in Vicinity instance were created from model name or path: {model_name_or_path}"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +131,7 @@ class HuggingFaceMixin:
             config = json.load(f)
             model_name_or_path = config.pop("model_name_or_path")
 
-        print(f"Embeddings in Vicinity instance were created from model name or path: {model_name_or_path}")
+        print(_MODEL_NAME_OR_PATH_PRINT_STATEMENT.format(model_name_or_path=model_name_or_path))
         backend_type = Backend(config["backend_type"])
         backend = get_backend_class(backend_type).load(repo_path / "backend")
 
