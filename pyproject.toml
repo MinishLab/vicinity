@@ -42,8 +42,15 @@ dev = [
     "ruff",
     "setuptools"
 ]
-hnsw = ["hnswlib"]
+
+# Integrations
 huggingface = ["datasets"]
+integrations = [
+    "datasets"
+]
+
+# Backends
+hnsw = ["hnswlib"]
 pynndescent = [
     "pynndescent>=0.5.10",
     "numba>=0.59.0",
@@ -54,6 +61,18 @@ annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
 voyager = ["voyager"]
+backends = [
+    "hnswlib",
+    "pynndescent>=0.5.10",
+    "numba>=0.59.0",
+    "llvmlite>=0.42.0",
+    "numpy>=1.24.0",
+    "annoy",
+    "faiss-cpu",
+    "usearch",
+    "voyager"
+]
+
 all = [
     "datasets",
     "hnswlib",
