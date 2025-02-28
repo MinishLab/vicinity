@@ -118,6 +118,7 @@ Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
 - Serialization: Save and load vector stores for persistence.
+- HuggingFace Hub Integration: Push and load vector stores directly to and from the HuggingFace Hub.
 - Evaluation: Easily evaluate the performance of different backends.
 - Easy to Use: Simple and intuitive API.
 
