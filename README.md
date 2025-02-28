@@ -36,7 +36,6 @@
 
 </div>
 
-
 Vicinity is a light-weight, low-dependency vector store. It provides a simple and intuitive interface for nearest neighbor search, with support for different backends and evaluation.
 
 There are many nearest neighbors packages and methods out there. However, we found it difficult to compare them. Every package has its own interface, quirks, and limitations, and learning a new package can be time-consuming. In addition to that, how do you effectively evaluate different packages? How do you know which one is the best for your use case?
@@ -49,7 +48,7 @@ Install the package with:
 ```bash
 pip install vicinity
 ```
-Optionally, [install any of the supported backends](#installation), or simply install all of them with:
+Optionally, [install specific backends and integrations](#installation), or simply install all of them with:
 ```bash
 pip install vicinity[all]
 ```
@@ -91,6 +90,13 @@ Saving and loading a vector store:
 ```python
 vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
+```
+
+Pushing and loading a vector store from the Hugging Face Hub:
+
+```python
+vicinity.push_to_hub(model_name_or_path='my_vector_store', repo_id='my_vector_store')
+vicinity = Vicinity.load_from_hub(repo_id='my_vector_store')
 ```
 
 Evaluating a backend:
@@ -173,8 +179,17 @@ The following installation options are available:
 # Install the base package
 pip install vicinity
 
-# Install all backends
+# Install all integrations and backends
 pip install vicinity[all]
+
+# Install all integrations
+pip install vicinity[integrations]
+
+# Install specific integrations
+pip install vicinity[huggingface]
+
+# Install all backends
+pip install vicinity[backends]
 
 # Install specific backends
 pip install vicinity[annoy]

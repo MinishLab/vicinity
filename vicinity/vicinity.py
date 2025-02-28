@@ -19,8 +19,10 @@ from vicinity.datatypes import Backend, PathLike, QueryResult
 
 logger = logging.getLogger(__name__)
 
+from vicinity.integrations.huggingface import HuggingFaceMixin
 
-class Vicinity:
+
+class Vicinity(HuggingFaceMixin):
     """
     Work with vector representations of items.
 
