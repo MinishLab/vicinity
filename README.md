@@ -92,10 +92,10 @@ vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
 ```
 
-Pushing and loading a vector store from the Hugging Face Hub:
+Pushing and loading a vector store from the Hugging Face Hub (optionally with the name or path of the model used to generate the vectors):
 
 ```python
-vicinity.push_to_hub(model_name_or_path='my_vector_store', repo_id='my_vector_store')
+vicinity.push_to_hub(repo_id='my_vector_store', model_name_or_path='minishlab/potion-base-8M')
 vicinity = Vicinity.load_from_hub(repo_id='my_vector_store')
 ```
 
