@@ -126,7 +126,7 @@ class Vicinity(HuggingFaceMixin):
         :param vectors: The vectors to find the nearest neighbors to.
         :param k: The number of most similar items to retrieve.
         :return: For each item in the input, the num most similar items are returned in the form of
-            (NAME, SIMILARITY) tuples.
+            (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
@@ -153,7 +153,7 @@ class Vicinity(HuggingFaceMixin):
         :param max_k: The maximum number of neighbors to consider for the threshold query.
 
         :return: For each item in the input, the items above the threshold are returned in the form of
-                (NAME, SIMILARITY) tuples.
+                (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:

@@ -4,18 +4,21 @@ import json
 import logging
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Type, TypeVar
 
-from vicinity.backends import BasicVectorStore, get_backend_class
+import numpy as np
+
+from vicinity.backends import AbstractBackend, BasicVectorStore, get_backend_class
 from vicinity.datatypes import Backend
 
 if TYPE_CHECKING:
     from huggingface_hub import CommitInfo
 
-    from vicinity.vicinity import Vicinity
+T = TypeVar("T", bound="HuggingFaceMixin")
 
 _HUB_IMPORT_ERROR = ImportError(
-    "`datasets` and `huggingface_hub` are required to push to the Hugging Face Hub. Please install them with `pip install 'vicinity[huggingface]'`"
+    "`datasets` and `huggingface_hub` are required to push to the Hugging Face Hub. "
+    "Please install them with `pip install 'vicinity[huggingface]'`"
 )
 _MODEL_NAME_OR_PATH_PRINT_STATEMENT = (
     "Embeddings in Vicinity instance were created from model name or path: {model_name_or_path}"
@@ -25,6 +28,19 @@ logger = logging.getLogger(__name__)
 
 
 class HuggingFaceMixin:
+    def __init__(
+        self,
+        items: list[Any],
+        vector_store: BasicVectorStore | None,
+        backend: AbstractBackend,
+        metadata: Any,
+    ) -> None:
+        """Initialize a Vicinity instance with items, vectors, backend, and metadata."""
+        self.items = items
+        self.vector_store = vector_store
+        self.backend = backend
+        self.metadata = metadata
+
     def push_to_hub(
         self,
         model_name_or_path: str,
@@ -43,6 +59,7 @@ class HuggingFaceMixin:
         :param private: Whether to create a private repository
         :param **kwargs: Additional arguments passed to Dataset.push_to_hub()
         :return: The commit info
+        :raises ImportError: If `datasets` or `huggingface_hub` are not installed
         """
         try:
             from datasets import Dataset
@@ -50,13 +67,15 @@ class HuggingFaceMixin:
         except ImportError:
             raise _HUB_IMPORT_ERROR
 
-        # Create and push dataset with items and vectors
         if isinstance(self.items[0], dict):
             dataset_dict = {k: [item[k] for item in self.items] for k in self.items[0].keys()}
         else:
             dataset_dict = {"items": self.items}
         if self.vector_store is not None:
-            dataset_dict["vectors"] = self.vector_store.vectors
+            if isinstance(self.vector_store.vectors, np.ndarray):
+                vectors: list[Any] = self.vector_store.vectors.tolist()
+            dataset_dict["vectors"] = vectors
+
         dataset = Dataset.from_dict(dataset_dict)
         dataset.push_to_hub(repo_id, token=token, private=private, **kwargs)
 
@@ -97,7 +116,7 @@ class HuggingFaceMixin:
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
     @classmethod
-    def load_from_hub(cls, repo_id: str, token: str | None = None, **kwargs: Any) -> "Vicinity":
+    def load_from_hub(cls: Type[T], repo_id: str, token: str | None = None, **kwargs: Any) -> T:
         """
         Load a Vicinity instance from the Hugging Face Hub.
 
@@ -105,6 +124,7 @@ class HuggingFaceMixin:
         :param token: Optional authentication token for private repositories.
         :param **kwargs: Additional arguments passed to load_dataset.
         :return: A Vicinity instance loaded from the Hub.
+        :raises ImportError: If `datasets` or `huggingface_hub` are not installed.
         """
         try:
             from datasets import load_dataset
@@ -131,8 +151,7 @@ class HuggingFaceMixin:
             config = json.load(f)
             model_name_or_path = config.pop("model_name_or_path")
 
-        print(_MODEL_NAME_OR_PATH_PRINT_STATEMENT.format(model_name_or_path=model_name_or_path))
+        print(_MODEL_NAME_OR_PATH_PRINT_STATEMENT.format(model_name_or_path=model_name_or_path))  # noqa: T201
         backend_type = Backend(config["backend_type"])
         backend = get_backend_class(backend_type).load(repo_path / "backend")
-
-        return cls(items=items, backend=backend, metadata=config["metadata"], vector_store=vector_store)
+        return cls(items, vector_store, backend, config["metadata"])

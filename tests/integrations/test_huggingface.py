@@ -16,7 +16,7 @@ def test_load_from_hub(vicinity_instance: Vicinity) -> None:
 
     :param vicinity_instance: A Vicinity instance.
     """
-    repo_id = "davidberenstein1957/my-vicinity-repo"
+    repo_id = "minishlab/my-vicinity-repo"
     # get the first part of the print statement to test if model name or path is printed
     expected_print_statement = _MODEL_NAME_OR_PATH_PRINT_STATEMENT.split(":")[0]
 
