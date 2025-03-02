@@ -22,6 +22,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_VICINITY_ITEM_COLUMN = "_vicinity_items"
+
 
 def push_to_hub(
     repo_id: str,
@@ -29,7 +31,6 @@ def push_to_hub(
     backend: AbstractBackend,
     metadata: dict[str, str],
     vector_store: BasicVectorStore | None = None,
-    model_name_or_path: str | None = None,
     token: str | None = None,
     private: bool = False,
     **kwargs: Any,
@@ -42,17 +43,15 @@ def push_to_hub(
     :param backend: The backend used to create the embeddings in the Vicinity instance.
     :param metadata: Metadata to include in the dataset card.
     :param vector_store: The vector store used to create the embeddings in the Vicinity instance.
-    :param model_name_or_path: The name of the model or the path to the local directory
-        that was used to create the embeddings in the Vicinity instance.
     :param token: Optional authentication token for private repositories.
     :param private: Whether to create a private repository.
-    :param **kwargs: Additional arguments passed to Dataset.push_to_hub(.)
+    :param **kwargs: Additional arguments passed to Dataset.push_to_hub().
     :return: The commit info.
     """
     if isinstance(items[0], dict):
         dataset_dict = {k: [item[k] for item in items] for k in items[0].keys()}
     else:
-        dataset_dict = {"items": items}
+        dataset_dict = {_VICINITY_ITEM_COLUMN: items}
     if vector_store is not None:
         if isinstance(vector_store.vectors, np.ndarray):
             vectors: list[list[float]] = vector_store.vectors.tolist()
@@ -74,9 +73,6 @@ def push_to_hub(
             repo_type="dataset",
             path_in_repo="backend",
         )
-        # Add model_name_or_path to metadata
-        if model_name_or_path is not None:
-            metadata["model_name_or_path"] = model_name_or_path
 
         # Save and upload config
         config = {
@@ -113,16 +109,17 @@ def load_from_hub(
     """
     # Load dataset and extract items and vectors
     dataset = load_dataset(repo_id, token=token, split="train", **kwargs)
-    if "items" in dataset.column_names:
-        items = dataset["items"]
-    else:
-        # Create items from all columns except 'vectors'
-        items = []
-        columns = [col for col in dataset.column_names if col != "vectors"]
-        for i in range(len(dataset)):
-            items.append({col: dataset[col][i] for col in columns})
     has_vectors = "vectors" in dataset.column_names
-    vector_store = BasicVectorStore(vectors=dataset["vectors"]) if has_vectors else None
+    if has_vectors:
+        vectors = dataset["vectors"]
+    if _VICINITY_ITEM_COLUMN in dataset.column_names:
+        items = dataset[_VICINITY_ITEM_COLUMN]
+    else:
+        # Remove the vectors column (if it exists) and then convert to a list.
+        if has_vectors:
+            dataset = dataset.remove_column("vectors")
+        items = dataset.to_list()
+    vector_store = BasicVectorStore(vectors=vectors) if has_vectors else None
 
     # Download and load config and backend
     repo_path = Path(snapshot_download(repo_id=repo_id, token=token, repo_type="dataset"))

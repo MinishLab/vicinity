@@ -283,7 +283,6 @@ class Vicinity:
     def push_to_hub(
         self,
         repo_id: str,
-        model_name_or_path: str | None = None,
         token: str | None = None,
         private: bool = False,
         **kwargs: Any,
@@ -292,8 +291,6 @@ class Vicinity:
         Push the Vicinity instance to the Hugging Face Hub.
 
         :param repo_id: The repository ID on the Hugging Face Hub
-        :param model_name_or_path: The (optional) name of the model or the path to the local directory
-            that was used to create the embeddings in the Vicinity instance.
         :param token: Optional authentication token for private repositories
         :param private: Whether to create a private repository
         :param **kwargs: Additional arguments passed to Dataset.push_to_hub()
@@ -302,7 +299,6 @@ class Vicinity:
 
         push_to_hub(
             repo_id=repo_id,
-            model_name_or_path=model_name_or_path,
             token=token,
             private=private,
             items=self.items,
