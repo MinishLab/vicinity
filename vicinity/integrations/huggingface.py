@@ -117,7 +117,7 @@ def load_from_hub(
     else:
         # Remove the vectors column (if it exists) and then convert to a list.
         if has_vectors:
-            dataset = dataset.remove_column("vectors")
+            dataset = dataset.remove_columns("vectors")
         items = dataset.to_list()
     vector_store = BasicVectorStore(vectors=vectors) if has_vectors else None
 
