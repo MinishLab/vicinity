@@ -6,7 +6,7 @@ import logging
 from io import open
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterable, Sequence, Union
+from typing import Any, Iterable, Sequence, Type, Union
 
 import numpy as np
 import orjson
@@ -19,10 +19,8 @@ from vicinity.datatypes import Backend, PathLike, QueryResult
 
 logger = logging.getLogger(__name__)
 
-from vicinity.integrations.huggingface import HuggingFaceMixin
 
-
-class Vicinity(HuggingFaceMixin):
+class Vicinity:
     """
     Work with vector representations of items.
 
@@ -126,7 +124,7 @@ class Vicinity(HuggingFaceMixin):
         :param vectors: The vectors to find the nearest neighbors to.
         :param k: The number of most similar items to retrieve.
         :return: For each item in the input, the num most similar items are returned in the form of
-            (NAME, SIMILARITY) tuples.
+            (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
@@ -153,7 +151,7 @@ class Vicinity(HuggingFaceMixin):
         :param max_k: The maximum number of neighbors to consider for the threshold query.
 
         :return: For each item in the input, the items above the threshold are returned in the form of
-                (NAME, SIMILARITY) tuples.
+                (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
@@ -281,6 +279,49 @@ class Vicinity(HuggingFaceMixin):
         # Delete items starting from the highest index
         for index in sorted(curr_indices, reverse=True):
             self.items.pop(index)
+
+    def push_to_hub(
+        self,
+        repo_id: str,
+        token: str | None = None,
+        private: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Push the Vicinity instance to the Hugging Face Hub.
+
+        :param repo_id: The repository ID on the Hugging Face Hub
+        :param token: Optional authentication token for private repositories
+        :param private: Whether to create a private repository
+        :param **kwargs: Additional arguments passed to Dataset.push_to_hub()
+        """
+        from vicinity.integrations.huggingface import push_to_hub
+
+        push_to_hub(
+            repo_id=repo_id,
+            token=token,
+            private=private,
+            items=self.items,
+            backend=self.backend,
+            metadata=self.metadata,
+            vector_store=self.vector_store,
+            **kwargs,
+        )
+
+    @classmethod
+    def load_from_hub(cls: Type[Vicinity], repo_id: str, token: str | None = None, **kwargs: Any) -> Vicinity:
+        """
+        Load a Vicinity instance from the Hugging Face Hub.
+
+        :param repo_id: The repository ID on the Hugging Face Hub.
+        :param token: Optional authentication token for private repositories.
+        :param **kwargs: Additional arguments passed to Dataset.load_from_hub().
+        :return: A Vicinity instance.
+        """
+        from vicinity.integrations.huggingface import load_from_hub
+
+        items, vector_store, backend, config = load_from_hub(repo_id=repo_id, token=token)
+        return Vicinity(items, backend, metadata=config["metadata"], vector_store=vector_store)
 
     def evaluate(
         self,

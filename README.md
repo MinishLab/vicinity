@@ -92,11 +92,11 @@ vicinity.save('my_vector_store')
 vicinity = Vicinity.load('my_vector_store')
 ```
 
-Pushing and loading a vector store from the Hugging Face Hub:
+Pushing and loading a vector store from the Hugging Face Hub (note that you can optionally add the model used for generating embeddings to the metadata, e.g. `vicinity.metadata["model"] = "minishlab/potion-base-8M"`):
 
 ```python
-vicinity.push_to_hub(model_name_or_path='my_vector_store', repo_id='my_vector_store')
-vicinity = Vicinity.load_from_hub(repo_id='my_vector_store')
+vicinity.push_to_hub(repo_id='minishlab/my-vicinity-repo')
+vicinity = Vicinity.load_from_hub(repo_id='minishlab/my-vicinity-repo')
 ```
 
 Evaluating a backend:
@@ -118,6 +118,7 @@ Vicinity provides the following features:
 - Lightweight: Minimal dependencies and fast performance.
 - Flexible Backend Support: Use different backends for vector storage and search.
 - Serialization: Save and load vector stores for persistence.
+- HuggingFace Hub Integration: Push and load vector stores directly to and from the HuggingFace Hub.
 - Evaluation: Easily evaluate the performance of different backends.
 - Easy to Use: Simple and intuitive API.
 
