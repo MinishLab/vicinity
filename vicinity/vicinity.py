@@ -6,11 +6,12 @@ import logging
 from io import open
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterable, Sequence, Union
+from typing import Any, Iterable, Sequence, Type, Union
 
 import numpy as np
 import orjson
 from numpy import typing as npt
+from orjson import JSONEncodeError
 
 from vicinity import Metric
 from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
@@ -29,7 +30,7 @@ class Vicinity:
 
     def __init__(
         self,
-        items: Sequence[str],
+        items: Sequence[Any],
         backend: AbstractBackend,
         metadata: Union[dict[str, Any], None] = None,
         vector_store: BasicVectorStore | None = None,
@@ -49,7 +50,7 @@ class Vicinity:
             raise ValueError(
                 "Your vector space and list of items are not the same length: " f"{len(backend)} != {len(items)}"
             )
-        self.items: list[str] = list(items)
+        self.items: list[Any] = list(items)
         self.backend: AbstractBackend = backend
         self.metadata = metadata or {}
         self.vector_store = vector_store
@@ -74,7 +75,7 @@ class Vicinity:
     def from_vectors_and_items(
         cls: type[Vicinity],
         vectors: npt.NDArray,
-        items: Sequence[str],
+        items: Sequence[Any],
         backend_type: Backend | str = Backend.BASIC,
         store_vectors: bool = False,
         **kwargs: Any,
@@ -123,7 +124,7 @@ class Vicinity:
         :param vectors: The vectors to find the nearest neighbors to.
         :param k: The number of most similar items to retrieve.
         :return: For each item in the input, the num most similar items are returned in the form of
-            (NAME, SIMILARITY) tuples.
+            (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
@@ -150,7 +151,7 @@ class Vicinity:
         :param max_k: The maximum number of neighbors to consider for the threshold query.
 
         :return: For each item in the input, the items above the threshold are returned in the form of
-                (NAME, SIMILARITY) tuples.
+                (NAME, DISTANCE) tuples.
         """
         vectors = np.asarray(vectors)
         if np.ndim(vectors) == 1:
@@ -177,6 +178,7 @@ class Vicinity:
         :param folder: The path to which to save the JSON file. The vectors are saved separately. The JSON contains a path to the numpy file.
         :param overwrite: Whether to overwrite the JSON and numpy files if they already exist.
         :raises ValueError: If the path is not a directory.
+        :raises JSONEncodeError: If the items are not serializable.
         """
         path = Path(folder)
         path.mkdir(parents=True, exist_ok=overwrite)
@@ -185,9 +187,11 @@ class Vicinity:
             raise ValueError(f"Path {path} should be a directory.")
 
         items_dict = {"items": self.items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
-
-        with open(path / "data.json", "wb") as file_handle:
-            file_handle.write(orjson.dumps(items_dict))
+        try:
+            with open(path / "data.json", "wb") as file_handle:
+                file_handle.write(orjson.dumps(items_dict))
+        except JSONEncodeError as e:
+            raise JSONEncodeError(f"Items could not be encoded to JSON because they are not serializable: {e}")
 
         self.backend.save(path)
         if self.vector_store is not None:
@@ -211,7 +215,7 @@ class Vicinity:
 
         with open(folder_path / "data.json", "rb") as file_handle:
             data: dict[str, Any] = orjson.loads(file_handle.read())
-        items: Sequence[str] = data["items"]
+        items: Sequence[Any] = data["items"]
 
         metadata: dict[str, Any] = data["metadata"]
         backend_type = Backend(data["backend_type"])
@@ -227,7 +231,7 @@ class Vicinity:
 
         return instance
 
-    def insert(self, tokens: Sequence[str], vectors: npt.NDArray) -> None:
+    def insert(self, tokens: Sequence[Any], vectors: npt.NDArray) -> None:
         """
         Insert new items into the vector space.
 
@@ -241,16 +245,12 @@ class Vicinity:
         if vectors.shape[1] != self.dim:
             raise ValueError("The inserted vectors must have the same dimension as the backend.")
 
-        item_set = set(self.items)
-        for token in tokens:
-            if token in item_set:
-                raise ValueError(f"Token {token} is already in the vector space.")
-            self.items.append(token)
+        self.items.extend(tokens)
         self.backend.insert(vectors)
         if self.vector_store is not None:
             self.vector_store.insert(vectors)
 
-    def delete(self, tokens: Sequence[str]) -> None:
+    def delete(self, tokens: Sequence[Any]) -> None:
         """
         Delete tokens from the vector space.
 
@@ -260,10 +260,17 @@ class Vicinity:
         :param tokens: A list of tokens to remove from the vector space.
         :raises ValueError: If any passed tokens are not in the vector space.
         """
-        try:
-            curr_indices = [self.items.index(token) for token in tokens]
-        except ValueError as exc:
-            raise ValueError(f"Token {exc} was not in the vector space.") from exc
+        tokens_to_find = list(tokens)
+        curr_indices = []
+        for idx, elem in enumerate(self.items):
+            matching_tokens = [t for t in tokens_to_find if t == elem]
+            if matching_tokens:
+                curr_indices.append(idx)
+                for t in matching_tokens:
+                    tokens_to_find.remove(t)
+
+        if tokens_to_find:
+            raise ValueError(f"Tokens {tokens_to_find} were not in the vector space.")
 
         self.backend.delete(curr_indices)
         if self.vector_store is not None:
@@ -272,6 +279,49 @@ class Vicinity:
         # Delete items starting from the highest index
         for index in sorted(curr_indices, reverse=True):
             self.items.pop(index)
+
+    def push_to_hub(
+        self,
+        repo_id: str,
+        token: str | None = None,
+        private: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Push the Vicinity instance to the Hugging Face Hub.
+
+        :param repo_id: The repository ID on the Hugging Face Hub
+        :param token: Optional authentication token for private repositories
+        :param private: Whether to create a private repository
+        :param **kwargs: Additional arguments passed to Dataset.push_to_hub()
+        """
+        from vicinity.integrations.huggingface import push_to_hub
+
+        push_to_hub(
+            repo_id=repo_id,
+            token=token,
+            private=private,
+            items=self.items,
+            backend=self.backend,
+            metadata=self.metadata,
+            vector_store=self.vector_store,
+            **kwargs,
+        )
+
+    @classmethod
+    def load_from_hub(cls: Type[Vicinity], repo_id: str, token: str | None = None, **kwargs: Any) -> Vicinity:
+        """
+        Load a Vicinity instance from the Hugging Face Hub.
+
+        :param repo_id: The repository ID on the Hugging Face Hub.
+        :param token: Optional authentication token for private repositories.
+        :param **kwargs: Additional arguments passed to Dataset.load_from_hub().
+        :return: A Vicinity instance.
+        """
+        from vicinity.integrations.huggingface import load_from_hub
+
+        items, vector_store, backend, config = load_from_hub(repo_id=repo_id, token=token)
+        return Vicinity(items, backend, metadata=config["metadata"], vector_store=vector_store)
 
     def evaluate(
         self,
