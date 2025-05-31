@@ -1,14 +1,8 @@
 
-<div align="center">
-    <picture>
-      <img width="40%" alt="Model2Vec logo" src="assets/images/vicinity_logo.png">
-    </picture>
-  </a>
-</div>
-
-<div align="center">
-  <h2>Lightweight Nearest Neighbors with Flexible Backends</h2>
-</div>
+<h2 align="center">
+  <img width="35%" alt="Vicinity logo" src="assets/images/vicinity_logo.png"><br/>
+  Lightweight Nearest Neighbors with Flexible Backends
+</h2>
 
 <div align="center">
   <h2>
