@@ -165,7 +165,9 @@ class Vicinity:
 
         return out
 
-    def save(self, folder: PathLike, overwrite: bool = False, serialize_type: ItemType = ItemType.MSGPACK) -> None:
+    def save(
+        self, folder: PathLike, overwrite: bool = False, serialize_type: ItemType | str = ItemType.MSGPACK
+    ) -> None:
         """
         Save a Vicinity instance in a fast format.
 
@@ -180,6 +182,8 @@ class Vicinity:
         """
         path = Path(folder)
         path.mkdir(parents=True, exist_ok=overwrite)
+
+        serialize_type = ItemType(serialize_type)
 
         if not path.is_dir():
             raise ValueError(f"Path {path} should be a directory.")
