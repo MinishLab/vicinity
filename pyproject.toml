@@ -24,7 +24,8 @@ classifiers = [
 dependencies = [
     "numpy",
     "orjson",
-    "tqdm"
+    "tqdm",
+    "msgspec"
 ]
 
 [build-system]
