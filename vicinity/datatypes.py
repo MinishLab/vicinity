@@ -22,3 +22,8 @@ class Backend(str, Enum):
     FAISS = "faiss"
     USEARCH = "usearch"
     VOYAGER = "voyager"
+
+
+class ItemType(str, Enum):
+    JSON = "json"
+    MSGPACK = "msgpack"
