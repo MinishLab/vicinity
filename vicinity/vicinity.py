@@ -15,7 +15,7 @@ from orjson import JSONEncodeError
 
 from vicinity import Metric
 from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
-from vicinity.datatypes import Backend, PathLike, QueryResult
+from vicinity.datatypes import Backend, PathLike, SimilarityResult
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class Vicinity:
         self,
         vectors: npt.NDArray,
         k: int = 10,
-    ) -> list[QueryResult]:
+    ) -> SimilarityResult:
         """
         Find the nearest neighbors to some arbitrary vector.
 
@@ -142,7 +142,7 @@ class Vicinity:
         vectors: npt.NDArray,
         threshold: float = 0.5,
         max_k: int = 100,
-    ) -> list[QueryResult]:
+    ) -> SimilarityResult:
         """
         Find the nearest neighbors to some arbitrary vector with some threshold. Note: the output is not sorted.
 
