@@ -77,7 +77,8 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         """Load the vectors from a path."""
         path = Path(base_path) / "index.bin"
         arguments = VoyagerArgs.load(base_path / "arguments.json")
-        index = Index.load(str(path))
+        with open(path, "rb"):
+            index = Index.load(str(path))
         return cls(index, arguments=arguments)
 
     def save(self, base_path: Path) -> None:
