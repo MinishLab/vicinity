@@ -21,8 +21,9 @@ def _require(module_name: str, backend: Backend, extra: str) -> None:
 
 
 def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
-    """Get all available backends."""
+    """Get the requested backend and ensure its dependencies are installed."""
     backend = Backend(backend)
+
     if backend == Backend.BASIC:
         return BasicBackend
 
@@ -31,11 +32,13 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
         from vicinity.backends.hnsw import HNSWBackend
 
         return HNSWBackend
+
     elif backend == Backend.ANNOY:
         _require("annoy", backend, "annoy")
         from vicinity.backends.annoy import AnnoyBackend
 
         return AnnoyBackend
+
     elif backend == Backend.PYNNDESCENT:
         _require("pynndescent", backend, "pynndescent")
         from vicinity.backends.pynndescent import PyNNDescentBackend
