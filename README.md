@@ -7,7 +7,7 @@
 <div align="center">
   <h2>
     <a href="https://pypi.org/project/vicinity/"><img src="https://img.shields.io/pypi/v/vicinity?color=%23007ec6&label=pypi%20package" alt="Package version"></a>
-    <a href="https://pypi.org/project/vicinity/"><img src="https://img.shields.io/pypi/pyversions/vicinity" alt="Supported Python versions"></a>
+    <a href="https://minish.ai/packages/vicinity/introduction"><img src="https://img.shields.io/badge/docs-minish.ai-blue.svg" alt="Docs"></a>
     <a href="https://pepy.tech/project/vicinity">
       <img src="https://static.pepy.tech/badge/vicinity" alt="Downloads">
     </a>
