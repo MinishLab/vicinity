@@ -8,7 +8,7 @@ from vicinity.datatypes import Backend
 
 class OptionalDependencyError(ImportError):
     def __init__(self, backend: Backend, extra: str) -> None:
-        msg = f"{backend} requires extra '{extra}'.\n" f"Install it with: `pip install vicinity[{extra}]`\n"
+        msg = f"{backend} requires extra '{extra}'.\n" f"Install it with: pip install 'vicinity[{extra}]'\n"
         super().__init__(msg)
         self.backend = backend
         self.extra = extra
@@ -28,7 +28,7 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
         return BasicBackend
 
     elif backend == Backend.HNSW:
-        _require("hnswlib", backend, "hnswlib")
+        _require("hnswlib", backend, "hnsw")
         from vicinity.backends.hnsw import HNSWBackend
 
         return HNSWBackend
@@ -46,7 +46,7 @@ def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
         return PyNNDescentBackend
 
     elif backend == Backend.FAISS:
-        _require("faiss", backend, "faiss-cpu or faiss-gpu")
+        _require("faiss", backend, "faiss")
         from vicinity.backends.faiss import FaissBackend
 
         return FaissBackend
