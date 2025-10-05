@@ -204,7 +204,7 @@ MIT
 If you use Vicinity in your research, please cite the following:
 
 ```bibtex
-@software{van_dongen_tulkens_2025_vicinity,
+@software{minishlab2024vicinity,
   author       = {Stephan Tulkens and {van Dongen}, Thomas},
   title        = {Vicinity: Lightweight Nearest Neighbors with Flexible Backends},
   year         = {2024},
