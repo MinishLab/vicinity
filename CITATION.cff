@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use Vicinity in your research, please cite it as below."
+title: "Vicinity: Lightweight Nearest Neighbors with Flexible Backends"
+authors:
+  - family-names: "Tulkens"
+    given-names: "Stephan"
+  - family-names: "van Dongen"
+    given-names: "Thomas"
+doi: 10.5281/zenodo.17265874
+license: MIT
+url: "https://github.com/MinishLab/vicinity"
+repository-code: "https://github.com/MinishLab/vicinity"
+date-released: "2024-11-09"
+
+preferred-citation:
+  type: software
+  title: "Vicinity: Lightweight Nearest Neighbors with Flexible Backends"
+  authors:
+    - family-names: "Tulkens"
+      given-names: "Stephan"
+    - family-names: "van Dongen"
+      given-names: "Thomas"
+  year: 2024
+  publisher: Zenodo
+  doi: 10.5281/zenodo.17265874
+  url: "https://github.com/MinishLab/vicinity"
+  license: MIT
