@@ -198,3 +198,19 @@ pip install vicinity[voyager]
 ## License
 
 MIT
+
+## Citing
+
+If you use Vicinity in your research, please cite the following:
+
+```bibtex
+@software{minishlab2024vicinity,
+  author       = {Stephan Tulkens and {van Dongen}, Thomas},
+  title        = {Vicinity: Lightweight Nearest Neighbors with Flexible Backends},
+  year         = {2024},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.17265874},
+  url          = {https://github.com/MinishLab/vicinity},
+  license      = {MIT}
+}
+```
