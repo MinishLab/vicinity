@@ -34,7 +34,7 @@ def push_to_hub(
     token: str | None = None,
     private: bool = False,
     **kwargs: Any,
-) -> "CommitInfo":
+) -> CommitInfo:
     """
     Push the Vicinity instance to the Hugging Face Hub.
 

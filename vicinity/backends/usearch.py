@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
@@ -46,7 +46,7 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
     def from_vectors(
         cls: type[UsearchBackend],
         vectors: npt.NDArray,
-        metric: Union[str, Metric] = "cos",
+        metric: str | Metric = "cos",
         connectivity: int = 16,
         expansion_add: int = 128,
         expansion_search: int = 64,

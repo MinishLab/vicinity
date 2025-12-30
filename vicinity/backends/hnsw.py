@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
@@ -41,7 +41,7 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
     def from_vectors(
         cls: type[HNSWBackend],
         vectors: npt.NDArray,
-        metric: Union[str, Metric],
+        metric: str | Metric,
         ef_construction: int,
         m: int,
         **kwargs: Any,

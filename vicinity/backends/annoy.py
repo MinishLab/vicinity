@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 from annoy import AnnoyIndex
@@ -46,7 +46,7 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
     def from_vectors(
         cls: type[AnnoyBackend],
         vectors: npt.NDArray,
-        metric: Union[str, Metric],
+        metric: str | Metric,
         trees: int,
         **kwargs: Any,
     ) -> AnnoyBackend:

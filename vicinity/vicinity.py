@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import logging
-from io import open
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterable, Sequence, Type, Union
+from typing import Any
 
 import numpy as np
 import orjson
@@ -32,7 +32,7 @@ class Vicinity:
         self,
         items: Sequence[Any],
         backend: AbstractBackend,
-        metadata: Union[dict[str, Any], None] = None,
+        metadata: dict[str, Any] | None = None,
         vector_store: BasicVectorStore | None = None,
     ) -> None:
         """
@@ -309,7 +309,7 @@ class Vicinity:
         )
 
     @classmethod
-    def load_from_hub(cls: Type[Vicinity], repo_id: str, token: str | None = None, **kwargs: Any) -> Vicinity:
+    def load_from_hub(cls: type[Vicinity], repo_id: str, token: str | None = None, **kwargs: Any) -> Vicinity:
         """
         Load a Vicinity instance from the Hugging Face Hub.
 

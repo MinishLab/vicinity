@@ -1,16 +1,16 @@
+from collections.abc import Iterable
 from enum import Enum
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union
 
 from numpy import typing as npt
 
-PathLike = Union[str, Path]
-Matrix = Union[npt.NDArray, List[npt.NDArray]]
-SimilarityItem = List[Tuple[str, float]]
-SimilarityResult = List[SimilarityItem]
+PathLike = str | Path
+Matrix = npt.NDArray | list[npt.NDArray]
+SimilarityItem = list[tuple[str, float]]
+SimilarityResult = list[SimilarityItem]
 # Tuple of (indices, distances)
-SingleQueryResult = Tuple[npt.NDArray, npt.NDArray]
-QueryResult = List[SingleQueryResult]
+SingleQueryResult = tuple[npt.NDArray, npt.NDArray]
+QueryResult = list[SingleQueryResult]
 Tokens = Iterable[str]
 
 

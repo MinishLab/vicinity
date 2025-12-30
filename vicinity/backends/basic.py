@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
@@ -115,7 +115,7 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
         raise NotImplementedError()
 
     @classmethod
-    def from_vectors(cls, vectors: npt.NDArray, metric: Union[str, Metric] = "cosine", **kwargs: Any) -> BasicBackend:
+    def from_vectors(cls, vectors: npt.NDArray, metric: str | Metric = "cosine", **kwargs: Any) -> BasicBackend:
         """Create a new instance from vectors."""
         metric_enum = Metric.from_string(metric)
         if metric_enum not in cls.supported_metrics:

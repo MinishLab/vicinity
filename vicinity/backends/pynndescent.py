@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
@@ -37,7 +37,7 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         cls: type[PyNNDescentBackend],
         vectors: npt.NDArray,
         n_neighbors: int = 15,
-        metric: Union[str, Metric] = "cosine",
+        metric: str | Metric = "cosine",
         **kwargs: Any,
     ) -> PyNNDescentBackend:
         """Create a new instance from vectors."""
