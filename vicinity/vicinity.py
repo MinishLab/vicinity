@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import builtins
 import logging
 from collections.abc import Iterable, Sequence
 from pathlib import Path
@@ -189,7 +188,7 @@ class Vicinity:
 
         items_dict = {"items": self.items, "metadata": self.metadata, "backend_type": self.backend.backend_type.value}
         try:
-            with builtins.open(path / "data.json", "wb") as file_handle:
+            with open(path / "data.json", "wb") as file_handle:
                 file_handle.write(orjson.dumps(items_dict))
         except JSONEncodeError as e:
             raise JSONEncodeError(f"Items could not be encoded to JSON because they are not serializable: {e}")
@@ -214,7 +213,7 @@ class Vicinity:
         """
         folder_path = Path(filename)
 
-        with builtins.open(folder_path / "data.json", "rb") as file_handle:
+        with open(folder_path / "data.json", "rb") as file_handle:
             data: dict[str, Any] = orjson.loads(file_handle.read())
         items: Sequence[Any] = data["items"]
 
