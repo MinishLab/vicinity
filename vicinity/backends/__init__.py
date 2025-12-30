@@ -1,5 +1,4 @@
 from importlib.util import find_spec
-from typing import Union
 
 from vicinity.backends.base import AbstractBackend
 from vicinity.backends.basic import BasicBackend, BasicVectorStore
@@ -20,7 +19,7 @@ def _require(module_name: str, backend: Backend, extra: str) -> None:
         raise OptionalDependencyError(backend, extra)
 
 
-def get_backend_class(backend: Union[Backend, str]) -> type[AbstractBackend]:
+def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
     """Get the requested backend and ensure its dependencies are installed."""
     backend = Backend(backend)
 

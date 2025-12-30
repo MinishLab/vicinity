@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Union
 
 import numpy as np
 from numpy import typing as npt
 
 
-def normalize(vectors: npt.NDArray, norms: Union[npt.NDArray, None] = None) -> npt.NDArray:
+def normalize(vectors: npt.NDArray, norms: npt.NDArray | None = None) -> npt.NDArray:
     """
     Normalize a matrix of row vectors to unit length.
 
@@ -66,7 +65,7 @@ class Metric(Enum):
     TANIMOTO = "tanimoto"
 
     @classmethod
-    def from_string(cls, metric: Union[str, Metric]) -> Metric:
+    def from_string(cls, metric: str | Metric) -> Metric:
         """Convert a string or Metric enum to a Metric enum member."""
         if isinstance(metric, cls):
             return metric

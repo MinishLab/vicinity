@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from numpy import typing as npt
 from voyager import Index, Space
@@ -41,7 +41,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
     def from_vectors(
         cls: type[VoyagerBackend],
         vectors: npt.NDArray,
-        metric: Union[str, Metric],
+        metric: str | Metric,
         ef_construction: int,
         m: int,
         **kwargs: Any,

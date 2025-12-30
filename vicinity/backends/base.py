@@ -26,7 +26,7 @@ class BaseArgs:
     @classmethod
     def load(cls: type[ArgType], file: Path) -> ArgType:
         """Load the arguments from a file."""
-        with open(file, "r") as f:
+        with open(file) as f:
             data = json.load(f)
             data["metric"] = Metric.from_string(data["metric"])
             return cls(**data)
