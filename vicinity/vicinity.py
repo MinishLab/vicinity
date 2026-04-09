@@ -6,9 +6,7 @@ import logging
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Generic, TypeVar
-
-T = TypeVar("T")
+from typing import Any, Generic
 
 import numpy as np
 import orjson
@@ -17,7 +15,7 @@ from orjson import JSONEncodeError
 
 from vicinity import Metric
 from vicinity.backends import AbstractBackend, BasicBackend, BasicVectorStore, get_backend_class
-from vicinity.datatypes import Backend, PathLike
+from vicinity.datatypes import Backend, PathLike, SimilarityResult, T
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +115,7 @@ class Vicinity(Generic[T]):
         self,
         vectors: npt.NDArray,
         k: int = 10,
-    ) -> list[list[tuple[T, float]]]:
+    ) -> SimilarityResult[T]:
         """
         Find the nearest neighbors to some arbitrary vector.
 
@@ -144,7 +142,7 @@ class Vicinity(Generic[T]):
         vectors: npt.NDArray,
         threshold: float = 0.5,
         max_k: int = 100,
-    ) -> list[list[tuple[T, float]]]:
+    ) -> SimilarityResult[T]:
         """
         Find the nearest neighbors to some arbitrary vector with some threshold. Note: the output is not sorted.
 
