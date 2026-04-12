@@ -7,7 +7,7 @@ from vicinity.datatypes import Backend
 
 class OptionalDependencyError(ImportError):
     def __init__(self, backend: Backend, extra: str) -> None:
-        msg = f"{backend} requires extra '{extra}'.\n" f"Install it with: pip install 'vicinity[{extra}]'\n"
+        msg = f"{backend} requires extra '{extra}'.\nInstall it with: pip install 'vicinity[{extra}]'\n"
         super().__init__(msg)
         self.backend = backend
         self.extra = extra

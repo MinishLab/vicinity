@@ -92,10 +92,10 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
         return len(self.index)
 
     @classmethod
-    def load(cls: type[UsearchBackend], base_path: Path) -> UsearchBackend:
+    def load(cls: type[UsearchBackend], path: Path) -> UsearchBackend:
         """Load the index from a path."""
-        path = Path(base_path) / "index.usearch"
-        arguments = UsearchArgs.load(base_path / "arguments.json")
+        index_path = path / "index.usearch"
+        arguments = UsearchArgs.load(path / "arguments.json")
 
         index = UsearchIndex(
             ndim=arguments.dim,
@@ -104,14 +104,13 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
             expansion_add=arguments.expansion_add,
             expansion_search=arguments.expansion_search,
         )
-        index.load(str(path))
+        index.load(str(index_path))
         return cls(index, arguments=arguments)
 
-    def save(self, base_path: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the index to a path."""
-        path = Path(base_path) / "index.usearch"
-        self.index.save(str(path))
-        self.arguments.dump(base_path / "arguments.json")
+        self.index.save(str(path / "index.usearch"))
+        self.arguments.dump(path / "arguments.json")
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend and return results as tuples of keys and distances."""

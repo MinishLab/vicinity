@@ -77,7 +77,7 @@ class AbstractBackend(ABC, Generic[ArgType]):
         raise NotImplementedError()
 
     @abstractmethod
-    def save(self, base_path: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the backend to a file."""
         raise NotImplementedError()
 
