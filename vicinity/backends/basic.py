@@ -50,25 +50,25 @@ class BasicVectorStore:
         self._vectors = np.delete(self._vectors, indices, axis=0)
         self._update_precomputed_data()
 
-    def save(self, folder: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the vectors to a path."""
-        path = folder / "vectors.npy"
+        path = path / "vectors.npy"
         with open(path, "wb") as f:
             np.save(f, self._vectors)
 
     @staticmethod
-    def _load_vectors(folder: Path) -> npt.NDArray:
+    def _load_vectors(path: Path) -> npt.NDArray:
         """Load the vectors from a path."""
-        path = folder / "vectors.npy"
+        path = path / "vectors.npy"
         with open(path, "rb") as f:
             vectors = np.load(f)
 
         return vectors
 
     @classmethod
-    def load(cls, folder: Path) -> BasicVectorStore:
+    def load(cls, path: Path) -> BasicVectorStore:
         """Load the vectors from a path."""
-        vectors = cls._load_vectors(folder)
+        vectors = cls._load_vectors(path)
         return cls(vectors=vectors)
 
     @property
@@ -130,10 +130,10 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
             raise ValueError(f"Unsupported metric: {metric}")
 
     @classmethod
-    def load(cls, folder: Path) -> BasicBackend:
+    def load(cls, path: Path) -> BasicBackend:
         """Load the vectors from a path."""
-        arguments = BasicArgs.load(folder / "arguments.json")
-        vectors = cls._load_vectors(folder)
+        arguments = BasicArgs.load(path / "arguments.json")
+        vectors = cls._load_vectors(path)
         if arguments.metric == Metric.COSINE:
             return CosineBasicBackend(vectors, arguments)
         elif arguments.metric == Metric.EUCLIDEAN:
@@ -141,10 +141,10 @@ class BasicBackend(BasicVectorStore, AbstractBackend[BasicArgs], ABC):
         else:
             raise ValueError(f"Unsupported metric: {arguments.metric}")
 
-    def save(self, folder: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the vectors to a path."""
-        super().save(folder)
-        self.arguments.dump(folder / "arguments.json")
+        super().save(path)
+        self.arguments.dump(path / "arguments.json")
 
     def threshold(
         self,

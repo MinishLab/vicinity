@@ -66,26 +66,26 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
             VoyagerArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m),
         )
 
-    def query(self, query: npt.NDArray, k: int) -> QueryResult:
+    def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend for the nearest neighbors."""
         k = min(k, len(self))
-        indices, distances = self.index.query(query, k)
+        indices, distances = self.index.query(vectors, k)
         return list(zip(indices, distances))
 
     @classmethod
-    def load(cls: type[VoyagerBackend], base_path: Path) -> VoyagerBackend:
+    def load(cls: type[VoyagerBackend], path: Path) -> VoyagerBackend:
         """Load the vectors from a path."""
-        path = Path(base_path) / "index.bin"
-        arguments = VoyagerArgs.load(base_path / "arguments.json")
-        with open(path, "rb") as f:
+        index_path = path / "index.bin"
+        arguments = VoyagerArgs.load(path / "arguments.json")
+        with open(index_path, "rb") as f:
             index = Index.load(f)
         return cls(index, arguments=arguments)
 
-    def save(self, base_path: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the vectors to a path."""
-        path = Path(base_path) / "index.bin"
-        self.index.save(str(path))
-        self.arguments.dump(base_path / "arguments.json")
+        index_path = path / "index.bin"
+        self.index.save(str(index_path))
+        self.arguments.dump(path / "arguments.json")
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""

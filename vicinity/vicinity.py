@@ -48,7 +48,7 @@ class Vicinity(Generic[T]):
         """
         if len(items) != len(backend):
             raise ValueError(
-                "Your vector space and list of items are not the same length: " f"{len(backend)} != {len(items)}"
+                f"Your vector space and list of items are not the same length: {len(backend)} != {len(items)}"
             )
         self.items: list[T] = list(items)
         self.backend: AbstractBackend = backend
@@ -107,7 +107,7 @@ class Vicinity(Generic[T]):
         return self.backend.dim
 
     @property
-    def metric(self) -> str:
+    def metric(self) -> Metric:
         """The metric used by the backend."""
         return self.backend.arguments.metric
 

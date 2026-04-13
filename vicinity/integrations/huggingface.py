@@ -55,6 +55,8 @@ def push_to_hub(
     if vector_store is not None:
         if isinstance(vector_store.vectors, np.ndarray):
             vectors: list[list[float]] = vector_store.vectors.tolist()
+        else:
+            vectors = vector_store.vectors
         dataset_dict["vectors"] = vectors
 
     dataset = Dataset.from_dict(dataset_dict)

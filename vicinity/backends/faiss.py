@@ -191,14 +191,14 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
         return out
 
-    def save(self, base_path: Path) -> None:
+    def save(self, path: Path) -> None:
         """Save the FAISS index and arguments."""
-        faiss.write_index(self.index, str(base_path / "index.faiss"))
-        self.arguments.dump(base_path / "arguments.json")
+        faiss.write_index(self.index, str(path / "index.faiss"))
+        self.arguments.dump(path / "arguments.json")
 
     @classmethod
-    def load(cls: type[FaissBackend], base_path: Path) -> FaissBackend:
+    def load(cls: type[FaissBackend], path: Path) -> FaissBackend:
         """Load a FAISS index and arguments."""
-        arguments = FaissArgs.load(base_path / "arguments.json")
-        index = faiss.read_index(str(base_path / "index.faiss"))
+        arguments = FaissArgs.load(path / "arguments.json")
+        index = faiss.read_index(str(path / "index.faiss"))
         return cls(index=index, arguments=arguments)
