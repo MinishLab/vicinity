@@ -29,6 +29,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
+      # Install OpenBLAS on Ubuntu (required by the turbovec wheel)
+      - name: Install system dependencies (Ubuntu)
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get install -y libopenblas-dev
+
       # Step for Windows: Create and activate a virtual environment
       - name: Create and activate a virtual environment (Windows)
         if: ${{ runner.os == 'Windows' }}
