@@ -88,12 +88,9 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     :param vicinity_instance: A Vicinity instance.
     :param query_vector: A query vector.
     """
-    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
-        # Skip insert for backends that don't support it.
-        return
-    if vicinity_instance.backend.backend_type == Backend.TURBOVEC:
-        # Skip: quantization distortion means the inserted vector is not
-        # reliably ranked in top-k at the small dimensions used in tests.
+    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT, Backend.TURBOVEC}:
+        # HNSW, Annoy, PyNNDescent don't support insert; TurboVec quantization distortion
+        # makes rank-based assertions unreliable at small dimensions.
         return
     new_item = ["item10001"]
     new_vector = query_vector
