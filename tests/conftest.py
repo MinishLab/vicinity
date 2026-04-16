@@ -51,9 +51,7 @@ def query_vector() -> np.ndarray:
     return random_gen.random(16)
 
 
-BACKEND_PARAMS: list[tuple[Backend, str | None]] = [
-    (Backend.FAISS, index_type) for index_type in _faiss_index_types
-] + [
+BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_types] + [
     (Backend.BASIC, None),
     (Backend.HNSW, None),
     (Backend.ANNOY, None),
