@@ -88,9 +88,8 @@ def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) 
     :param vicinity_instance: A Vicinity instance.
     :param query_vector: A query vector.
     """
-    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT, Backend.TURBOVEC}:
-        # Skip insert for HNSW, Annoy, PyNNDescent backends (no support) and
-        # TURBOVEC (quantization at d=8 makes rank-based assertions unreliable).
+    if vicinity_instance.backend.backend_type in {Backend.HNSW, Backend.ANNOY, Backend.PYNNDESCENT}:
+        # Skip insert for HNSW, Annoy and PyNNDescent backends (no support).
         return
     new_item = ["item10001"]
     new_vector = query_vector

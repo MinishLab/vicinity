@@ -42,13 +42,13 @@ def non_serializable_items() -> list[object]:
 @pytest.fixture(scope="session")
 def vectors() -> np.ndarray:
     """Fixture providing an array of vectors corresponding to items."""
-    return random_gen.random((10000, 8))
+    return random_gen.random((10000, 16))
 
 
 @pytest.fixture(scope="session")
 def query_vector() -> np.ndarray:
     """Fixture providing a query vector."""
-    return random_gen.random(8)
+    return random_gen.random(16)
 
 
 BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_types] + [
