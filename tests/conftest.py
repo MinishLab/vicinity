@@ -22,13 +22,13 @@ _faiss_index_types = [
 
 
 @pytest.fixture(scope="session")
-def items() -> list[str]:
+def items() -> list[str | dict[str, object]]:
     """Fixture providing a list of item names."""
     return [f"item{i}" if i % 2 == 0 else {"name": f"item{i}", "id": i} for i in range(1, 10001)]
 
 
 @pytest.fixture(scope="session")
-def non_serializable_items() -> list[str]:
+def non_serializable_items() -> list[object]:
     """Fixture providing a list of non-serializable items."""
 
     class NonSerializable:
@@ -58,6 +58,7 @@ BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_typ
     (Backend.PYNNDESCENT, None),
     (Backend.USEARCH, None),
     (Backend.VOYAGER, None),
+    (Backend.TURBOVEC, None),
 ]
 
 
