@@ -45,9 +45,10 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         metric_enum = Metric.from_string(metric)
 
         if metric_enum not in cls.supported_metrics:
-            raise ValueError(
-                f"Metric '{metric_enum.value}' is not supported by TurboVecBackend. Only cosine is supported."
-            )
+            raise ValueError(f"Metric '{metric_enum.value}' is not supported by TurboVecBackend.")
+
+        if bit_width not in (2, 3, 4):
+            raise ValueError(f"bit_width must be 2, 3, or 4, got {bit_width}.")
 
         dim = vectors.shape[1]
         index = TurboQuantIndex(dim=dim, bit_width=bit_width)
@@ -86,7 +87,7 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         """Query the backend and return results as tuples of keys and distances."""
         k = min(k, len(self))
         scores_batch, indices_batch = self.index.search(vectors.astype(np.float32), k=k)
-        # turbovec returns cosine similarity scores (higher=better); convert to cosine distance
+        # TurboVec returns cosine similarity scores; convert to cosine distance
         distances_batch = 1.0 - scores_batch
         return [(indices_batch[i], distances_batch[i].astype(np.float32)) for i in range(len(vectors))]
 
