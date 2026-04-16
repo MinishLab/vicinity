@@ -51,6 +51,8 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
             raise ValueError(f"bit_width must be 2, 3, or 4, got {bit_width}.")
 
         dim = vectors.shape[1]
+        if dim % 8 != 0:
+            raise ValueError(f"dim must be a multiple of 8, got {dim}.")
         index = TurboQuantIndex(dim=dim, bit_width=bit_width)
         index.add(vectors.astype(np.float32))
         arguments = TurboVecArgs(dim=dim, metric=metric_enum, bit_width=bit_width)

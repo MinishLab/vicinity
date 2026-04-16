@@ -70,8 +70,7 @@ backends = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager",
-    "turbovec"
+    "voyager"
 ]
 
 all = [
@@ -84,8 +83,7 @@ all = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager",
-    "turbovec"
+    "voyager"
 ]
 
 [project.urls]

@@ -51,7 +51,9 @@ def query_vector() -> np.ndarray:
     return random_gen.random(16)
 
 
-BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_types] + [
+BACKEND_PARAMS: list[tuple[Backend, str | None]] = [
+    (Backend.FAISS, index_type) for index_type in _faiss_index_types
+] + [
     (Backend.BASIC, None),
     (Backend.HNSW, None),
     (Backend.ANNOY, None),
@@ -60,7 +62,6 @@ BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_typ
     (Backend.VOYAGER, None),
     (Backend.TURBOVEC, None),
 ]
-
 
 # Create human-readable ids for each backend type
 BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name for backend, index_type in BACKEND_PARAMS]

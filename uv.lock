@@ -1673,7 +1673,6 @@ all = [
     { name = "numba" },
     { name = "numpy" },
     { name = "pynndescent" },
-    { name = "turbovec" },
     { name = "usearch" },
     { name = "voyager" },
 ]
@@ -1688,7 +1687,6 @@ backends = [
     { name = "numba" },
     { name = "numpy" },
     { name = "pynndescent" },
-    { name = "turbovec" },
     { name = "usearch" },
     { name = "voyager" },
 ]
@@ -1767,8 +1765,6 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools", marker = "extra == 'dev'" },
     { name = "tqdm" },
-    { name = "turbovec", marker = "extra == 'all'" },
-    { name = "turbovec", marker = "extra == 'backends'" },
     { name = "turbovec", marker = "extra == 'turbovec'" },
     { name = "usearch", marker = "extra == 'all'" },
     { name = "usearch", marker = "extra == 'backends'" },
