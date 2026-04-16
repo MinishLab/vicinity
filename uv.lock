@@ -1578,6 +1578,17 @@ wheels = [
 ]
 
 [[package]]
+name = "turbovec"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/05/f9c8de1eea79a69c43b0760a026e34cbeeda063038bbd9b99425d897c902/turbovec-0.1.3.tar.gz", hash = "sha256:140a433438f102e17947875a231f8cce50fd79b5dc381672f6510cd346cfb0d1", size = 44254, upload-time = "2026-04-15T14:40:18.158Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b7/ec/3bc9e28852b6c2a5d2a9e88048c5bca0363e641e3956f4d1f9dc6eecc7a2/turbovec-0.1.3-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:34e50b9448759933b67136ccc7ab2cedfedcd4b4ae41441b94c93d16274fd686", size = 761398, upload-time = "2026-04-15T14:40:13.817Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/3e/2240c4401bdce3463d517ba652a7aa31f794bc30b10985694572ef2c30d9/turbovec-0.1.3-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:21b1b77113cfabb9e023b6b922ecd97e3098ec3665395234a1c581a93fe76347", size = 900829, upload-time = "2026-04-15T14:40:15.324Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/ce/5406ccb0efa79bf01ba9aa965262003a6c772cf09ceb940023491df0105f/turbovec-0.1.3-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:c14e19bdbb6e833505fb1bc8eee2791bee99355d045c82e6f350f6b39f7663c5", size = 755675, upload-time = "2026-04-15T14:40:16.64Z" },
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1662,6 +1673,7 @@ all = [
     { name = "numba" },
     { name = "numpy" },
     { name = "pynndescent" },
+    { name = "turbovec" },
     { name = "usearch" },
     { name = "voyager" },
 ]
@@ -1676,6 +1688,7 @@ backends = [
     { name = "numba" },
     { name = "numpy" },
     { name = "pynndescent" },
+    { name = "turbovec" },
     { name = "usearch" },
     { name = "voyager" },
 ]
@@ -1706,6 +1719,9 @@ pynndescent = [
     { name = "numba" },
     { name = "numpy" },
     { name = "pynndescent" },
+]
+turbovec = [
+    { name = "turbovec" },
 ]
 usearch = [
     { name = "usearch" },
@@ -1751,6 +1767,9 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "setuptools", marker = "extra == 'dev'" },
     { name = "tqdm" },
+    { name = "turbovec", marker = "extra == 'all'" },
+    { name = "turbovec", marker = "extra == 'backends'" },
+    { name = "turbovec", marker = "extra == 'turbovec'" },
     { name = "usearch", marker = "extra == 'all'" },
     { name = "usearch", marker = "extra == 'backends'" },
     { name = "usearch", marker = "extra == 'usearch'" },
@@ -1758,7 +1777,7 @@ requires-dist = [
     { name = "voyager", marker = "extra == 'backends'" },
     { name = "voyager", marker = "extra == 'voyager'" },
 ]
-provides-extras = ["dev", "huggingface", "integrations", "hnsw", "pynndescent", "annoy", "faiss", "usearch", "voyager", "backends", "all"]
+provides-extras = ["dev", "huggingface", "integrations", "hnsw", "pynndescent", "annoy", "faiss", "usearch", "voyager", "turbovec", "backends", "all"]
 
 [[package]]
 name = "virtualenv"
