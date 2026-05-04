@@ -142,3 +142,6 @@ license-files = []
 
 [tool.setuptools.dynamic]
 version = {attr = "vicinity.version.__version__"}
+
+[tool.uv]
+exclude-newer = "1 week"
