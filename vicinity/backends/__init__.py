@@ -62,5 +62,11 @@ def get_backend_class(backend: Backend | str) -> type[AbstractBackend]:
 
         return VoyagerBackend
 
+    elif backend == Backend.TURBOVEC:
+        _require("turbovec", backend, "turbovec")
+        from vicinity.backends.turbovec import TurboVecBackend
+
+        return TurboVecBackend
+
 
 __all__ = ["get_backend_class", "AbstractBackend", "BasicVectorStore"]
