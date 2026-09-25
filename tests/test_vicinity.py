@@ -8,6 +8,7 @@ from orjson import JSONEncodeError
 
 from vicinity import Vicinity
 from vicinity.datatypes import Backend
+from vicinity.utils import normalize
 
 BackendType = tuple[Backend, str]
 
@@ -364,3 +365,33 @@ def test_vicinity_usearch_binary_metrics(tmp_path: Path, metric: str) -> None:
 
     with pytest.raises(ValueError, match="bit-packed"):
         Vicinity.from_vectors_and_items(bits.astype(np.float32), items, backend_type=Backend.USEARCH, metric=metric)
+
+
+@pytest.mark.parametrize("metric", ["cosine", "euclidean"])
+@pytest.mark.parametrize(
+    "backend_type,kwargs",
+    [
+        (Backend.BASIC, {}),
+        (Backend.HNSW, {}),
+        (Backend.PYNNDESCENT, {}),
+        (Backend.VOYAGER, {}),
+        (Backend.FAISS, {"index_type": "flat"}),
+        (Backend.FAISS, {"index_type": "ivf", "nlist": 50}),
+        (Backend.FAISS, {"index_type": "hnsw"}),
+    ],
+)
+def test_backend_distances_match_metric(
+    backend_type: Backend, kwargs: dict, metric: str, vectors: np.ndarray, query_vector: np.ndarray
+) -> None:
+    """Backends return true cosine or Euclidean distances for the returned items, without padding."""
+    vicinity = Vicinity.from_vectors_and_items(
+        vectors, list(range(len(vectors))), backend_type=backend_type, metric=metric, **kwargs
+    )
+    if metric == "cosine":
+        expected = 1 - normalize(vectors) @ normalize(query_vector)
+    else:
+        expected = np.linalg.norm(vectors - query_vector, axis=1)
+    threshold = float(np.sort(expected)[10])
+    for result in (vicinity.query(query_vector, k=100)[0], vicinity.query_threshold(query_vector, threshold)[0]):
+        items, distances = zip(*result)
+        assert np.allclose(distances, expected[list(items)], atol=1e-4)

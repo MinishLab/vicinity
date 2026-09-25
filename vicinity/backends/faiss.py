@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import faiss
+import numpy as np
 from numpy import typing as npt
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
@@ -147,16 +148,33 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Perform a k-NN search in the FAISS index."""
         k = min(len(self), k)
-        if self.arguments.metric == "cosine":
+        if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
         distances, indices = self.index.search(vectors, k)
-        if self.arguments.metric == "cosine":
-            distances = 1 - distances
-        return list(zip(indices, distances))
+        out: QueryResult = []
+        for idx, raw in zip(indices, distances):
+            # FAISS pads missing results with index -1.
+            found = idx >= 0
+            out.append((idx[found], self._to_distances(raw[found])))
+        return out
+
+    def _to_distances(self, raw: npt.NDArray) -> npt.NDArray:
+        """Convert raw FAISS scores to distances for the configured metric."""
+        if self.index.metric_type == faiss.METRIC_INNER_PRODUCT:
+            return 1 - raw
+        # L2 indexes return squared distances, which are 2 - 2 * cosine for normalized vectors.
+        raw = np.maximum(raw, 0)
+        return raw / 2 if self.arguments.metric == Metric.COSINE else np.sqrt(raw)
+
+    def _radius(self, threshold: float) -> float:
+        """Convert a distance threshold to a FAISS range search radius."""
+        if self.index.metric_type == faiss.METRIC_INNER_PRODUCT:
+            return 1 - threshold
+        return 2 * threshold if self.arguments.metric == Metric.COSINE else threshold**2
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        if self.arguments.metric == "cosine":
+        if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
         self.index.add(vectors)
 
@@ -167,27 +185,21 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Query vectors within a distance threshold, using range_search if supported."""
         out: QueryResult = []
-        if self.arguments.metric == "cosine":
+        if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
 
         if isinstance(self.index, RANGE_SEARCH_INDEXES):
-            radius = threshold
-            lims, D, I = self.index.range_search(vectors, radius)
-            for i in range(vectors.shape[0]):
-                start, end = lims[i], lims[i + 1]
-                idx = I[start:end]
-                dist = D[start:end]
-                if self.arguments.metric == "cosine":
-                    dist = 1 - dist
-                mask = dist < threshold
-                out.append((idx[mask], dist[mask]))
+            lims, D, I = self.index.range_search(vectors, self._radius(threshold))
+            results = [(I[lims[i] : lims[i + 1]], D[lims[i] : lims[i + 1]]) for i in range(vectors.shape[0])]
         else:
             distances, indices = self.index.search(vectors, max_k)
-            for dist, idx in zip(distances, indices):
-                if self.arguments.metric == "cosine":
-                    dist = 1 - dist
-                mask = dist < threshold
-                out.append((idx[mask], dist[mask]))
+            results = list(zip(indices, distances))
+
+        for idx, raw in results:
+            dist = self._to_distances(raw)
+            # FAISS pads missing results with index -1.
+            mask = (idx >= 0) & (dist < threshold)
+            out.append((idx[mask], dist[mask]))
 
         return out
 

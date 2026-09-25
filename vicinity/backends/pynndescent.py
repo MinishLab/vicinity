@@ -68,8 +68,9 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Batched approximate nearest neighbors search."""
-        normalized_vectors = normalize_or_copy(vectors)
-        indices, distances = self.index.query(normalized_vectors, k=k)
+        if self.arguments.metric == Metric.COSINE:
+            vectors = normalize_or_copy(vectors)
+        indices, distances = self.index.query(vectors, k=k)
         return list(zip(indices, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
@@ -82,8 +83,9 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
 
     def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Find neighbors within a distance threshold."""
-        normalized_vectors = normalize_or_copy(vectors)
-        indices, distances = self.index.query(normalized_vectors, k=max_k)
+        if self.arguments.metric == Metric.COSINE:
+            vectors = normalize_or_copy(vectors)
+        indices, distances = self.index.query(vectors, k=max_k)
         out: QueryResult = []
         for idx, dist in zip(indices, distances):
             mask = dist < threshold
