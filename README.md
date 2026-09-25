@@ -158,7 +158,7 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 |                 | `m`                 | Number of connections per layer.                                                              | `16`                |
 | **PYNNDESCENT** | `metric`            | Similarity metric to use (`cosine`, `euclidean`, `manhattan`).                                | `"cosine"`          |
 |                 | `n_neighbors`       | Number of neighbors to use for search.                                                        | `15`                |
-| **USEARCH**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`).                        | `"cos"`             |
+| **USEARCH**     | `metric`            | Similarity metric to use (`cos`, `ip`, `l2sq`, `hamming`, `tanimoto`). `hamming` and `tanimoto` take uint8 vectors bit-packed with `np.packbits`. | `"cos"`             |
 |                 | `connectivity`      | Number of connections per node in the graph.                                                  | `16`                |
 |                 | `expansion_add`     | Number of candidates considered during graph construction.                                    | `128`               |
 |                 | `expansion_search`  | Number of candidates considered during search.                                                | `64`                |

@@ -333,3 +333,34 @@ def test_vicinity_evaluate(vicinity_instance: Vicinity, vectors: np.ndarray) -> 
     vicinity_instance.backend.arguments.metric = "manhattan"
     with pytest.raises(ValueError):
         vicinity_instance.evaluate(vectors, query_vectors)
+
+
+@pytest.mark.parametrize("metric", ["hamming", "tanimoto"])
+def test_vicinity_usearch_binary_metrics(tmp_path: Path, metric: str) -> None:
+    """
+    Test that the usearch backend supports binary metrics on bit-packed vectors.
+
+    :param tmp_path: Temporary directory for saving and loading.
+    :param metric: The binary metric to use.
+    """
+    bits = np.random.default_rng(42).integers(0, 2, size=(50, 64)).astype(bool)
+    packed = np.packbits(bits, axis=1)
+    items = [str(i) for i in range(len(bits))]
+    vicinity = Vicinity.from_vectors_and_items(packed, items, backend_type=Backend.USEARCH, metric=metric)
+    assert vicinity.dim == packed.shape[1]
+
+    if metric == "hamming":
+        expected = (bits[0] != bits).sum(axis=1)
+    else:
+        expected = 1 - (bits[0] & bits).sum(axis=1) / (bits[0] | bits).sum(axis=1)
+    ((_, distance),) = vicinity.query(packed[:1], k=1)[0]
+    ((_, farthest),) = vicinity.query(packed[:1], k=len(items))[0][-1:]
+    assert distance == pytest.approx(0)
+    assert farthest == pytest.approx(expected.max(), abs=1e-5)
+
+    vicinity.insert(["new"], packed[:1])
+    vicinity.save(tmp_path / "binary")
+    assert Vicinity.load(tmp_path / "binary").query(packed[:1], k=3)[0] == vicinity.query(packed[:1], k=3)[0]
+
+    with pytest.raises(ValueError, match="bit-packed"):
+        Vicinity.from_vectors_and_items(bits.astype(np.float32), items, backend_type=Backend.USEARCH, metric=metric)
