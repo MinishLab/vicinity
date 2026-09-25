@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from vicinity import Vicinity
+from vicinity.backends import OptionalDependencyError
 from vicinity.datatypes import Backend
 
 random_gen = np.random.default_rng(42)
@@ -22,13 +23,13 @@ _faiss_index_types = [
 
 
 @pytest.fixture(scope="session")
-def items() -> list[str]:
+def items() -> list[str | dict[str, object]]:
     """Fixture providing a list of item names."""
     return [f"item{i}" if i % 2 == 0 else {"name": f"item{i}", "id": i} for i in range(1, 10001)]
 
 
 @pytest.fixture(scope="session")
-def non_serializable_items() -> list[str]:
+def non_serializable_items() -> list[object]:
     """Fixture providing a list of non-serializable items."""
 
     class NonSerializable:
@@ -58,8 +59,8 @@ BACKEND_PARAMS = [(Backend.FAISS, index_type) for index_type in _faiss_index_typ
     (Backend.PYNNDESCENT, None),
     (Backend.USEARCH, None),
     (Backend.VOYAGER, None),
+    (Backend.TURBOVEC, None),
 ]
-
 
 # Create human-readable ids for each backend type
 BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name for backend, index_type in BACKEND_PARAMS]
@@ -68,6 +69,13 @@ BACKEND_IDS = [f"{backend.name}-{index_type}" if index_type else backend.name fo
 @pytest.fixture(params=BACKEND_PARAMS)
 def backend_type(request: pytest.FixtureRequest) -> Backend:
     """Fixture parametrizing over all backend types defined in Backend."""
+    backend, _ = request.param
+    try:
+        from vicinity.backends import get_backend_class
+
+        get_backend_class(backend)
+    except OptionalDependencyError as e:
+        pytest.skip(str(e))
     return request.param
 
 
@@ -75,29 +83,32 @@ def backend_type(request: pytest.FixtureRequest) -> Backend:
 def vicinity_instance(request: pytest.FixtureRequest, items: list[str], vectors: np.ndarray) -> Vicinity:
     """Fixture providing a Vicinity instance for each backend type."""
     backend_type, index_type = request.param
-    # Handle FAISS backend with specific FAISS index types
-    if backend_type == Backend.FAISS:
-        if index_type in ("pq", "ivfpq", "ivfpqr"):
-            # Use smaller values for pq indexes since the dataset is small
-            return Vicinity.from_vectors_and_items(
-                vectors,
-                items,
-                backend_type=backend_type,
-                index_type=index_type,
-                m=2,
-                nbits=4,
-            )
-        else:
-            return Vicinity.from_vectors_and_items(
-                vectors,
-                items,
-                backend_type=backend_type,
-                index_type=index_type,
-                nlist=2,
-                nbits=32,
-            )
+    try:
+        # Handle FAISS backend with specific FAISS index types
+        if backend_type == Backend.FAISS:
+            if index_type in ("pq", "ivfpq", "ivfpqr"):
+                # Use smaller values for pq indexes since the dataset is small
+                return Vicinity.from_vectors_and_items(
+                    vectors,
+                    items,
+                    backend_type=backend_type,
+                    index_type=index_type,
+                    m=2,
+                    nbits=4,
+                )
+            else:
+                return Vicinity.from_vectors_and_items(
+                    vectors,
+                    items,
+                    backend_type=backend_type,
+                    index_type=index_type,
+                    nlist=2,
+                    nbits=32,
+                )
 
-    return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+        return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type)
+    except OptionalDependencyError as e:
+        pytest.skip(str(e))
 
 
 @pytest.fixture(params=BACKEND_PARAMS, ids=BACKEND_IDS)
@@ -106,19 +117,28 @@ def vicinity_instance_with_stored_vectors(
 ) -> Vicinity:
     """Fixture providing a Vicinity instance for each backend type."""
     backend_type, index_type = request.param
-    # Handle FAISS backend with specific FAISS index types
-    if backend_type == Backend.FAISS:
-        if index_type in ("pq", "ivfpq", "ivfpqr"):
-            # Use smaller values for pq indexes since the dataset is small
-            return Vicinity.from_vectors_and_items(
-                vectors, items, backend_type=backend_type, index_type=index_type, m=2, nbits=4, store_vectors=True
-            )
-        else:
-            return Vicinity.from_vectors_and_items(
-                vectors, items, backend_type=backend_type, index_type=index_type, nlist=2, nbits=32, store_vectors=True
-            )
+    try:
+        # Handle FAISS backend with specific FAISS index types
+        if backend_type == Backend.FAISS:
+            if index_type in ("pq", "ivfpq", "ivfpqr"):
+                # Use smaller values for pq indexes since the dataset is small
+                return Vicinity.from_vectors_and_items(
+                    vectors, items, backend_type=backend_type, index_type=index_type, m=2, nbits=4, store_vectors=True
+                )
+            else:
+                return Vicinity.from_vectors_and_items(
+                    vectors,
+                    items,
+                    backend_type=backend_type,
+                    index_type=index_type,
+                    nlist=2,
+                    nbits=32,
+                    store_vectors=True,
+                )
 
-    return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type, store_vectors=True)
+        return Vicinity.from_vectors_and_items(vectors, items, backend_type=backend_type, store_vectors=True)
+    except OptionalDependencyError as e:
+        pytest.skip(str(e))
 
 
 @pytest.fixture()

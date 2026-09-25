@@ -25,3 +25,4 @@ class Backend(str, Enum):
     FAISS = "faiss"
     USEARCH = "usearch"
     VOYAGER = "voyager"
+    TURBOVEC = "turbovec"
