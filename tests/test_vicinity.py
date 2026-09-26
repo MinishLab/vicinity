@@ -369,21 +369,24 @@ def test_vicinity_usearch_binary_metrics(tmp_path: Path, metric: str) -> None:
 
 @pytest.mark.parametrize("metric", ["cosine", "euclidean"])
 @pytest.mark.parametrize(
-    "backend_type,kwargs",
+    "backend_type,kwargs,atol",
     [
-        (Backend.BASIC, {}),
-        (Backend.HNSW, {}),
-        (Backend.PYNNDESCENT, {}),
-        (Backend.VOYAGER, {}),
-        (Backend.FAISS, {"index_type": "flat"}),
-        (Backend.FAISS, {"index_type": "ivf", "nlist": 50}),
-        (Backend.FAISS, {"index_type": "hnsw"}),
+        (Backend.BASIC, {}, 1e-4),
+        (Backend.HNSW, {}, 1e-4),
+        (Backend.PYNNDESCENT, {}, 1e-4),
+        (Backend.VOYAGER, {}, 1e-4),
+        (Backend.FAISS, {"index_type": "flat"}, 1e-4),
+        (Backend.FAISS, {"index_type": "ivf", "nlist": 50}, 1e-4),
+        (Backend.FAISS, {"index_type": "hnsw"}, 1e-4),
+        # Scalar quantization makes distances approximate.
+        (Backend.FAISS, {"index_type": "scalar"}, 0.05),
+        (Backend.FAISS, {"index_type": "ivf_scalar", "nlist": 50}, 0.05),
     ],
 )
 def test_backend_distances_match_metric(
-    backend_type: Backend, kwargs: dict, metric: str, vectors: np.ndarray, query_vector: np.ndarray
+    backend_type: Backend, kwargs: dict, atol: float, metric: str, vectors: np.ndarray, query_vector: np.ndarray
 ) -> None:
-    """Backends return true cosine or Euclidean distances for the returned items, without padding."""
+    """Backends return true cosine or Euclidean distances without padding; exact backends return every close item."""
     vicinity = Vicinity.from_vectors_and_items(
         vectors, list(range(len(vectors))), backend_type=backend_type, metric=metric, **kwargs
     )
@@ -391,7 +394,33 @@ def test_backend_distances_match_metric(
         expected = 1 - normalize(vectors) @ normalize(query_vector)
     else:
         expected = np.linalg.norm(vectors - query_vector, axis=1)
-    threshold = float(np.sort(expected)[10])
+    # Halfway between the 11th and 12th closest items, so no item sits on the boundary.
+    threshold = float(np.sort(expected)[10:12].mean())
     for result in (vicinity.query(query_vector, k=100)[0], vicinity.query_threshold(query_vector, threshold)[0]):
         items, distances = zip(*result)
-        assert np.allclose(distances, expected[list(items)], atol=1e-4)
+        assert np.allclose(distances, expected[list(items)], atol=atol)
+    if backend_type == Backend.BASIC or kwargs.get("index_type") == "flat":
+        returned = {item for item, _ in vicinity.query_threshold(query_vector, threshold)[0]}
+        assert returned == set(np.flatnonzero(expected < threshold).tolist())
+
+
+@pytest.mark.parametrize(
+    "backend_type,kwargs",
+    [
+        (Backend.BASIC, {}),
+        (Backend.FAISS, {"index_type": "flat"}),
+        (Backend.FAISS, {"index_type": "hnsw"}),
+        (Backend.FAISS, {"index_type": "scalar"}),
+        (Backend.FAISS, {"index_type": "ivf_scalar", "nlist": 1}),
+    ],
+)
+def test_cosine_distance_to_zero_vector(backend_type: Backend, kwargs: dict) -> None:
+    """A zero vector has cosine distance 1 to everything, so it never falls within a threshold below 1."""
+    vectors = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+    vicinity = Vicinity.from_vectors_and_items(
+        vectors, ["zero", "same", "orthogonal"], backend_type=backend_type, **kwargs
+    )
+    query = np.array([1.0, 0.0], dtype=np.float32)
+    distances = dict(vicinity.query(query, k=3)[0])
+    assert np.allclose([distances["zero"], distances["same"], distances["orthogonal"]], [1.0, 0.0, 1.0], atol=0.01)
+    assert [item for item, _ in vicinity.query_threshold(query, threshold=0.75)[0]] == ["same"]

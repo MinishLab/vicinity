@@ -89,11 +89,11 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         if index_type == "flat":
             index = faiss.IndexFlat(dim, faiss_metric)
         elif index_type == "hnsw":
-            index = faiss.IndexHNSWFlat(dim, m)
+            index = faiss.IndexHNSWFlat(dim, m, faiss_metric)
         elif index_type == "lsh":
             index = faiss.IndexLSH(dim, nbits)
         elif index_type == "scalar":
-            index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit)
+            index = faiss.IndexScalarQuantizer(dim, faiss.ScalarQuantizer.QT_8bit, faiss_metric)
         elif index_type == "pq":
             if not (1 <= nbits <= 16):
                 logger.warning(f"Invalid nbits={nbits} for IndexPQ. Setting nbits to 16.")
@@ -104,9 +104,11 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             if index_type == "ivf":
                 index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss_metric)
             elif index_type == "ivf_scalar":
-                index = faiss.IndexIVFScalarQuantizer(quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit)
+                index = faiss.IndexIVFScalarQuantizer(
+                    quantizer, dim, nlist, faiss.ScalarQuantizer.QT_8bit, faiss_metric
+                )
             elif index_type == "ivfpq":
-                index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits)
+                index = faiss.IndexIVFPQ(quantizer, dim, nlist, m, nbits, faiss_metric)
             elif index_type == "ivfpqr":
                 index = faiss.IndexIVFPQR(quantizer, dim, nlist, m, nbits, m, refine_nbits)
             else:
@@ -160,9 +162,12 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
     def _to_distances(self, raw: npt.NDArray) -> npt.NDArray:
         """Convert raw FAISS scores to distances for the configured metric."""
+        if isinstance(self.index, faiss.IndexLSH):
+            # LSH returns Hamming distances between binary codes, which cannot be converted.
+            return raw
         if self.index.metric_type == faiss.METRIC_INNER_PRODUCT:
             return 1 - raw
-        # L2 indexes return squared distances, which are 2 - 2 * cosine for normalized vectors.
+        # L2 indexes (pq and ivfpqr) return squared distances, which are 2 - 2 * cosine for unit vectors.
         raw = np.maximum(raw, 0)
         return raw / 2 if self.arguments.metric == Metric.COSINE else np.sqrt(raw)
 
