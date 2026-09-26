@@ -56,10 +56,13 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         self,
         index: faiss.Index,
         arguments: FaissArgs,
+        zero_indices: npt.NDArray | None = None,
     ) -> None:
         """Initialize the backend using a FAISS index."""
         super().__init__(arguments)
         self.index = index
+        # Indices of zero vectors, whose cosine distance cannot be derived from squared L2.
+        self.zero_indices = np.zeros(0, dtype=np.int64) if zero_indices is None else zero_indices
 
     @classmethod
     def from_vectors(  # noqa: C901
@@ -80,6 +83,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             raise ValueError(f"Metric '{metric_enum.value}' is not supported by FaissBackend.")
 
         faiss_metric = cls._map_metric_to_string(metric_enum)
+        zero_indices = np.flatnonzero(np.linalg.norm(vectors, axis=1) == 0)
         if faiss_metric == faiss.METRIC_INNER_PRODUCT:
             vectors = normalize(vectors)
 
@@ -131,7 +135,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             nbits=nbits,
             refine_nbits=refine_nbits,
         )
-        return cls(index=index, arguments=arguments)
+        return cls(index=index, arguments=arguments, zero_indices=zero_indices)
 
     def __len__(self) -> int:
         """Return the number of vectors in the index."""
@@ -150,26 +154,32 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Perform a k-NN search in the FAISS index."""
         k = min(len(self), k)
+        zero_queries = np.linalg.norm(vectors, axis=1) == 0
         if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
         distances, indices = self.index.search(vectors, k)
         out: QueryResult = []
-        for idx, raw in zip(indices, distances):
+        for idx, raw, zero_query in zip(indices, distances, zero_queries):
             # FAISS pads missing results with index -1.
             found = idx >= 0
-            out.append((idx[found], self._to_distances(raw[found])))
+            out.append((idx[found], self._to_distances(raw[found], idx[found], zero_query)))
         return out
 
-    def _to_distances(self, raw: npt.NDArray) -> npt.NDArray:
+    def _to_distances(self, raw: npt.NDArray, indices: npt.NDArray, zero_query: bool) -> npt.NDArray:
         """Convert raw FAISS scores to distances for the configured metric."""
         if isinstance(self.index, faiss.IndexLSH):
             # LSH returns Hamming distances between binary codes, which cannot be converted.
             return raw
         if self.index.metric_type == faiss.METRIC_INNER_PRODUCT:
             return 1 - raw
-        # L2 indexes (pq and ivfpqr) return squared distances, which are 2 - 2 * cosine for unit vectors.
         raw = np.maximum(raw, 0)
-        return raw / 2 if self.arguments.metric == Metric.COSINE else np.sqrt(raw)
+        if self.arguments.metric != Metric.COSINE:
+            return np.sqrt(raw)
+        # L2 indexes (pq and ivfpqr) return squared distances, which are 2 - 2 * cosine for unit vectors.
+        # Zero vectors are not unit vectors, and have cosine distance 1 to everything.
+        distances = raw / 2
+        distances[np.isin(indices, self.zero_indices)] = 1.0
+        return np.ones_like(distances) if zero_query else distances
 
     def _radius(self, threshold: float) -> float:
         """Convert a distance threshold to a FAISS range search radius."""
@@ -179,6 +189,8 @@ class FaissBackend(AbstractBackend[FaissArgs]):
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
+        new_zero_indices = np.flatnonzero(np.linalg.norm(vectors, axis=1) == 0) + len(self)
+        self.zero_indices = np.concatenate([self.zero_indices, new_zero_indices])
         if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
         self.index.add(vectors)
@@ -190,6 +202,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Query vectors within a distance threshold, using range_search if supported."""
         out: QueryResult = []
+        zero_queries = np.linalg.norm(vectors, axis=1) == 0
         if self.arguments.metric == Metric.COSINE:
             vectors = normalize(vectors)
 
@@ -200,8 +213,8 @@ class FaissBackend(AbstractBackend[FaissArgs]):
             distances, indices = self.index.search(vectors, max_k)
             results = list(zip(indices, distances))
 
-        for idx, raw in results:
-            dist = self._to_distances(raw)
+        for (idx, raw), zero_query in zip(results, zero_queries):
+            dist = self._to_distances(raw, idx, zero_query)
             # FAISS pads missing results with index -1.
             mask = (idx >= 0) & (dist < threshold)
             out.append((idx[mask], dist[mask]))
@@ -211,6 +224,7 @@ class FaissBackend(AbstractBackend[FaissArgs]):
     def save(self, path: Path) -> None:
         """Save the FAISS index and arguments."""
         faiss.write_index(self.index, str(path / "index.faiss"))
+        np.save(path / "zero_indices.npy", self.zero_indices)
         self.arguments.dump(path / "arguments.json")
 
     @classmethod
@@ -218,4 +232,6 @@ class FaissBackend(AbstractBackend[FaissArgs]):
         """Load a FAISS index and arguments."""
         arguments = FaissArgs.load(path / "arguments.json")
         index = faiss.read_index(str(path / "index.faiss"))
-        return cls(index=index, arguments=arguments)
+        zero_indices_path = path / "zero_indices.npy"
+        zero_indices = np.load(zero_indices_path) if zero_indices_path.exists() else None
+        return cls(index=index, arguments=arguments, zero_indices=zero_indices)

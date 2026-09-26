@@ -145,6 +145,7 @@ def test_vicinity_save_and_load(tmp_path: Path, vicinity_instance: Vicinity) -> 
 
     v = Vicinity.load(save_path)
     assert v.vector_store is None
+    assert v.query(np.ones(v.dim), k=5)[0]
 
 
 def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_with_stored_vectors: Vicinity) -> None:
@@ -412,15 +413,18 @@ def test_backend_distances_match_metric(
         (Backend.FAISS, {"index_type": "hnsw"}),
         (Backend.FAISS, {"index_type": "scalar"}),
         (Backend.FAISS, {"index_type": "ivf_scalar", "nlist": 1}),
+        (Backend.FAISS, {"index_type": "pq", "m": 1, "nbits": 3}),
+        (Backend.FAISS, {"index_type": "ivfpq", "nlist": 1, "m": 1, "nbits": 3}),
+        (Backend.FAISS, {"index_type": "ivfpqr", "nlist": 1, "m": 1, "nbits": 3, "refine_nbits": 3}),
     ],
 )
 def test_cosine_distance_to_zero_vector(backend_type: Backend, kwargs: dict) -> None:
-    """A zero vector has cosine distance 1 to everything, so it never falls within a threshold below 1."""
-    vectors = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
-    vicinity = Vicinity.from_vectors_and_items(
-        vectors, ["zero", "same", "orthogonal"], backend_type=backend_type, **kwargs
-    )
+    """Zero vectors have cosine distance 1 to everything, both as stored items and as queries."""
+    # Apart from the zero vector, every vector points away from the query, so nothing falls within the threshold.
+    vectors = np.array([[0.0, 0.0]] + [[-1.0, 0.1 * i] for i in range(15)], dtype=np.float32)
+    vicinity = Vicinity.from_vectors_and_items(vectors, list(range(len(vectors))), backend_type=backend_type, **kwargs)
     query = np.array([1.0, 0.0], dtype=np.float32)
-    distances = dict(vicinity.query(query, k=3)[0])
-    assert np.allclose([distances["zero"], distances["same"], distances["orthogonal"]], [1.0, 0.0, 1.0], atol=0.01)
-    assert [item for item, _ in vicinity.query_threshold(query, threshold=0.75)[0]] == ["same"]
+    assert dict(vicinity.query(query, k=len(vectors))[0])[0] == pytest.approx(1.0, abs=0.01)
+    assert vicinity.query_threshold(query, threshold=0.75)[0] == []
+    zero_query_distances = [distance for _, distance in vicinity.query(np.zeros(2, dtype=np.float32), k=5)[0]]
+    assert np.allclose(zero_query_distances, 1.0, atol=0.01)

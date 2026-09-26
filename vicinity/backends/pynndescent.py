@@ -112,6 +112,8 @@ class PyNNDescentBackend(AbstractBackend[PyNNDescentArgs]):
         # Load the neighbor graph if it was saved
         neighbor_graph_path = path / "neighbor_graph.npy"
         if neighbor_graph_path.exists():
-            index._neighbor_graph = np.load(str(neighbor_graph_path), allow_pickle=True)
+            # The (indices, distances) tuple is saved as one float array, so restore the original dtypes.
+            indices, distances = np.load(str(neighbor_graph_path), allow_pickle=True)
+            index._neighbor_graph = (indices.astype(np.int32), distances.astype(np.float32))
 
         return cls(index=index, arguments=arguments)
