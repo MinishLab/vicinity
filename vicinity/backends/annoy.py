@@ -67,7 +67,9 @@ class AnnoyBackend(AbstractBackend[AnnoyArgs]):
             index.add_item(i, vector)
         index.build(trees)
 
-        arguments = AnnoyArgs(dim=dim, metric=metric, trees=trees, length=len(vectors), internal_metric=internal_metric)  # type: ignore
+        arguments = AnnoyArgs(
+            dim=dim, metric=metric_enum, trees=trees, length=len(vectors), internal_metric=internal_metric
+        )
         return AnnoyBackend(index, arguments=arguments)
 
     @property

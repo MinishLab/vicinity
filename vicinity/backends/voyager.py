@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from numpy import typing as npt
 from voyager import Index, Space
 
@@ -60,7 +61,8 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
             M=m,
             ef_construction=ef_construction,
         )
-        index.add_items(vectors)
+        # Explicit ids, since Voyager does not guarantee input order when assigning them.
+        index.add_items(vectors, ids=np.arange(len(vectors)))
         return cls(
             index,
             VoyagerArgs(dim=dim, metric=metric_enum, ef_construction=ef_construction, m=m),
@@ -70,6 +72,9 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
         """Query the backend for the nearest neighbors."""
         k = min(k, len(self))
         indices, distances = self.index.query(vectors, k)
+        if self.arguments.metric == Metric.EUCLIDEAN:
+            # Voyager returns squared Euclidean distances.
+            distances = np.sqrt(distances)
         return list(zip(indices, distances))
 
     @classmethod
@@ -89,7 +94,7 @@ class VoyagerBackend(AbstractBackend[VoyagerArgs]):
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        self.index.add_items(vectors)
+        self.index.add_items(vectors, ids=np.arange(len(self), len(self) + len(vectors)))
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the backend."""

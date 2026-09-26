@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 from hnswlib import Index as HnswIndex
 from numpy import typing as npt
 
@@ -94,7 +95,11 @@ class HNSWBackend(AbstractBackend[HNSWArgs]):
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend."""
         k = min(k, len(self))
-        return list(zip(*self.index.knn_query(vectors, k)))
+        indices, distances = self.index.knn_query(vectors, k)
+        if self.arguments.metric == Metric.EUCLIDEAN:
+            # hnswlib returns squared Euclidean distances.
+            distances = np.sqrt(distances)
+        return list(zip(indices, distances))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
