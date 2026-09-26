@@ -7,8 +7,9 @@ import pytest
 from orjson import JSONEncodeError
 
 from vicinity import Vicinity
+from vicinity.backends.faiss import FaissBackend
 from vicinity.datatypes import Backend
-from vicinity.utils import normalize
+from vicinity.utils import Metric, normalize
 
 BackendType = tuple[Backend, str]
 
@@ -42,11 +43,12 @@ def test_vicinity_from_vectors_and_items(backend_type: BackendType, items: list[
     :param vectors: An array of vectors.
     """
     backend = backend_type[0]
-    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend)
+    vicinity = Vicinity.from_vectors_and_items(vectors, items, backend_type=backend, metric="cosine")
 
     assert len(vicinity) == len(items)
     assert vicinity.items == items
     assert vicinity.dim == vectors.shape[1]
+    assert vicinity.metric is Metric.COSINE
 
 
 def test_vicinity_query(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -377,7 +379,8 @@ def test_vicinity_usearch_binary_metrics(tmp_path: Path, metric: str) -> None:
         (Backend.PYNNDESCENT, {}, 1e-4),
         (Backend.VOYAGER, {}, 1e-4),
         (Backend.FAISS, {"index_type": "flat"}, 1e-4),
-        (Backend.FAISS, {"index_type": "ivf", "nlist": 50}, 1e-4),
+        # Clusters of about 10 vectors, so a query for 100 neighbours gets padded results.
+        (Backend.FAISS, {"index_type": "ivf", "nlist": 1000}, 1e-4),
         (Backend.FAISS, {"index_type": "hnsw"}, 1e-4),
         # Scalar quantization makes distances approximate.
         (Backend.FAISS, {"index_type": "scalar"}, 0.05),
@@ -388,21 +391,30 @@ def test_backend_distances_match_metric(
     backend_type: Backend, kwargs: dict, atol: float, metric: str, vectors: np.ndarray, query_vector: np.ndarray
 ) -> None:
     """Backends return true cosine or Euclidean distances without padding; exact backends return every close item."""
+    # Centred and scaled, so distances go beyond 0.5 (cosine) and 1 (Euclidean), where FAISS range radii differ.
+    vectors, query = 2 * (vectors - 0.5), 2 * (query_vector - 0.5)
     vicinity = Vicinity.from_vectors_and_items(
         vectors, list(range(len(vectors))), backend_type=backend_type, metric=metric, **kwargs
     )
-    if metric == "cosine":
-        expected = 1 - normalize(vectors) @ normalize(query_vector)
-    else:
-        expected = np.linalg.norm(vectors - query_vector, axis=1)
+
+    def distance(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        if metric == "cosine":
+            return 1 - np.sum(normalize(a) * normalize(b), axis=-1)
+        return np.linalg.norm(a - b, axis=-1)
+
+    expected = distance(vectors, query)
     # Halfway between the 11th and 12th closest items, so no item sits on the boundary.
     threshold = float(np.sort(expected)[10:12].mean())
-    for result in (vicinity.query(query_vector, k=100)[0], vicinity.query_threshold(query_vector, threshold)[0]):
+    for result in (vicinity.query(query, k=100)[0], vicinity.query_threshold(query, threshold)[0]):
         items, distances = zip(*result)
         assert np.allclose(distances, expected[list(items)], atol=atol)
+    # Every stored vector must come back with its true distance, which catches items mapped to the wrong vector.
+    items, distances = zip(*(result[0] for result in vicinity.query(vectors, k=1)))
+    assert np.allclose(distances, distance(vectors, vectors[list(items)]), atol=atol)
     if backend_type == Backend.BASIC or kwargs.get("index_type") == "flat":
-        returned = {item for item, _ in vicinity.query_threshold(query_vector, threshold)[0]}
-        assert returned == set(np.flatnonzero(expected < threshold).tolist())
+        for limit in (threshold, float(np.median(expected))):
+            returned = {item for item, _ in vicinity.query_threshold(query, limit)[0]}
+            assert returned == set(np.flatnonzero(expected < limit).tolist())
 
 
 @pytest.mark.parametrize(
@@ -418,13 +430,27 @@ def test_backend_distances_match_metric(
         (Backend.FAISS, {"index_type": "ivfpqr", "nlist": 1, "m": 1, "nbits": 3, "refine_nbits": 3}),
     ],
 )
-def test_cosine_distance_to_zero_vector(backend_type: Backend, kwargs: dict) -> None:
-    """Zero vectors have cosine distance 1 to everything, both as stored items and as queries."""
-    # Apart from the zero vector, every vector points away from the query, so nothing falls within the threshold.
+def test_cosine_distance_to_zero_vector(tmp_path: Path, backend_type: Backend, kwargs: dict) -> None:
+    """Zero vectors have cosine distance 1 to everything: built, inserted, reloaded and as queries."""
+    # Apart from the zero vectors, every vector points away from the query, so nothing falls within the threshold.
     vectors = np.array([[0.0, 0.0]] + [[-1.0, 0.1 * i] for i in range(15)], dtype=np.float32)
     vicinity = Vicinity.from_vectors_and_items(vectors, list(range(len(vectors))), backend_type=backend_type, **kwargs)
+    vicinity.insert([16], np.zeros((1, 2), dtype=np.float32))
+    vicinity.save(tmp_path / "vicinity")
+    vicinity = Vicinity.load(tmp_path / "vicinity")
     query = np.array([1.0, 0.0], dtype=np.float32)
-    assert dict(vicinity.query(query, k=len(vectors))[0])[0] == pytest.approx(1.0, abs=0.01)
+    distances = dict(vicinity.query(query, k=len(vectors) + 1)[0])
+    assert [distances[0], distances[16]] == pytest.approx([1.0, 1.0], abs=0.01)
     assert vicinity.query_threshold(query, threshold=0.75)[0] == []
     zero_query_distances = [distance for _, distance in vicinity.query(np.zeros(2, dtype=np.float32), k=5)[0]]
     assert np.allclose(zero_query_distances, 1.0, atol=0.01)
+
+
+def test_faiss_lsh_returns_hamming_distances(vectors: np.ndarray, query_vector: np.ndarray) -> None:
+    """LSH distances are FAISS's Hamming distances, which cannot be converted to cosine distances."""
+    vicinity = Vicinity.from_vectors_and_items(
+        vectors, list(range(len(vectors))), backend_type=Backend.FAISS, index_type="lsh", nbits=32
+    )
+    assert isinstance(vicinity.backend, FaissBackend)
+    hamming, _ = vicinity.backend.index.search(normalize(query_vector)[None], 10)
+    assert [distance for _, distance in vicinity.query(query_vector, k=10)[0]] == hamming[0].tolist()
