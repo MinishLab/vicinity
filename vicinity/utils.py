@@ -49,7 +49,10 @@ def normalize_or_copy(vectors: npt.NDArray) -> npt.NDArray:
     Otherwise, the vectors are normalized, and a new array is returned.
     """
     norms = np.linalg.norm(vectors, axis=-1)
-    all_unit_length = np.allclose(norms[norms != 0], 1)
+    rtol = 1e-5
+    if np.issubdtype(vectors.dtype, np.floating):
+        rtol = max(rtol, 4 * float(np.finfo(vectors.dtype).eps))
+    all_unit_length = np.allclose(norms[norms != 0], 1, rtol=rtol)
     if all_unit_length:
         return vectors
     return normalize(vectors, norms)
