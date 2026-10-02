@@ -43,3 +43,14 @@ def test_normalize_or_copy() -> None:
     result_zero = normalize_or_copy(zero_vectors)
     assert_array_equal(result_zero, zero_vectors)
     assert result_zero is zero_vectors, "Should return the original array"
+
+
+def test_normalize_or_copy_dtypes() -> None:
+    """Test that normalized vectors are recognized for every float dtype."""
+    rng = np.random.default_rng(42)
+    for dtype in (np.float16, np.float32, np.float64):
+        vectors = normalize(rng.standard_normal((1000, 384)).astype(dtype))
+        assert normalize_or_copy(vectors) is vectors, f"Should return the original array for {dtype}"
+
+        scaled = vectors * dtype(1.01)
+        assert normalize_or_copy(scaled) is not scaled, f"Should return a new array for {dtype}"
