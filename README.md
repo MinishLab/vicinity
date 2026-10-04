@@ -137,7 +137,7 @@ The following backends are supported:
 - [VOYAGER](https://github.com/spotify/voyager): Voyager is a library for performing fast approximate nearest-neighbor searches on an in-memory collection of vectors.
 - [TURBOVEC](https://github.com/RyanCodrai/turbovec): Quantized flat index using Google's TurboQuant, with 2-4 bits per dimension.
 
-NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, `Usearch`, and `TurboVec`. The `BASIC` backend supports both insertion and deletion.
+NOTE: most ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, `Usearch`, and `TurboVec`. The `BASIC` and `TurboVec` backends support both insertion and deletion.
 
 ### Backend Parameters
 

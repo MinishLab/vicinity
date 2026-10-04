@@ -32,10 +32,19 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         self,
         index: TurboQuantIndex,
         arguments: TurboVecArgs,
+        positions: npt.NDArray | None = None,
     ) -> None:
-        """Initialize the backend using TurboVec."""
+        """
+        Initialize the backend using TurboVec.
+
+        :param index: The TurboVec index.
+        :param arguments: The arguments of the backend.
+        :param positions: The position of the vector in each index slot. Defaults to the slot itself.
+        """
         super().__init__(arguments)
         self.index = index
+        # Deletion moves the last vector into the freed slot, so slots are mapped back to their positions.
+        self.positions = np.arange(len(index)) if positions is None else positions
 
     @classmethod
     def from_vectors(
@@ -64,6 +73,7 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
             sample = rng.choice(len(prepared), min(len(prepared), _CALIBRATION_SAMPLE_SIZE), replace=False)
             backend.index.calibrate(prepared[sample])
         backend.index.add(prepared)
+        backend.positions = np.arange(len(prepared))
         return backend
 
     @property
@@ -86,21 +96,23 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         index_path = path / "index.tv"
         arguments = TurboVecArgs.load(path / "arguments.json")
         index = TurboQuantIndex.load(str(index_path))
-        return cls(index, arguments=arguments)
+        return cls(index, arguments=arguments, positions=np.load(path / "positions.npy"))
 
     def save(self, path: Path) -> None:
         """Save the index to a path."""
         self.index.write(str(path / "index.tv"))
+        np.save(path / "positions.npy", self.positions)
         self.arguments.dump(path / "arguments.json")
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend and return results as tuples of keys and distances."""
         scores, indices = self.index.search(self._prepare(vectors), k=k)
         # Inner products of unit vectors are cosine similarities.
-        return list(zip(indices, 1.0 - scores))
+        return list(zip(self.positions[indices], 1.0 - scores))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
+        self.positions = np.concatenate([self.positions, np.arange(len(self), len(self) + len(vectors))])
         self.index.add(self._prepare(vectors))
 
     def _prepare(self, vectors: npt.NDArray) -> npt.NDArray:
@@ -110,8 +122,15 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         return np.ascontiguousarray(np.pad(vectors, ((0, 0), (0, padding))), dtype=np.float32)
 
     def delete(self, indices: list[int]) -> None:
-        """Delete vectors from the index (not supported by TurboVec)."""
-        raise NotImplementedError("Dynamic deletion is not supported in TurboVec.")
+        """Delete vectors at the given positions, shifting later positions down to stay aligned with the items."""
+        deleted = np.sort(np.asarray(indices, dtype=np.int64))
+        slots = np.flatnonzero(np.isin(self.positions, deleted))
+        # Remove the highest slots first, so the last vector moved into a freed slot is never one being deleted.
+        for slot in slots[::-1]:
+            self.index.swap_remove(int(slot))
+            self.positions[slot] = self.positions[-1]
+            self.positions = self.positions[:-1]
+        self.positions = self.positions - np.searchsorted(deleted, self.positions)
 
     def threshold(self, vectors: npt.NDArray, threshold: float, max_k: int) -> QueryResult:
         """Query vectors within a distance threshold and return keys and distances."""
