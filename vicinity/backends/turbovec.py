@@ -10,7 +10,10 @@ from turbovec import TurboQuantIndex
 
 from vicinity.backends.base import AbstractBackend, BaseArgs
 from vicinity.datatypes import Backend, QueryResult
-from vicinity.utils import Metric
+from vicinity.utils import Metric, normalize
+
+# Rows used to fit TQ+ calibration; turbovec recommends around 1024.
+_CALIBRATION_SAMPLE_SIZE = 1024
 
 
 @dataclass
@@ -18,6 +21,7 @@ class TurboVecArgs(BaseArgs):
     dim: int = 0
     metric: Metric = Metric.COSINE
     bit_width: int = 4
+    calibrate: bool = True
 
 
 class TurboVecBackend(AbstractBackend[TurboVecArgs]):
@@ -39,9 +43,10 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         vectors: npt.NDArray,
         metric: str | Metric = Metric.COSINE,
         bit_width: int = 4,
+        calibrate: bool = True,
         **kwargs: Any,
     ) -> TurboVecBackend:
-        """Create a new instance from vectors."""
+        """Create a new instance from vectors, optionally fitting TQ+ calibration on a random sample first."""
         metric_enum = Metric.from_string(metric)
 
         if metric_enum not in cls.supported_metrics:
@@ -50,13 +55,16 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         if bit_width not in (2, 3, 4):
             raise ValueError(f"bit_width must be 2, 3, or 4, got {bit_width}.")
 
-        dim = vectors.shape[1]
-        if dim % 8 != 0:
-            raise ValueError(f"dim must be a multiple of 8, got {dim}.")
-        index = TurboQuantIndex(dim=dim, bit_width=bit_width)
-        index.add(vectors.astype(np.float32))
-        arguments = TurboVecArgs(dim=dim, metric=metric_enum, bit_width=bit_width)
-        return cls(index, arguments)
+        arguments = TurboVecArgs(dim=vectors.shape[1], metric=metric_enum, bit_width=bit_width, calibrate=calibrate)
+        backend = cls(TurboQuantIndex(dim=_padded_dim(arguments.dim), bit_width=bit_width), arguments)
+        prepared = backend._prepare(vectors)
+        # turbovec needs at least two rows to fit a calibration.
+        if calibrate and len(prepared) > 1:
+            rng = np.random.default_rng(42)
+            sample = rng.choice(len(prepared), min(len(prepared), _CALIBRATION_SAMPLE_SIZE), replace=False)
+            backend.index.calibrate(prepared[sample])
+        backend.index.add(prepared)
+        return backend
 
     @property
     def backend_type(self) -> Backend:
@@ -75,27 +83,31 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
     @classmethod
     def load(cls: type[TurboVecBackend], path: Path) -> TurboVecBackend:
         """Load the index from a path."""
-        index_path = path / "index.tq"
+        index_path = path / "index.tv"
         arguments = TurboVecArgs.load(path / "arguments.json")
         index = TurboQuantIndex.load(str(index_path))
         return cls(index, arguments=arguments)
 
     def save(self, path: Path) -> None:
         """Save the index to a path."""
-        self.index.write(str(path / "index.tq"))
+        self.index.write(str(path / "index.tv"))
         self.arguments.dump(path / "arguments.json")
 
     def query(self, vectors: npt.NDArray, k: int) -> QueryResult:
         """Query the backend and return results as tuples of keys and distances."""
-        k = min(k, len(self))
-        scores_batch, indices_batch = self.index.search(vectors.astype(np.float32), k=k)
-        # TurboVec returns cosine similarity scores; convert to cosine distance
-        distances_batch = 1.0 - scores_batch
-        return [(indices_batch[i], distances_batch[i].astype(np.float32)) for i in range(len(vectors))]
+        scores, indices = self.index.search(self._prepare(vectors), k=k)
+        # Inner products of unit vectors are cosine similarities.
+        return list(zip(indices, 1.0 - scores))
 
     def insert(self, vectors: npt.NDArray) -> None:
         """Insert vectors into the backend."""
-        self.index.add(vectors.astype(np.float32))
+        self.index.add(self._prepare(vectors))
+
+    def _prepare(self, vectors: npt.NDArray) -> npt.NDArray:
+        """Normalize, zero-pad to the index dim and convert to contiguous float32, as turbovec requires."""
+        vectors = normalize(np.asarray(vectors, dtype=np.float32))
+        padding = _padded_dim(self.dim) - self.dim
+        return np.ascontiguousarray(np.pad(vectors, ((0, 0), (0, padding))), dtype=np.float32)
 
     def delete(self, indices: list[int]) -> None:
         """Delete vectors from the index (not supported by TurboVec)."""
@@ -107,6 +119,11 @@ class TurboVecBackend(AbstractBackend[TurboVecArgs]):
         for keys_row, distances_row in self.query(vectors, max_k):
             keys_row = np.array(keys_row)
             distances_row = np.array(distances_row, dtype=np.float32)
-            mask = distances_row <= threshold
+            mask = distances_row < threshold
             out.append((keys_row[mask], distances_row[mask]))
         return out
+
+
+def _padded_dim(dim: int) -> int:
+    """Round up to a multiple of 8, which turbovec requires; zero padding leaves inner products unchanged."""
+    return -(-dim // 8) * 8

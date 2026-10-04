@@ -5,7 +5,7 @@ readme = { file = "README.md", content-type = "text/markdown" }
 dynamic = ["version"]
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
-authors = [{ name = "Stéphan Tulkens", email = "stephantul@gmail.com"}, {name = "Thomas van Dongen", email = "thomas123@live.nl"}]
+authors = [{ name = "Stéphan Tulkens", email = "stephantul@gmail.com"}, {name = "Thomas van Dongen", email = "thomasvdongen@proton.me"}]
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -70,7 +70,8 @@ backends = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager"
+    "voyager",
+    "turbovec"
 ]
 
 all = [
@@ -83,7 +84,8 @@ all = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager"
+    "voyager",
+    "turbovec"
 ]
 
 [project.urls]
@@ -143,3 +145,6 @@ license-files = []
 
 [tool.setuptools.dynamic]
 version = {attr = "vicinity.version.__version__"}
+
+[tool.uv]
+exclude-newer = "1 week"

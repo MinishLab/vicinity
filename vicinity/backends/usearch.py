@@ -25,6 +25,9 @@ class UsearchArgs(BaseArgs):
 class UsearchBackend(AbstractBackend[UsearchArgs]):
     argument_class = UsearchArgs
     supported_metrics = {Metric.COSINE, Metric.INNER_PRODUCT, Metric.L2_SQUARED, Metric.HAMMING, Metric.TANIMOTO}
+    # Binary metrics take vectors bit-packed into uint8, as produced by np.packbits, and usearch counts their
+    # dimensions in bits.
+    binary_metrics = {Metric.HAMMING, Metric.TANIMOTO}
     inverse_metric_mapping = {
         Metric.COSINE: "cos",
         Metric.INNER_PRODUCT: "ip",
@@ -60,6 +63,13 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
         metric = cls._map_metric_to_string(metric_enum)
         dim = vectors.shape[1]
+        if metric_enum in cls.binary_metrics:
+            if vectors.dtype != np.uint8:
+                raise ValueError(
+                    f"Metric '{metric_enum.value}' requires vectors bit-packed into uint8 with np.packbits, "
+                    f"got dtype {vectors.dtype}."
+                )
+            dim *= 8
         index = UsearchIndex(
             ndim=dim,
             metric=metric,
@@ -84,7 +94,9 @@ class UsearchBackend(AbstractBackend[UsearchArgs]):
 
     @property
     def dim(self) -> int:
-        """Get the dimension of the space."""
+        """Get the dimension of the space, in bytes for bit-packed binary metrics."""
+        if self.arguments.metric in self.binary_metrics:
+            return self.index.ndim // 8
         return self.index.ndim
 
     def __len__(self) -> int:
