@@ -80,7 +80,10 @@ def test_vicinity_query_threshold(vicinity_instance: Vicinity, query_vector: np.
 
     results = vicinity_instance.query_threshold(np.stack([query_vector, query_vector]), threshold=0.7)
 
-    assert results[0] == results[1]
+    # PyNNDescent seeds each query in a batch from a shared random state, so identical queries can find different
+    # approximate neighbours.
+    if vicinity_instance.backend.backend_type != Backend.PYNNDESCENT:
+        assert results[0] == results[1]
 
 
 def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
@@ -112,8 +115,8 @@ def test_vicinity_delete(vicinity_instance: Vicinity, items: list[str], vectors:
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if vicinity_instance.backend.backend_type != Backend.BASIC:
-        # Skip delete for non-basic backends
+    if vicinity_instance.backend.backend_type not in {Backend.BASIC, Backend.TURBOVEC}:
+        # Only the basic and TurboVec backends support deletion.
         return
 
     # Get the vector corresponding to "item2"
@@ -223,8 +226,8 @@ def test_vicinity_delete_nonexistent(vicinity_instance: Vicinity) -> None:
     :param vicinity_instance: A Vicinity instance.
     :raises ValueError: If deleting items that do not exist.
     """
-    if vicinity_instance.backend.backend_type != Backend.BASIC:
-        # Skip delete for non-basic backends
+    if vicinity_instance.backend.backend_type not in {Backend.BASIC, Backend.TURBOVEC}:
+        # Only the basic and TurboVec backends support deletion.
         return
     with pytest.raises(ValueError):
         vicinity_instance.delete(["item10002"])
@@ -295,8 +298,8 @@ def test_vicinity_delete_and_query(vicinity_instance: Vicinity, items: list[str]
     :param items: List of item names.
     :param vectors: Array of vectors corresponding to items.
     """
-    if vicinity_instance.backend.backend_type != Backend.BASIC:
-        # Skip delete for non-basic backends
+    if vicinity_instance.backend.backend_type not in {Backend.BASIC, Backend.TURBOVEC}:
+        # Only the basic and TurboVec backends support deletion.
         return
 
     # Delete some items from the Vicinity instance
@@ -385,12 +388,16 @@ def test_vicinity_usearch_binary_metrics(tmp_path: Path, metric: str) -> None:
         # Scalar quantization makes distances approximate.
         (Backend.FAISS, {"index_type": "scalar"}, 0.05),
         (Backend.FAISS, {"index_type": "ivf_scalar", "nlist": 50}, 0.05),
+        # 4-bit quantization of 8-dimensional vectors is coarse, with errors up to 0.055 depending on the platform.
+        (Backend.TURBOVEC, {}, 0.1),
     ],
 )
 def test_backend_distances_match_metric(
     backend_type: Backend, kwargs: dict, atol: float, metric: str, vectors: np.ndarray, query_vector: np.ndarray
 ) -> None:
     """Backends return true cosine or Euclidean distances without padding; exact backends return every close item."""
+    if backend_type == Backend.TURBOVEC and metric == "euclidean":
+        pytest.skip("TurboVec only supports cosine.")
     # Centred and scaled, so distances go beyond 0.5 (cosine) and 1 (Euclidean), where FAISS range radii differ.
     vectors, query = 2 * (vectors - 0.5), 2 * (query_vector - 0.5)
     vicinity = Vicinity.from_vectors_and_items(
@@ -428,6 +435,7 @@ def test_backend_distances_match_metric(
         (Backend.FAISS, {"index_type": "pq", "m": 1, "nbits": 3}),
         (Backend.FAISS, {"index_type": "ivfpq", "nlist": 1, "m": 1, "nbits": 3}),
         (Backend.FAISS, {"index_type": "ivfpqr", "nlist": 1, "m": 1, "nbits": 3, "refine_nbits": 3}),
+        (Backend.TURBOVEC, {}),
     ],
 )
 def test_cosine_distance_to_zero_vector(tmp_path: Path, backend_type: Backend, kwargs: dict) -> None:
@@ -454,3 +462,18 @@ def test_faiss_lsh_returns_hamming_distances(vectors: np.ndarray, query_vector: 
     assert isinstance(vicinity.backend, FaissBackend)
     hamming, _ = vicinity.backend.index.search(normalize(query_vector)[None], 10)
     assert [distance for _, distance in vicinity.query(query_vector, k=10)[0]] == hamming[0].tolist()
+
+
+def test_turbovec_delete_keeps_items_aligned(tmp_path: Path) -> None:
+    """Deleting from TurboVec moves vectors between slots, but every item still maps to its own vector."""
+    vectors = np.eye(16, dtype=np.float32)[:10]
+    vicinity = Vicinity.from_vectors_and_items(vectors, list(range(10)), backend_type=Backend.TURBOVEC)
+    vicinity.delete([1, 4, 9])
+    vicinity.insert([10], np.eye(16, dtype=np.float32)[10:11])
+    vicinity.save(tmp_path / "turbovec")
+    vicinity = Vicinity.load(tmp_path / "turbovec")
+
+    remaining = [0, 2, 3, 5, 6, 7, 8, 10]
+    assert vicinity.items == remaining
+    results = vicinity.query(np.eye(16, dtype=np.float32)[remaining], k=1)
+    assert [result[0][0] for result in results] == remaining

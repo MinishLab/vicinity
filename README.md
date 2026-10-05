@@ -135,8 +135,9 @@ The following backends are supported:
   - `ivfpq`: Inverted file search with product quantizer.
   - `ivfpqr`: Inverted file search with product quantizer and refinement.
 - [VOYAGER](https://github.com/spotify/voyager): Voyager is a library for performing fast approximate nearest-neighbor searches on an in-memory collection of vectors.
+- [TURBOVEC](https://github.com/RyanCodrai/turbovec): Quantized flat index using Google's TurboQuant, with 2-4 bits per dimension.
 
-NOTE: the ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, and `Usearch`. The `BASIC` backend supports both insertion and deletion.
+NOTE: most ANN backends do not support dynamic deletion. To delete items, you need to recreate the index. Insertion is supported in the following backends: `FAISS`, `HNSW`, `Usearch`, and `TurboVec`. The `BASIC` and `TurboVec` backends support both insertion and deletion.
 
 ### Backend Parameters
 
@@ -165,6 +166,9 @@ NOTE: the ANN backends do not support dynamic deletion. To delete items, you nee
 | **VOYAGER**        | `metric`            | Similarity space to use (`cosine`, `l2`).                                                     | `"cosine"`          |
 |                 | `ef_construction`   | The number of vectors that this index searches through when inserting a new vector into the index.                                           | `200`               |
 |                 | `m`                 | The number of connections between nodes in the tree’s internal data structure.                                                              | `16`                |
+| **TURBOVEC**    | `metric`            | Similarity metric to use (`cosine`).                                                          | `"cosine"`          |
+|                 | `bit_width`         | Bits per dimension (`2`, `3`, or `4`).                                                        | `4`                 |
+|                 | `calibrate`         | Fit TQ+ calibration on a random sample of the vectors before indexing, which improves recall. | `True`              |
 
 ## Installation
 
@@ -193,6 +197,7 @@ pip install vicinity[hnsw]
 pip install vicinity[pynndescent]
 pip install vicinity[usearch]
 pip install vicinity[voyager]
+pip install vicinity[turbovec]
 ```
 
 ## License

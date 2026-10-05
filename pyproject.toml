@@ -60,6 +60,7 @@ annoy = ["annoy"]
 faiss = ["faiss-cpu"]
 usearch = ["usearch"]
 voyager = ["voyager"]
+turbovec = ["turbovec"]
 backends = [
     "hnswlib",
     "pynndescent>=0.5.10",
@@ -69,7 +70,8 @@ backends = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager"
+    "voyager",
+    "turbovec"
 ]
 
 all = [
@@ -82,7 +84,8 @@ all = [
     "annoy",
     "faiss-cpu",
     "usearch",
-    "voyager"
+    "voyager",
+    "turbovec"
 ]
 
 [project.urls]
