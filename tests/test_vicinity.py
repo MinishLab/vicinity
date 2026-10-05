@@ -80,7 +80,10 @@ def test_vicinity_query_threshold(vicinity_instance: Vicinity, query_vector: np.
 
     results = vicinity_instance.query_threshold(np.stack([query_vector, query_vector]), threshold=0.7)
 
-    assert results[0] == results[1]
+    # PyNNDescent seeds each query in a batch from a shared random state, so identical queries can find different
+    # approximate neighbours.
+    if vicinity_instance.backend.backend_type != Backend.PYNNDESCENT:
+        assert results[0] == results[1]
 
 
 def test_vicinity_insert(vicinity_instance: Vicinity, query_vector: np.ndarray) -> None:
