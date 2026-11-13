@@ -177,6 +177,7 @@ class Vicinity(Generic[T]):
 
         :param folder: The path to which to save the JSON file. The vectors are saved separately. The JSON contains a path to the numpy file.
         :param overwrite: Whether to overwrite the JSON and numpy files if they already exist.
+            Raw vectors from an earlier save are removed if this instance has no vector store.
         :raises ValueError: If the path is not a directory.
         :raises JSONEncodeError: If the items are not JSON-serializable. ``save()`` and ``load()``
             only support item types that orjson can encode (e.g. strings, numbers, dicts).
@@ -196,10 +197,15 @@ class Vicinity(Generic[T]):
             raise JSONEncodeError(f"Items could not be encoded to JSON because they are not serializable: {e}")
 
         self.backend.save(path)
+        store_path = path / "store"
         if self.vector_store is not None:
-            store_path = path / "store"
             store_path.mkdir(exist_ok=overwrite)
             self.vector_store.save(store_path)
+        elif store_path.is_dir():
+            # Remove only the library-owned raw vectors, preserving unrelated files.
+            (store_path / "vectors.npy").unlink(missing_ok=True)
+            if not any(store_path.iterdir()):
+                store_path.rmdir()
 
     @classmethod
     def load(cls, filename: PathLike) -> Vicinity[Any]:
@@ -224,7 +230,7 @@ class Vicinity(Generic[T]):
 
         backend_cls: type[AbstractBackend] = get_backend_class(backend_type)
         backend = backend_cls.load(folder_path)
-        if Path(folder_path / "store").exists():
+        if (folder_path / "store" / "vectors.npy").is_file():
             vector_store = BasicVectorStore.load(folder_path / "store")
         else:
             vector_store = None
