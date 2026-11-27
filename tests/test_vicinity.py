@@ -167,6 +167,25 @@ def test_vicinity_save_and_load_vector_store(tmp_path: Path, vicinity_instance_w
     assert v.vector_store is not None
 
 
+def test_vicinity_overwrite_without_vector_store(tmp_path: Path) -> None:
+    """Overwriting a stored-vector snapshot removes the previous vector store."""
+    save_path = tmp_path / "vicinity_data"
+    original = Vicinity.from_vectors_and_items(np.array([[1.0, 0.0]]), ["old"], store_vectors=True)
+    original.save(save_path)
+
+    vectors = np.array([[0.0, 1.0]])
+    replacement = Vicinity.from_vectors_and_items(vectors, ["new"], store_vectors=False)
+    replacement.save(save_path, overwrite=True)
+
+    loaded = Vicinity.load(save_path)
+    assert loaded.items == ["new"]
+    assert loaded.query(vectors, k=1) == replacement.query(vectors, k=1)
+    assert loaded.vector_store is None
+    assert not (save_path / "store").exists()
+    with pytest.raises(ValueError, match="No vector store was provided"):
+        loaded.get_vector_by_index(0)
+
+
 def test_vicinity_save_and_load_non_serializable_items(
     tmp_path: Path, non_serializable_items: list[str], vectors: np.ndarray
 ) -> None:
