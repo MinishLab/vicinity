@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from time import perf_counter
@@ -196,10 +197,12 @@ class Vicinity(Generic[T]):
             raise JSONEncodeError(f"Items could not be encoded to JSON because they are not serializable: {e}")
 
         self.backend.save(path)
+        store_path = path / "store"
         if self.vector_store is not None:
-            store_path = path / "store"
             store_path.mkdir(exist_ok=overwrite)
             self.vector_store.save(store_path)
+        elif store_path.exists():
+            shutil.rmtree(store_path)
 
     @classmethod
     def load(cls, filename: PathLike) -> Vicinity[Any]:
